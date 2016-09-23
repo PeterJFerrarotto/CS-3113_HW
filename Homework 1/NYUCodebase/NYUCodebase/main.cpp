@@ -62,11 +62,22 @@ int main(int argc, char *argv[])
 
 	GLuint texture1 = LoadTexture("assets/backdrop.png");
 	GLuint texture2 = LoadTexture("assets/F5S4.png");
+	GLuint texture3 = LoadTexture("assets/eyeball.png");
+
+	//Yes, I used gravel, a space ship, and an eyeball. I didn't know what three sprites to use, so I just chose the first three random words
+	//that came to mind. Which were gravel, spaceship, and eyeball. Don't ask me why.
+
+	//Some people say the best ideas for games come from random ideas.
+
+	//This seems more like the idea for a nightmare.
 
 	Matrix projectionMatrix;
 	Matrix modelMatrix;
 	Matrix modelMatrixBackground;
+	Matrix modelMatrixEyeball;
 	Matrix viewMatrix;
+
+	modelMatrixEyeball.setPosition(1.0, -2.0, 0.0);
 
 	projectionMatrix.setOrthoProjection(-3.55, 3.55, -2.0f, 2.0f, -1.0f, 1.0f);
 
@@ -75,6 +86,8 @@ int main(int argc, char *argv[])
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	float moveSpeed;
 	glUseProgram(program.programID);
+
+
 
 	SDL_Event event;
 	bool done = false;
@@ -207,7 +220,6 @@ int main(int argc, char *argv[])
 
 		program.setModelMatrix(modelMatrix);
 
-
 		glBindTexture(GL_TEXTURE_2D, texture2);
 
 		float vertices[] = { -0.5, -0.5, 0.5, -0.5, 0.5, 0.5, -0.5, -0.5, 0.5, 0.5, -0.5, 0.5 };
@@ -216,6 +228,23 @@ int main(int argc, char *argv[])
 
 		float texCoords[] = { 0.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 1.0, 1.0, 0.0, 0.0, 0.0 };
 		glVertexAttribPointer(program.texCoordAttribute, 2, GL_FLOAT, false, 0, texCoords);
+		glEnableVertexAttribArray(program.texCoordAttribute);
+
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+
+		glDisableVertexAttribArray(program.positionAttribute);
+		glDisableVertexAttribArray(program.texCoordAttribute);
+
+		program.setModelMatrix(modelMatrixEyeball);
+
+		glBindTexture(GL_TEXTURE_2D, texture3);
+
+		float eyeBallVertices[] = { -1, -1, 1, -1, 1, 1, -1, -1, 1, 1, -1, 1 };
+		glVertexAttribPointer(program.positionAttribute, 2, GL_FLOAT, false, 0, eyeBallVertices);
+		glEnableVertexAttribArray(program.positionAttribute);
+
+		float eyeBallTexCoords[] = { 0.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 1.0, 1.0, 0.0, 0.0, 0.0 };
+		glVertexAttribPointer(program.texCoordAttribute, 2, GL_FLOAT, false, 0, eyeBallTexCoords);
 		glEnableVertexAttribArray(program.texCoordAttribute);
 
 		glDrawArrays(GL_TRIANGLES, 0, 6);
