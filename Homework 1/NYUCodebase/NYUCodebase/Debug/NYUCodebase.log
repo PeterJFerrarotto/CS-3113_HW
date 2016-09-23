@@ -1,0 +1,18 @@
+﻿  main.cpp
+c:\users\pf749_000\cs-3113_hw\nyucodebase\nyucodebase\main.cpp(71): warning C4305: 'argument' : truncation from 'double' to 'float'
+c:\users\pf749_000\cs-3113_hw\nyucodebase\nyucodebase\main.cpp(114): warning C4305: '=' : truncation from 'double' to 'float'
+c:\users\pf749_000\cs-3113_hw\nyucodebase\nyucodebase\main.cpp(117): warning C4305: '=' : truncation from 'double' to 'float'
+c:\users\pf749_000\cs-3113_hw\nyucodebase\nyucodebase\main.cpp(125): warning C4244: '+=' : conversion from 'double' to 'float', possible loss of data
+c:\users\pf749_000\cs-3113_hw\nyucodebase\nyucodebase\main.cpp(127): warning C4244: '+=' : conversion from 'double' to 'float', possible loss of data
+c:\users\pf749_000\cs-3113_hw\nyucodebase\nyucodebase\main.cpp(134): warning C4244: '-=' : conversion from 'double' to 'float', possible loss of data
+c:\users\pf749_000\cs-3113_hw\nyucodebase\nyucodebase\main.cpp(136): warning C4244: '+=' : conversion from 'double' to 'float', possible loss of data
+c:\users\pf749_000\cs-3113_hw\nyucodebase\nyucodebase\main.cpp(140): warning C4244: '-=' : conversion from 'double' to 'float', possible loss of data
+c:\users\pf749_000\cs-3113_hw\nyucodebase\nyucodebase\main.cpp(141): warning C4244: '+=' : conversion from 'double' to 'float', possible loss of data
+c:\users\pf749_000\cs-3113_hw\nyucodebase\nyucodebase\main.cpp(144): warning C4244: '+=' : conversion from 'double' to 'float', possible loss of data
+c:\users\pf749_000\cs-3113_hw\nyucodebase\nyucodebase\main.cpp(145): warning C4244: '+=' : conversion from 'double' to 'float', possible loss of data
+c:\users\pf749_000\cs-3113_hw\nyucodebase\nyucodebase\main.cpp(167): warning C4244: '-=' : conversion from 'double' to 'float', possible loss of data
+c:\users\pf749_000\cs-3113_hw\nyucodebase\nyucodebase\main.cpp(171): warning C4244: '+=' : conversion from 'double' to 'float', possible loss of data
+c:\users\pf749_000\cs-3113_hw\nyucodebase\nyucodebase\main.cpp(180): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+c:\users\pf749_000\cs-3113_hw\nyucodebase\nyucodebase\main.cpp(183): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+c:\users\pf749_000\cs-3113_hw\nyucodebase\nyucodebase\main.cpp(187): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
+  NYUCodebase.vcxproj -> C:\Users\pf749_000\CS-3113_HW\NYUCodebase\Debug\PFerrarottoHW.exe
