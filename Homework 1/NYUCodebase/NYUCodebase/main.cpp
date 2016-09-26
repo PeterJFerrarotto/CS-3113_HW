@@ -21,20 +21,19 @@
 SDL_Window* displayWindow;
 
 GLuint LoadTexture(const char* imagePath) {
-
-
 	SDL_Surface *surface = IMG_Load(imagePath);
 	GLuint textureID;	
-	glPixelStorei(GL_PACK_ROW_LENGTH, surface->w);
-	glPixelStorei(GL_UNPACK_ROW_LENGTH, surface->w);
-	glPixelStorei(GL_UNPACK_ROW_LENGTH, surface->pitch / surface->format->BytesPerPixel);
-	glPixelStorei(GL_PACK_ALIGNMENT, 1);
-	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 	glGenTextures(1, &textureID);
 
 	//glGetIntegerv(GL_TEXTURE_BINDING_2D, (GLint*) &textureID);
 	glBindTexture(GL_TEXTURE_2D, textureID);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, surface->w, surface->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, surface->pixels);
+
+	GLenum externalFormat = GL_RGBA;
+	if (surface->format->BytesPerPixel == 3) {
+		externalFormat = GL_RGB;
+	}
+
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, surface->w, surface->h, 0, externalFormat, GL_UNSIGNED_BYTE, surface->pixels);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
@@ -52,17 +51,19 @@ int main(int argc, char *argv[])
 #endif
 
 	float lastFrameTicks = 0.0f;
-	float playerPosX = 0.0f;
-	float playerSpeedX = 0.0f;
+	float playerRot = 0.0f;
+	float playerRotSpeed = 0.0f;
 	float playerPosY = 0.0f;
 	float playerSpeedY = 0.0f;
+	float playerPosX = 0.0f;
+	float playerSpeedX = 0.0f;
 	glViewport(0, 0, 640, 360);
 
 	ShaderProgram program(RESOURCE_FOLDER"vertex_textured.glsl", RESOURCE_FOLDER"fragment_textured.glsl");
 
-	GLuint texture1 = LoadTexture("assets/backdrop.png");
-	GLuint texture2 = LoadTexture("assets/F5S4.png");
-	GLuint texture3 = LoadTexture("assets/eyeball.png");
+	GLuint texture1 = LoadTexture(RESOURCE_FOLDER"assets/backdrop.png");
+	GLuint texture2 = LoadTexture(RESOURCE_FOLDER"assets/F5S4.png");
+	GLuint texture3 = LoadTexture(RESOURCE_FOLDER"assets/eyeball.png");
 
 	//Yes, I used gravel, a space ship, and an eyeball. I didn't know what three sprites to use, so I just chose the first three random words
 	//that came to mind. Which were gravel, spaceship, and eyeball. Don't ask me why.
@@ -115,9 +116,9 @@ int main(int argc, char *argv[])
 		if (state[SDL_SCANCODE_RETURN]) {
 			modelMatrix.identity();
 			playerPosY = 0.0f;
-			playerPosX = 0.0f;
+			playerRot = 0.0f;
 			playerSpeedY = 0.0f;
-			playerSpeedX = 0.0f;
+			playerRotSpeed = 0.0f;
 		}
 		else if (state[SDL_SCANCODE_ESCAPE]){
 			done = true;
@@ -130,74 +131,130 @@ int main(int argc, char *argv[])
 			moveSpeed = RUNNING_SPEED;
 		}
 
-		if (leftKey && !rightKey){
-			if (playerSpeedX > -1){
-				if (playerSpeedX < 0){
-					playerSpeedX = 0;
+		if ((keyA && !keyD) || (leftKey && !rightKey)){
+			if (playerRotSpeed > -1){
+				if (playerRotSpeed < 0){
+					playerRotSpeed = 0;
 				}
-				playerSpeedX += elapsed * TURN_SPEED;
+				playerRotSpeed += elapsed * TURN_SPEED;
 			}
-			playerPosX += playerSpeedX * M_PI/180;
+			playerRot += playerRotSpeed * M_PI / 180;
+			if (playerRot >= 2 * M_PI){
+				playerRot -= 2 * M_PI;
+			}
 		}
-		else if (rightKey && !leftKey){
-			if (playerSpeedX < 1){
-				if (playerSpeedX > 0){
-					playerSpeedX = 0;
+		else if ((keyD && !keyA) || (rightKey && !leftKey)){
+			if (playerRotSpeed < 1){
+				if (playerRotSpeed > 0){
+					playerRotSpeed = 0;
 				}
-				playerSpeedX -= elapsed * TURN_SPEED;
+				playerRotSpeed -= elapsed * TURN_SPEED;
 			}
-			playerPosX += playerSpeedX * M_PI/180;
+			playerRot += playerRotSpeed * M_PI / 180;
+			if (playerRot <= -2 * M_PI){
+				playerRot += 2 * M_PI;
+			}
 		}
-		else if (!rightKey && !leftKey){
-			if (playerSpeedX > 0 && playerSpeedX >= 0.04 * elapsed){
-				playerSpeedX -= elapsed * 0.04;
-				playerPosX += playerSpeedX * M_PI/180;
+		else if ((!keyD && !keyA) && (!leftKey && !rightKey)){
+			if (playerRotSpeed > 0 && playerRotSpeed >= 0.04 * elapsed){
+				playerRotSpeed -= elapsed * 0.04;
+				playerRot += playerRotSpeed * M_PI / 180;
 			}
-			else if (playerSpeedX < 0 && playerSpeedX <= -0.04 * elapsed){
-				playerSpeedX += elapsed * 0.04;
-				playerPosX += playerSpeedX * M_PI/180;
+			else if (playerRotSpeed < 0 && playerRotSpeed <= -0.04 * elapsed){
+				playerRotSpeed += elapsed * 0.04;
+				playerRot += playerRotSpeed * M_PI/180;
 			}
 			else
 			{
-				playerSpeedX = 0;
+				playerRotSpeed = 0;
 			}
 		}
 		
 		if (upKey && !downKey){
 			if (playerSpeedY < 5){
-				playerSpeedY += elapsed * moveSpeed;
+				playerSpeedY += elapsed * moveSpeed * cos(playerRot);
+				playerSpeedX += elapsed * moveSpeed * -sin(playerRot);
 			}
 			playerPosY += playerSpeedY;
+			playerPosX += playerSpeedX;
+			if (abs(playerPosY) >= 1.77){
+				playerPosY -= playerSpeedY;
+				playerSpeedY = -playerSpeedY / 2;
+				playerPosY += playerSpeedY;
+			}
+			if (abs(playerPosX) >= 3){
+				playerPosX -= playerSpeedX;
+				playerSpeedX = -playerSpeedX / 2;
+				playerPosX += playerSpeedX;
+			}
 		}
 		else if (downKey && !upKey){
 			if (playerSpeedY > -5){
-				playerSpeedY -= elapsed * moveSpeed;
+				playerSpeedY -= elapsed * moveSpeed * cos(playerRot);
+				playerSpeedX -= elapsed * moveSpeed * -sin(playerRot);
 			}
 			playerPosY += playerSpeedY;
-		}
-		else if (!downKey && !upKey){
-			if (playerSpeedY > 0 && playerSpeedY >= 0.001 * elapsed){
-				playerSpeedY -= 0.001 * elapsed;
+			playerPosX += playerSpeedX;
+			if (abs(playerPosY) >= 1.77){
+				playerPosY -= playerSpeedY;
+				playerSpeedY = -playerSpeedY / 2;
 				playerPosY += playerSpeedY;
 			}
-			else if (playerSpeedY < 0 && playerSpeedY <= -0.001 * elapsed){
-				playerSpeedY += 0.001 * elapsed;
+			if (abs(playerPosX) >= 3){
+				playerPosX -= playerSpeedX;
+				playerSpeedX = -playerSpeedX / 2;
+				playerPosX += playerSpeedX;
+			}
+		}
+		else if (!downKey && !upKey){
+			if (playerSpeedY > 0 && playerSpeedY >= 0.001 * elapsed * abs(cos(playerRot))){
+				playerSpeedY -= 0.001 * elapsed * abs(cos(playerRot));
 				playerPosY += playerSpeedY;
+				if (abs(playerPosY) >= 1.77){
+					playerPosY -= playerSpeedY;
+					playerSpeedY = -playerSpeedY / 2;
+					playerPosY += playerSpeedY;
+				}
+			}
+			else if (playerSpeedY < 0 && playerSpeedY <= -0.001 * elapsed * abs(cos(playerRot))){
+				playerSpeedY += 0.001 * elapsed * abs(cos(playerRot));
+				playerPosY += playerSpeedY;
+				if (abs(playerPosY) >= 1.77){
+					playerPosY -= playerSpeedY;
+					playerSpeedY = -playerSpeedY / 2;
+					playerPosY += playerSpeedY;
+				}
 			}
 			else{
 				playerSpeedY = 0;
 			}
+
+			if (playerSpeedX > 0 && playerSpeedX >= 0.001 * elapsed * abs(sin(playerRot))){
+				playerSpeedX -= 0.001 * elapsed * abs(sin(playerRot));
+				playerPosX += playerSpeedX;
+				if (abs(playerPosX) >= 2){
+					playerPosX -= playerSpeedX;
+					playerSpeedX = -playerSpeedX / 2;
+					playerPosX += playerSpeedX;
+				}
+			}
+			else if (playerSpeedX < 0 && playerSpeedX <= -0.001 * elapsed * abs(sin(playerRot))){
+				playerSpeedX += 0.001 * elapsed * abs(sin(playerRot));
+				playerPosX += playerSpeedX;
+				if (abs(playerPosX) >= 2){
+					playerPosX -= playerSpeedX;
+					playerSpeedX = -playerSpeedX / 2;
+					playerPosX += playerSpeedX;
+				}
+			}
+			else{
+				playerSpeedX = 0;
+			}
 		}
 
-		if (keyA && !keyD){
-			modelMatrix.Rotate(25 * (3.14 / 180) * elapsed);
-		}
-		else if (keyD && !keyA){
-			modelMatrix.Rotate(-25 * (3.14 / 180) * elapsed);
-		}
-
-		modelMatrix.Translate(0.0f, playerSpeedY, 0.0);
-		modelMatrix.Rotate(playerSpeedX * M_PI / 180);
+		modelMatrix.identity();
+		modelMatrix.Translate(playerPosX, playerPosY, 0.0);
+		modelMatrix.Rotate(playerRot);
 
 		program.setProjectionMatrix(projectionMatrix);
 		program.setViewMatrix(viewMatrix);
