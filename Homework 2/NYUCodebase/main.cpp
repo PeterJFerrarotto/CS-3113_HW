@@ -69,7 +69,7 @@ void checkBallColision(float paddleXPos, float paddleYPos, float paddleXBounding
 		}
 	}
 	if (paddleSpeed < 5){
-		paddleSpeed += 0.01;
+		paddleSpeed += 0.05;
 	}
 }
 
@@ -98,6 +98,9 @@ int main(int argc, char *argv[])
 
 	Matrix player1ModelMatrix;
 	Matrix player2ModelMatrix;
+	Matrix backgroundMatrix1;
+	Matrix backgroundMatrix2;
+	Matrix backgroundMatrix3;
 	Matrix ballModelMatrix;
 	Matrix projectionMatrix;
 	Matrix viewMatrix;
@@ -138,6 +141,12 @@ int main(int argc, char *argv[])
 	ballSpeed = 1.3;
 	ballModelMatrix.Translate(ballXPos, ballYPos, 0.0);
 
+	backgroundMatrix1.identity();
+
+	backgroundMatrix2.Translate(0, 1.5, 0.0);
+	
+	backgroundMatrix3.Translate(0, -1.5, 0.0);
+
 	//Set the vertices data:
 	float paddleVertices[] = { -0.125, -0.5, 0.125, -.5, 0.125, .5, -0.125, -.5, 0.125, .5, -0.125, .5 };
 	float paddleTextureVertices[] = { 0.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 1.0, 1.0, 0.0, 0.0, 0.0 };
@@ -161,6 +170,7 @@ int main(int argc, char *argv[])
 		const Uint8 keyUp = state[SDL_SCANCODE_UP];
 		const Uint8 keyDown = state[SDL_SCANCODE_DOWN];
 
+		//Input sensing for Player 1 Paddle...
 		if (keyUp && !keyDown){
 			if (p1YPos + p1YBounding < 1.77){
 				p1YVel = p1Speed;
@@ -182,7 +192,7 @@ int main(int argc, char *argv[])
 		}
 
 		//Logic for player 2 paddle...
-		if (ballYPos + ballYBounding < p2YPos - p2YBounding && ballXPos < 0){
+		if (ballYPos < p2YPos){
 			if (p2YPos - p2YBounding > -1.77){
 				p2YVel = -p2Speed;
 			}
@@ -190,7 +200,7 @@ int main(int argc, char *argv[])
 				p2YVel = 0;
 			}
 		}
-		else if (ballYPos - ballYBounding > p2YPos + p2YBounding && ballXPos < 0){
+		else if (ballYPos > p2YPos){
 			if (p2YPos + p2YBounding < 1.77){
 				p2YVel = p2Speed;
 			}
@@ -214,6 +224,7 @@ int main(int argc, char *argv[])
 		player2ModelMatrix.Translate(p2XPos, p2YPos, 0.0);
 
 		ballXPos += ballXVel * elapsed;
+
 		//Check for ball collision with paddles...
 		checkBallColision(p1XPos, p1YPos, p1XBounding, p1YBounding, p1Speed, elapsed);
 		checkBallColision(p2XPos, p2YPos, p2XBounding, p2YBounding, p2Speed, elapsed);
@@ -222,7 +233,7 @@ int main(int argc, char *argv[])
 		if (abs(ballYPos) >= 1.77){
 			ballYPos -= ballYVel * elapsed;
 			if (ballSpeed < 10){
-				ballSpeed += 0.1;
+				ballSpeed += 0.5;
 			}
 			if (ballYVel > 0){
 				ballYVel = -ballSpeed;
@@ -249,7 +260,7 @@ int main(int argc, char *argv[])
 			}
 		}
 
-		if (ballXPos >= 3){
+		if (ballXPos >= p1XPos + p1XBounding){
 			ballYPos = ballYPosStart;
 			ballXPos = ballXPosStart;
 			ballSpeed = BALL_BASE_SPEED;
@@ -261,7 +272,7 @@ int main(int argc, char *argv[])
 			}
 			bounces = 0;
 		}
-		else if (ballXPos <= -3){
+		else if (ballXPos <= p2XPos - p2XBounding){
 
 			ballYPos = ballYPosStart;
 			ballXPos = ballXPosStart;
@@ -279,8 +290,46 @@ int main(int argc, char *argv[])
 
 		program.setProjectionMatrix(projectionMatrix);
 		program.setViewMatrix(viewMatrix);
-		//Draw player 1 paddle
+
+		//Draw background elements...
 		glBindTexture(GL_TEXTURE_2D, paddleTexture);
+		program.setModelMatrix(backgroundMatrix1);
+
+		glVertexAttribPointer(program.positionAttribute, 2, GL_FLOAT, false, 0, paddleVertices);
+		glEnableVertexAttribArray(program.positionAttribute);
+
+		glVertexAttribPointer(program.texCoordAttribute, 2, GL_FLOAT, false, 0, paddleTextureVertices);
+		glEnableVertexAttribArray(program.texCoordAttribute);
+
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+		glDisableVertexAttribArray(program.positionAttribute);
+		glDisableVertexAttribArray(program.texCoordAttribute);
+
+		program.setModelMatrix(backgroundMatrix2);
+
+		glVertexAttribPointer(program.positionAttribute, 2, GL_FLOAT, false, 0, paddleVertices);
+		glEnableVertexAttribArray(program.positionAttribute);
+
+		glVertexAttribPointer(program.texCoordAttribute, 2, GL_FLOAT, false, 0, paddleTextureVertices);
+		glEnableVertexAttribArray(program.texCoordAttribute);
+
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+		glDisableVertexAttribArray(program.positionAttribute);
+		glDisableVertexAttribArray(program.texCoordAttribute);
+
+		program.setModelMatrix(backgroundMatrix3);
+
+		glVertexAttribPointer(program.positionAttribute, 2, GL_FLOAT, false, 0, paddleVertices);
+		glEnableVertexAttribArray(program.positionAttribute);
+
+		glVertexAttribPointer(program.texCoordAttribute, 2, GL_FLOAT, false, 0, paddleTextureVertices);
+		glEnableVertexAttribArray(program.texCoordAttribute);
+
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+		glDisableVertexAttribArray(program.positionAttribute);
+		glDisableVertexAttribArray(program.texCoordAttribute);
+
+		//Draw player 1 paddle
 		program.setModelMatrix(player1ModelMatrix);
 		
 		glVertexAttribPointer(program.positionAttribute, 2, GL_FLOAT, false, 0, paddleVertices);
