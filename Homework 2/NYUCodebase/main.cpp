@@ -155,6 +155,8 @@ int main(int argc, char *argv[])
 	float ballTextureVertices[] = { 0.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 1.0, 1.0, 0.0, 0.0, 0.0 };
 	SDL_Event event;
 	bool done = false;
+	//------------------------------------
+	//Game Loop:
 	while (!done) {
 		while (SDL_PollEvent(&event)) {
 			if (event.type == SDL_QUIT || event.type == SDL_WINDOWEVENT_CLOSE) {
