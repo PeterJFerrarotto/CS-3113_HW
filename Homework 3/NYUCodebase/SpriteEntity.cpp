@@ -16,6 +16,9 @@ SpriteEntity::~SpriteEntity()
 
 void SpriteEntity::draw(ShaderProgram* program){
 	glBindTexture(GL_TEXTURE_2D, textureID);
+	modelMatrix.identity();
+	transformMatrix();
+	program->setModelMatrix(modelMatrix);
 
 	float u = (float)(((int)index) % spriteCountX) / (float)spriteCountX;
 	float v = (float)(((int)index) / spriteCountX) / (float)spriteCountY;

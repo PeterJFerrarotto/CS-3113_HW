@@ -14,7 +14,7 @@ enum BOUNDARY_BEHAVIOR{ BOUND_STOP, BOUND_BOUNCE, BOUND_DESTROY, BOUND_RETURN, B
 enum COLLISION_BEHAVIOR{ COLL_STOP, COLL_BOUNCE, COLL_DESTROY, COLL_DAMAGE, COLLISION_BEHAVIOR_COUNT };
 enum ENTITY_TYPE{ PLAYER, PLAYER_PROJECTILE, ENEMY_PROJECTILE, ENEMY_SHIP, ENEMY_SAUCER, SHIELD, TEXT, ICON, ENTITY_TYPE_COUNT};
 
-enum STATE {PROJECTILE_MOTION, PLAYER_STILL, ENEMY_ALIVE, DESTROYED, STATIC};
+enum STATE {PROJECTILE_MOTION, ALIVE, DESTROYED, STATIC, TEXT_VISIBLE, TEXT_INVISIBLE};
 class ShaderProgram;
 
 class Entity
@@ -26,7 +26,9 @@ protected:
 	std::vector<float> objectVertices;
 	unsigned collisionType;
 	Vector3 position;
+	Vector3 startingPosition;
 	Vector3 velocity;
+	Vector3 startingVelocity;
 	Vector3 bounding;
 	float velX, velY, velZ;
 	float rotation;
@@ -40,6 +42,8 @@ protected:
 	float firingDelay;
 	float roll;
 	float yaw;
+	bool render;
+	int index, spriteCountX, spriteCountY;
 public:
 	Entity();
 	~Entity();
@@ -48,7 +52,7 @@ public:
 	void setModelMatrix(const Matrix& modelMatrix);
 	void setObjectVertices(const std::vector<float>& objectVertices);
 	void setCollisionType(int collisionType);
-	void setPosition(float posX, float posY, float posZ = 1.0);
+	void setPosition(float posX, float posY, float posZ = 0.0);
 	void setVelocity(float velX, float velY, float velZ = 0.0);
 	void setBounding(float boundX, float boundY, float boundZ = 1.0);
 	void setRotation(float rotation);
@@ -64,6 +68,10 @@ public:
 	void decreaseFiringDelay(float elapsed);
 	void setRoll(float roll);
 	void setYaw(float yaw);
+	void setRender(bool render);
+	void setStartingPosition(float x, float y, float z = 0);
+	void setStartingVelocity(float x, float y, float z = 0);
+	void returnToStart();
 
 	bool getCanFire();
 	bool getCanCollide();
@@ -86,6 +94,7 @@ public:
 	int getCollisionBehavior();
 	float getRoll();
 	float getYaw();
+	bool getRender();
 
 	virtual void setTextureID(GLuint textureID);
 	virtual void draw(ShaderProgram* program);

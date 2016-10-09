@@ -113,6 +113,32 @@ void Entity::setYaw(float yaw){
 	this->yaw = yaw;
 }
 
+void Entity::setRender(bool render){
+	this->render = render;
+}
+
+void Entity::setStartingPosition(float x, float y, float z){
+	startingPosition.x = x;
+	startingPosition.y = y;
+	startingPosition.z = z;
+}
+
+void Entity::setStartingVelocity(float x, float y, float z){
+	startingVelocity.x = x;
+	startingVelocity.y = y;
+	startingVelocity.z = z;
+}
+
+void Entity::returnToStart(){
+	position.x = startingPosition.x;
+	position.y = startingPosition.y;
+	position.z = startingPosition.z;
+
+	velocity.x = startingVelocity.x;
+	velocity.y = startingVelocity.y;
+	velocity.z = startingVelocity.z;
+}
+
 //-------------------------
 //GETTERS:
 bool Entity::getCanCollide(){
@@ -190,6 +216,10 @@ float Entity::getRoll(){
 
 float Entity::getYaw(){
 	return yaw;
+}
+
+bool Entity::getRender(){
+	return render;
 }
 
 //-------------------------------

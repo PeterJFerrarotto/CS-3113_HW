@@ -6,7 +6,6 @@ class SpriteEntity :
 	public TexturedEntity
 {
 protected:
-	int index, spriteCountX, spriteCountY;
 public:
 	SpriteEntity();
 	~SpriteEntity();
