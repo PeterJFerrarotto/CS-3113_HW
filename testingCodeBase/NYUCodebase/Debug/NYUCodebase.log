@@ -1,0 +1,27 @@
+﻿Build started 10/5/2016 12:13:05 PM.
+     1>Project "C:\Users\peter\Documents\testingCodeBase\NYUCodebase\NYUCodebase.vcxproj" on node 2 (Build target(s)).
+     1>ClCompile:
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\CL.exe /c /IC:\SDL2\include /IC:\SDL2_image\include /IC:\glew\include /IC:\SDL2_mixer\include /ZI /nologo /W3 /WX- /sdl /Od /Oy- /D _WINDOWS /D _MBCS /D _MBCS /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Debug\\" /Fd"Debug\vc120.pdb" /Gd /TP /analyze- /errorReport:prompt main.cpp
+         main.cpp
+     1>c:\users\peter\documents\testingcodebase\nyucodebase\main.cpp(33): warning C4305: 'initializing' : truncation from 'double' to 'float'
+     1>c:\users\peter\documents\testingcodebase\nyucodebase\main.cpp(293): warning C4305: 'argument' : truncation from 'double' to 'float'
+     1>c:\users\peter\documents\testingcodebase\nyucodebase\main.cpp(294): warning C4305: 'argument' : truncation from 'double' to 'float'
+     1>c:\users\peter\documents\testingcodebase\nyucodebase\main.cpp(308): warning C4305: 'argument' : truncation from 'double' to 'float'
+       Link:
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"C:\Users\peter\Documents\testingCodeBase\Debug\testingCodeBase.exe" /INCREMENTAL /NOLOGO /LIBPATH:C:\SDL2_mixer\lib\x86 /LIBPATH:C:\SDL2\lib\x86 /LIBPATH:C:\SDL2_image\lib\x86 /LIBPATH:C:\glew\lib\Release\Win32 SDL2.lib SDL2_mixer.lib glew32.lib SDL2main.lib SDL2_image.lib OpenGL32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"C:\Users\peter\Documents\testingCodeBase\Debug\testingCodeBase.pdb" /SUBSYSTEM:WINDOWS /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:\Users\peter\Documents\testingCodeBase\Debug\testingCodeBase.lib" /MACHINE:X86 Debug\CollisionEvent.obj
+         Debug\Entity.obj
+         Debug\EventListener.obj
+         Debug\LogicEvent.obj
+         Debug\main.obj
+         Debug\Matrix.obj
+         Debug\ShaderProgram.obj
+         Debug\SpriteEntity.obj
+         Debug\TexturedEntity.obj
+         Debug\TickEvent.obj
+         Debug\Vector3.obj
+         NYUCodebase.vcxproj -> C:\Users\peter\Documents\testingCodeBase\Debug\testingCodeBase.exe
+     1>Done Building Project "C:\Users\peter\Documents\testingCodeBase\NYUCodebase\NYUCodebase.vcxproj" (Build target(s)).
+
+Build succeeded.
+
+Time Elapsed 00:00:01.49
