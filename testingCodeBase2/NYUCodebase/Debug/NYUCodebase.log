@@ -1,0 +1,99 @@
+﻿Build started 10/11/2016 8:49:47 PM.
+     1>Project "C:\Users\peter\Desktop\testingCodeBase2\NYUCodebase\NYUCodebase.vcxproj" on node 2 (Build target(s)).
+     1>C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\V120\Microsoft.CppBuild.targets(388,5): warning MSB8028: The intermediate directory (Debug\) contains files shared from another project (Homework 3.vcxproj, testingCodeBase.vcxproj).  This can lead to incorrect clean and rebuild behavior.
+     1>ClCompile:
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\CL.exe /c /IC:\SDL2\include /IC:\SDL2_image\include /IC:\glew\include /IC:\SDL2_mixer\include /ZI /nologo /W3 /WX- /sdl /Od /Oy- /D _WINDOWS /D _MBCS /D _MBCS /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Debug\\" /Fd"Debug\vc120.pdb" /Gd /TP /analyze- /errorReport:prompt main.cpp
+         main.cpp
+     1>c:\users\peter\desktop\testingcodebase2\nyucodebase\main.cpp(70): warning C4018: '<' : signed/unsigned mismatch
+     1>c:\users\peter\desktop\testingcodebase2\nyucodebase\main.cpp(124): warning C4305: '-=' : truncation from 'double' to 'float'
+     1>c:\users\peter\desktop\testingcodebase2\nyucodebase\main.cpp(128): warning C4244: '-=' : conversion from 'double' to 'float', possible loss of data
+     1>c:\users\peter\desktop\testingcodebase2\nyucodebase\main.cpp(159): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+     1>c:\users\peter\desktop\testingcodebase2\nyucodebase\main.cpp(203): warning C4305: 'argument' : truncation from 'double' to 'float'
+     1>c:\users\peter\desktop\testingcodebase2\nyucodebase\main.cpp(275): warning C4305: '=' : truncation from 'double' to 'float'
+     1>c:\users\peter\desktop\testingcodebase2\nyucodebase\main.cpp(282): warning C4305: '=' : truncation from 'double' to 'float'
+     1>c:\users\peter\desktop\testingcodebase2\nyucodebase\main.cpp(289): warning C4305: '=' : truncation from 'double' to 'float'
+     1>c:\users\peter\desktop\testingcodebase2\nyucodebase\main.cpp(296): warning C4305: '=' : truncation from 'double' to 'float'
+     1>c:\users\peter\desktop\testingcodebase2\nyucodebase\main.cpp(303): warning C4305: '=' : truncation from 'double' to 'float'
+     1>c:\users\peter\desktop\testingcodebase2\nyucodebase\main.cpp(310): warning C4305: '=' : truncation from 'double' to 'float'
+     1>c:\users\peter\desktop\testingcodebase2\nyucodebase\main.cpp(317): warning C4305: '=' : truncation from 'double' to 'float'
+     1>c:\users\peter\desktop\testingcodebase2\nyucodebase\main.cpp(324): warning C4305: '=' : truncation from 'double' to 'float'
+     1>c:\users\peter\desktop\testingcodebase2\nyucodebase\main.cpp(331): warning C4305: '=' : truncation from 'double' to 'float'
+     1>c:\users\peter\desktop\testingcodebase2\nyucodebase\main.cpp(338): warning C4305: '=' : truncation from 'double' to 'float'
+     1>c:\users\peter\desktop\testingcodebase2\nyucodebase\main.cpp(345): warning C4305: '=' : truncation from 'double' to 'float'
+     1>c:\users\peter\desktop\testingcodebase2\nyucodebase\main.cpp(352): warning C4305: '=' : truncation from 'double' to 'float'
+     1>c:\users\peter\desktop\testingcodebase2\nyucodebase\main.cpp(359): warning C4305: '=' : truncation from 'double' to 'float'
+     1>c:\users\peter\desktop\testingcodebase2\nyucodebase\main.cpp(366): warning C4305: '=' : truncation from 'double' to 'float'
+     1>c:\users\peter\desktop\testingcodebase2\nyucodebase\main.cpp(373): warning C4305: '=' : truncation from 'double' to 'float'
+     1>c:\users\peter\desktop\testingcodebase2\nyucodebase\main.cpp(380): warning C4305: '=' : truncation from 'double' to 'float'
+     1>c:\users\peter\desktop\testingcodebase2\nyucodebase\main.cpp(387): warning C4305: '=' : truncation from 'double' to 'float'
+     1>c:\users\peter\desktop\testingcodebase2\nyucodebase\main.cpp(394): warning C4305: '=' : truncation from 'double' to 'float'
+     1>c:\users\peter\desktop\testingcodebase2\nyucodebase\main.cpp(401): warning C4305: '=' : truncation from 'double' to 'float'
+     1>c:\users\peter\desktop\testingcodebase2\nyucodebase\main.cpp(408): warning C4305: '=' : truncation from 'double' to 'float'
+     1>c:\users\peter\desktop\testingcodebase2\nyucodebase\main.cpp(415): warning C4305: '=' : truncation from 'double' to 'float'
+     1>c:\users\peter\desktop\testingcodebase2\nyucodebase\main.cpp(422): warning C4305: '=' : truncation from 'double' to 'float'
+     1>c:\users\peter\desktop\testingcodebase2\nyucodebase\main.cpp(429): warning C4305: '=' : truncation from 'double' to 'float'
+     1>c:\users\peter\desktop\testingcodebase2\nyucodebase\main.cpp(436): warning C4305: '=' : truncation from 'double' to 'float'
+     1>c:\users\peter\desktop\testingcodebase2\nyucodebase\main.cpp(443): warning C4305: '=' : truncation from 'double' to 'float'
+     1>c:\users\peter\desktop\testingcodebase2\nyucodebase\main.cpp(450): warning C4305: '=' : truncation from 'double' to 'float'
+     1>c:\users\peter\desktop\testingcodebase2\nyucodebase\main.cpp(457): warning C4305: '=' : truncation from 'double' to 'float'
+     1>c:\users\peter\desktop\testingcodebase2\nyucodebase\main.cpp(464): warning C4305: '=' : truncation from 'double' to 'float'
+     1>c:\users\peter\desktop\testingcodebase2\nyucodebase\main.cpp(471): warning C4305: '=' : truncation from 'double' to 'float'
+     1>c:\users\peter\desktop\testingcodebase2\nyucodebase\main.cpp(478): warning C4305: '=' : truncation from 'double' to 'float'
+     1>c:\users\peter\desktop\testingcodebase2\nyucodebase\main.cpp(485): warning C4305: '=' : truncation from 'double' to 'float'
+     1>c:\users\peter\desktop\testingcodebase2\nyucodebase\main.cpp(492): warning C4305: '=' : truncation from 'double' to 'float'
+     1>c:\users\peter\desktop\testingcodebase2\nyucodebase\main.cpp(499): warning C4305: '=' : truncation from 'double' to 'float'
+     1>c:\users\peter\desktop\testingcodebase2\nyucodebase\main.cpp(506): warning C4305: '=' : truncation from 'double' to 'float'
+     1>c:\users\peter\desktop\testingcodebase2\nyucodebase\main.cpp(513): warning C4305: '=' : truncation from 'double' to 'float'
+     1>c:\users\peter\desktop\testingcodebase2\nyucodebase\main.cpp(520): warning C4305: '=' : truncation from 'double' to 'float'
+     1>c:\users\peter\desktop\testingcodebase2\nyucodebase\main.cpp(562): warning C4305: 'initializing' : truncation from 'double' to 'float'
+     1>c:\users\peter\desktop\testingcodebase2\nyucodebase\main.cpp(567): warning C4305: '=' : truncation from 'double' to 'float'
+     1>c:\users\peter\desktop\testingcodebase2\nyucodebase\main.cpp(572): warning C4305: '=' : truncation from 'double' to 'float'
+     1>c:\users\peter\desktop\testingcodebase2\nyucodebase\main.cpp(587): warning C4305: '=' : truncation from 'double' to 'float'
+     1>c:\users\peter\desktop\testingcodebase2\nyucodebase\main.cpp(592): warning C4305: '=' : truncation from 'double' to 'float'
+     1>c:\users\peter\desktop\testingcodebase2\nyucodebase\main.cpp(597): warning C4305: '=' : truncation from 'double' to 'float'
+     1>c:\users\peter\desktop\testingcodebase2\nyucodebase\main.cpp(602): warning C4305: '=' : truncation from 'double' to 'float'
+     1>c:\users\peter\desktop\testingcodebase2\nyucodebase\main.cpp(612): warning C4305: '=' : truncation from 'double' to 'float'
+     1>c:\users\peter\desktop\testingcodebase2\nyucodebase\main.cpp(617): warning C4305: '=' : truncation from 'double' to 'float'
+     1>c:\users\peter\desktop\testingcodebase2\nyucodebase\main.cpp(622): warning C4305: '=' : truncation from 'double' to 'float'
+     1>c:\users\peter\desktop\testingcodebase2\nyucodebase\main.cpp(627): warning C4305: '=' : truncation from 'double' to 'float'
+     1>c:\users\peter\desktop\testingcodebase2\nyucodebase\main.cpp(637): warning C4305: '=' : truncation from 'double' to 'float'
+     1>c:\users\peter\desktop\testingcodebase2\nyucodebase\main.cpp(642): warning C4305: '=' : truncation from 'double' to 'float'
+     1>c:\users\peter\desktop\testingcodebase2\nyucodebase\main.cpp(647): warning C4305: '=' : truncation from 'double' to 'float'
+     1>c:\users\peter\desktop\testingcodebase2\nyucodebase\main.cpp(652): warning C4305: '=' : truncation from 'double' to 'float'
+     1>c:\users\peter\desktop\testingcodebase2\nyucodebase\main.cpp(657): warning C4305: '=' : truncation from 'double' to 'float'
+     1>c:\users\peter\desktop\testingcodebase2\nyucodebase\main.cpp(662): warning C4305: '=' : truncation from 'double' to 'float'
+     1>c:\users\peter\desktop\testingcodebase2\nyucodebase\main.cpp(667): warning C4305: '=' : truncation from 'double' to 'float'
+     1>c:\users\peter\desktop\testingcodebase2\nyucodebase\main.cpp(672): warning C4305: '=' : truncation from 'double' to 'float'
+     1>c:\users\peter\desktop\testingcodebase2\nyucodebase\main.cpp(687): warning C4305: '=' : truncation from 'double' to 'float'
+     1>c:\users\peter\desktop\testingcodebase2\nyucodebase\main.cpp(692): warning C4305: '=' : truncation from 'double' to 'float'
+     1>c:\users\peter\desktop\testingcodebase2\nyucodebase\main.cpp(697): warning C4305: '=' : truncation from 'double' to 'float'
+     1>c:\users\peter\desktop\testingcodebase2\nyucodebase\main.cpp(702): warning C4305: '=' : truncation from 'double' to 'float'
+     1>c:\users\peter\desktop\testingcodebase2\nyucodebase\main.cpp(712): warning C4305: '=' : truncation from 'double' to 'float'
+     1>c:\users\peter\desktop\testingcodebase2\nyucodebase\main.cpp(717): warning C4305: '=' : truncation from 'double' to 'float'
+     1>c:\users\peter\desktop\testingcodebase2\nyucodebase\main.cpp(722): warning C4305: '=' : truncation from 'double' to 'float'
+     1>c:\users\peter\desktop\testingcodebase2\nyucodebase\main.cpp(727): warning C4305: '=' : truncation from 'double' to 'float'
+     1>c:\users\peter\desktop\testingcodebase2\nyucodebase\main.cpp(737): warning C4305: '=' : truncation from 'double' to 'float'
+     1>c:\users\peter\desktop\testingcodebase2\nyucodebase\main.cpp(749): warning C4305: 'argument' : truncation from 'double' to 'float'
+     1>c:\users\peter\desktop\testingcodebase2\nyucodebase\main.cpp(751): warning C4244: 'argument' : conversion from 'time_t' to 'unsigned int', possible loss of data
+     1>c:\users\peter\desktop\testingcodebase2\nyucodebase\main.cpp(752): warning C4244: 'initializing' : conversion from 'double' to 'float', possible loss of data
+     1>c:\users\peter\desktop\testingcodebase2\nyucodebase\main.cpp(753): warning C4244: 'initializing' : conversion from 'double' to 'float', possible loss of data
+       Link:
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"C:\Users\peter\Desktop\testingCodeBase2\Debug\testingCodeBase2.exe" /INCREMENTAL /NOLOGO /LIBPATH:C:\SDL2_mixer\lib\x86 /LIBPATH:C:\SDL2\lib\x86 /LIBPATH:C:\SDL2_image\lib\x86 /LIBPATH:C:\glew\lib\Release\Win32 SDL2.lib SDL2_mixer.lib glew32.lib SDL2main.lib SDL2_image.lib OpenGL32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"C:\Users\peter\Desktop\testingCodeBase2\Debug\testingCodeBase2.pdb" /SUBSYSTEM:WINDOWS /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:\Users\peter\Desktop\testingCodeBase2\Debug\testingCodeBase2.lib" /MACHINE:X86 Debug\CollisionEvent.obj
+         Debug\CollisionEventListener.obj
+         Debug\Entity.obj
+         Debug\EventListener.obj
+         Debug\LogicEvent.obj
+         Debug\main.obj
+         Debug\Matrix.obj
+         Debug\ShaderProgram.obj
+         Debug\SpriteEntity.obj
+         Debug\TextCharacter.obj
+         Debug\TexturedEntity.obj
+         Debug\TickEvent.obj
+         Debug\Vector3.obj
+         NYUCodebase.vcxproj -> C:\Users\peter\Desktop\testingCodeBase2\Debug\testingCodeBase2.exe
+     1>Done Building Project "C:\Users\peter\Desktop\testingCodeBase2\NYUCodebase\NYUCodebase.vcxproj" (Build target(s)).
+
+Build succeeded.
+
+Time Elapsed 00:00:01.27
