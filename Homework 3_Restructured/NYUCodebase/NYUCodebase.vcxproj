@@ -79,11 +79,13 @@
     <ClCompile Include="CompositeEntity.cpp" />
     <ClCompile Include="EnemyShip.cpp" />
     <ClCompile Include="Entity.cpp" />
+    <ClCompile Include="EnumClassHash.cpp" />
     <ClCompile Include="GameEngine.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Matrix.cpp" />
     <ClCompile Include="ShaderProgram.cpp" />
     <ClCompile Include="Ship.cpp" />
+    <ClCompile Include="TextEntity.cpp" />
     <ClCompile Include="Texture.cpp" />
     <ClCompile Include="Vector3.cpp" />
   </ItemGroup>
@@ -92,6 +94,7 @@
     <ClInclude Include="CompositeEntity.h" />
     <ClInclude Include="EnemyShip.h" />
     <ClInclude Include="Entity.h" />
+    <ClInclude Include="EnumClassHash.h" />
     <ClInclude Include="GameEngine.h" />
     <ClInclude Include="Matrix.h" />
     <ClInclude Include="rapidxml.hpp" />
@@ -100,6 +103,7 @@
     <ClInclude Include="rapidxml_utils.hpp" />
     <ClInclude Include="ShaderProgram.h" />
     <ClInclude Include="Ship.h" />
+    <ClInclude Include="TextEntity.h" />
     <ClInclude Include="Texture.h" />
     <ClInclude Include="Vector3.h" />
   </ItemGroup>

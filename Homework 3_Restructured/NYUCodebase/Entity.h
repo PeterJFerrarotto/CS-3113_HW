@@ -30,6 +30,7 @@ protected:
 	float rotationalVelocity;
 
 	bool canCollide;
+	bool doRender;
 
 	Matrix modelMatrix;
 	void transformMatrix(Vector3 positionOffset, Vector3 scaleOffset, float rotationOffset);
@@ -38,7 +39,8 @@ protected:
 	std::vector<GLfloat> textureCoordinates;
 	std::string entityID;
 
-	int boundingType;
+	BOUNDING_TYPE boundingType;
+
 public:
 	Entity();
 	Entity(const std::string& entityID, Texture* texture);
@@ -53,8 +55,9 @@ public:
 	float getRotation();
 	float getRotationalVelocity();
 	Entity* getNext();
-	int getBoundingType();
+	BOUNDING_TYPE getBoundingType();
 	bool getCanCollide();
+	bool getDoRender();
 
 	void setEntityID(const std::string& entityID);
 	void setPosition(float x, float y, float z = 0.0f);
@@ -66,12 +69,17 @@ public:
 	void setRotationalVelocity(float rotationalVelocity);
 	void setNext(Entity* next);
 	void setObjectVertices(const std::vector<GLfloat>& objectVertices);
-	void setBoundingType(int boundingType);
+	void setBoundingType(BOUNDING_TYPE boundingType);
 	void setCanCollide(bool canCollide);
+	void setDoRender(bool doRender);
 
+	void freeMemory();
 	void move(float elapsed);
 	void addEntity(Entity* toAdd);
 	void draw(ShaderProgram* program, Vector3 positionOffset, Vector3 scaleOffset, float rotationOffset);
+
+	void blink();
+	void blinkAll();
 
 	void updateBounding();
 };

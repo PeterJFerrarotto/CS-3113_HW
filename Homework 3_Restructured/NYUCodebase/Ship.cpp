@@ -8,12 +8,14 @@ Ship::Ship()
 
 Ship::Ship(Entity* first){
 	this->first = first;
+	updateBounding();
 }
 
 Ship::Ship(Entity* first, float firingDelay){
 	this->first = first;
 	this->firingDelay = firingDelay;
 	timeSinceFiring = firingDelay;
+	updateBounding();
 }
 
 
@@ -33,6 +35,7 @@ CompositeEntity* Ship::fire(Texture* projectileTexture){
 		projectile->setBoundingType(SQUARE);
 		projectile->setRotation(0);
 		projectile->setCanCollide(true);
+		projectile->setDoRender(true);
 
 		CompositeEntity* collectiveProjectile = new CompositeEntity(projectile);
 		collectiveProjectile->setVelocity(0, 1.5);

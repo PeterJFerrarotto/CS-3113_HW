@@ -13,13 +13,14 @@
 #include <fstream>
 #include "rapidxml.hpp"
 #include "rapidxml_utils.hpp"
-#include "Entity.h"
 #include "Texture.h"
+#include "Entity.h"
 #include "CompositeEntity.h"
 #include "Ship.h"
-#include "GameEngine.h"
 #include "CollisionListener.h"
 #include "EnemyShip.h"
+#include "TextEntity.h"
+#include "GameEngine.h"
 using namespace rapidxml;
 using namespace std;
 
@@ -72,12 +73,6 @@ int main(int argc, char *argv[])
 	glewInit();
 #endif
 	float lastFrameTicks = 0.0f;
-	
-	GLuint spriteSheet = loadTexture(RESOURCE_FOLDER"Assets/Space shooter assets (300 assets)/Spritesheet/sheet.png");
-	file<> * xmlFile = new file<>(RESOURCE_FOLDER"Assets/Space shooter assets (300 assets)/Spritesheet/sheet.xml");
-	xml_document<>* doc = new xml_document<>();
-	doc->parse<0>(xmlFile->data());
-
 	glViewport(0, 0, 640, 720);
 
 	ShaderProgram program(RESOURCE_FOLDER"vertex_textured.glsl", RESOURCE_FOLDER"fragment_textured.glsl");
@@ -85,72 +80,151 @@ int main(int argc, char *argv[])
 	glEnable(GL_BLEND);
 
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	Matrix projectionMatrix;
+	Matrix viewMatrix;
+
+	projectionMatrix.setOrthoProjection(-3.55, 3.55, -2.0f, 2.0f, -1.0f, 1.0f);
+	GLuint spriteSheet = loadTexture(RESOURCE_FOLDER"Assets/Space shooter assets (300 assets)/Spritesheet/sheet.png");
+	GLuint font = loadTexture(RESOURCE_FOLDER"Assets/font2.png");
+	file<> * xmlFile = new file<>(RESOURCE_FOLDER"Assets/Space shooter assets (300 assets)/Spritesheet/sheet.xml");
+	xml_document<>* doc = new xml_document<>();
+	doc->parse<0>(xmlFile->data());	
 
 	Texture* projectileTexture = new Texture(spriteSheet, doc, "laserBlue01.png", 0.4, 0);
 
 	GameEngine gameEngine(projectileTexture);
 
-	Matrix projectionMatrix;
-	Matrix viewMatrix;
 
-	projectionMatrix.setOrthoProjection(-3.55, 3.55, -2.0f, 2.0f, -1.0f, 1.0f);
 	Texture* tex = new Texture(spriteSheet, doc, "playerShip2_orange.png", 0.5, 0);
 
-	Texture* tex2 = new Texture(spriteSheet, doc, "playerLife1_green.png", 0.5, 99);
+	Texture* iconTexture = new Texture(spriteSheet, doc, "playerLife1_green.png", 0.5, 99);
 
-	Texture* enemyTex1 = new Texture(spriteSheet, doc, "enemyBlack4.png", 0.5, 1);
+	Texture* staticTexture = new Texture(spriteSheet, doc, "meteorBrown_big1.png", 0.5, 99);
 
-	Entity* x1 = new Entity("x1", tex);
-	Entity* x2 = new Entity("x2", tex2);
+	Texture* enemyTexture = new Texture(spriteSheet, doc, "enemyBlack4.png", 0.5, 1);
 
+	Entity* playerEntity = new Entity("playerEntity", tex);
+	Entity* iconEntity = new Entity("iconEntity", iconTexture);
+	Entity* staticTest = new Entity("staticTest", staticTexture);
 
-	x1->setPosition(0, 0, 0);
-	x1->setVelocity(0, 0, 0);
-	x1->setAcceleration(0, 0, 0);
-	x1->setScale(1.5, 1, 1);
-	x1->setBoundingType(SQUARE);
-	x1->setRotation(0);
-	x1->setCanCollide(true);
+	playerEntity->setPosition(0, 0, 0);
+	playerEntity->setVelocity(0, 0, 0);
+	playerEntity->setAcceleration(0, 0, 0);
+	playerEntity->setScale(1.5, 1, 1);
+	playerEntity->setBoundingType(SQUARE);
+	playerEntity->setRotation(0);
+	playerEntity->setCanCollide(true);
+	playerEntity->setDoRender(true);
 
-	x2->setPosition(0, 0, 0);
-	x2->setVelocity(0, 0, 0);
-	x2->setAcceleration(0, 0, 0);
-	x2->setScale(1, 0.5, 1);
-	x2->setBoundingType(SQUARE);
-	x2->setRotation(0);
-	x2->setCanCollide(false);
+	iconEntity->setPosition(0, 0, 0);
+	iconEntity->setVelocity(0, 0, 0);
+	iconEntity->setAcceleration(0, 0, 0);
+	iconEntity->setScale(1, 0.5, 1);
+	iconEntity->setBoundingType(SQUARE);
+	iconEntity->setRotation(0);
+	iconEntity->setCanCollide(false);
+	iconEntity->setDoRender(true);
 
+	staticTest->setPosition(0, 0, 0);
+	staticTest->setVelocity(0, 0, 0);
+	staticTest->setAcceleration(0, 0, 0);
+	staticTest->setScale(1.5, 1, 1);
+	staticTest->setBoundingType(SQUARE);
+	staticTest->setRotation(0);
+	staticTest->setCanCollide(true);
+	staticTest->setDoRender(true);
 
-	CompositeEntity* X1 = new Ship(x1, 2.5);
-	CompositeEntity* X2 = new Ship(x2, 2.5);
+	CompositeEntity* playerShip = new Ship(playerEntity, 1.0);
+	CompositeEntity* lifeIcon = new CompositeEntity(iconEntity);
+	CompositeEntity* lifeIcon2 = new CompositeEntity(iconEntity);
+	CompositeEntity* lifeIcon3 = new CompositeEntity(iconEntity);
+	CompositeEntity* titleText = new TextEntity("Space Invaders", font, 0.2, 0.05, -GAME_WALL + 1.0, GAME_CEILING - 0.8);
+	CompositeEntity* textSelection1 = new TextEntity("Begin Game!", font, 0.2, 0.05, -GAME_WALL + 1.0, 0);
+	CompositeEntity* pointsIndicator = new TextEntity("Points: ", font, 0.1, 0.05, -GAME_WALL + 0.8, GAME_CEILING - 0.1);
 
+	playerShip->setStartingPosition(0, -GAME_CEILING + 0.5);
+	playerShip->setStartingScale(0.5, 0.5);
+	playerShip->setRotation(0);
+	playerShip->setStartingVelocity(0, 0, 0);
+	playerShip->setBoundingType(SQUARE);
+	playerShip->setEntityType( ACTOR_PLAYER);
+	playerShip->setCollisionBehavior(DEACTIVATE);
+	playerShip->setBoundaryBehavior(BOUND_STOP);
+	playerShip->setIsActive(false);
+	playerShip->setEntityID("Player");
+	playerShip->setCanCollide(true);
 
+	lifeIcon->setStartingPosition(-GAME_WALL + 0.75, -GAME_CEILING + 0.25);
+	lifeIcon->setStartingScale(1, 1);
+	lifeIcon->setRotation(0);
+	lifeIcon->setBoundingType(SQUARE);
+	lifeIcon->setEntities(iconEntity);
+	lifeIcon->setEntityType( LIFE_ICON_ENTITY);
+	lifeIcon->setCollisionBehavior(BOUNCE);
+	lifeIcon->setBoundaryBehavior(BOUND_NOTHING);
+	lifeIcon->setIsActive(false);
+	lifeIcon->setEntityID("lifeIndicator");
+	lifeIcon->setCanCollide(false);
 
-	X1->setPosition(0, -GAME_CEILING + 0.5);
-	X1->setScale(0.5, 0.5);
-	X1->setRotation(0);
-	X1->setVelocity(0, 0, 0);
-	X1->setBoundingType(SQUARE);
-	X1->setEntityType(ACTOR_PLAYER);
-	X1->setCollisionBehavior(DEACTIVATE);
-	X1->setBoundaryBehavior(BOUND_STOP);
-	X1->setIsActive(true);
-	X1->setCanCollide(true);
+	lifeIcon2->setStartingPosition(-GAME_WALL + 1.5, -GAME_CEILING + 0.25);
+	lifeIcon2->setStartingScale(1, 1);
+	lifeIcon2->setRotation(0);
+	lifeIcon2->setBoundingType(SQUARE);
+	lifeIcon2->setEntities(iconEntity);
+	lifeIcon2->setEntityType( LIFE_ICON_ENTITY);
+	lifeIcon2->setCollisionBehavior(BOUNCE);
+	lifeIcon2->setBoundaryBehavior(BOUND_NOTHING);
+	lifeIcon2->setIsActive(false);
+	lifeIcon2->setEntityID("lifeIndicator");
+	lifeIcon2->setCanCollide(false);
 
-	X2->setPosition(-GAME_WALL + 0.75, -GAME_CEILING + 0.25);
-	X2->setScale(1, 1);
-	X2->setRotation(0);
-	X2->setBoundingType(SQUARE);
-	X2->setEntities(x2);
-	X2->setEntityType(ICON_ENTITY);
-	X2->setCollisionBehavior(BOUNCE);
-	X2->setBoundaryBehavior(BOUND_NOTHING);
-	X2->setIsActive(true);
-	X2->setCanCollide(false);
+	lifeIcon3->setStartingPosition(-GAME_WALL + 2.25, -GAME_CEILING + 0.25);
+	lifeIcon3->setStartingScale(1, 1);
+	lifeIcon3->setRotation(0);
+	lifeIcon3->setBoundingType(SQUARE);
+	lifeIcon3->setEntities(iconEntity);
+	lifeIcon3->setEntityType( LIFE_ICON_ENTITY);
+	lifeIcon3->setCollisionBehavior(BOUNCE);
+	lifeIcon3->setBoundaryBehavior(BOUND_NOTHING);
+	lifeIcon3->setIsActive(false);
+	lifeIcon3->setEntityID("lifeIndicator");
+	lifeIcon3->setCanCollide(false);
+
+	titleText->setStartingScale(1, 1);
+	titleText->setBoundingType(SQUARE);
+	titleText->setCanCollide(false);
+	titleText->setIsActive(false);
+	titleText->setEntityID("Title");
+	titleText->setEntityType( TITLE_TEXT_ENTITY);
+
+	textSelection1->setStartingScale(1, 1);
+	textSelection1->setBoundingType(SQUARE);
+	textSelection1->setCanCollide(false);
+	textSelection1->setIsActive(false);
+	textSelection1->setEntityID("Selection01");
+	textSelection1->setEntityType( TITLE_TEXT_ENTITY);
+
+	pointsIndicator->setStartingScale(1, 1);
+	pointsIndicator->setCanCollide(false);
+	pointsIndicator->setIsActive(false);
+	pointsIndicator->setEntityID("Points");
+	pointsIndicator->setEntityType( POINTS_INDICATOR);
+
+	CompositeEntity* staticTestComp = new CompositeEntity(staticTest);
+	staticTestComp->setCanCollide(true);
+	staticTestComp->setIsActive(false);
+	staticTestComp->setStartingPosition(1, -GAME_CEILING + 0.5);
+	staticTestComp->setStartingScale(1, 1);
+	staticTestComp->setRotation(0);
+	staticTestComp->setStartingVelocity(0, 0, 0);
+	staticTestComp->setBoundingType(SQUARE);
+	staticTestComp->setEntityType(STATIC_ENTITY);
+	staticTestComp->setCollisionBehavior(NOTHING);
+	staticTestComp->setBoundaryBehavior(BOUND_NOTHING);
 
 	for (float y = GAME_CEILING - 0.5; y > GAME_CEILING - 1.5; y -= 0.5){
 		for (float x = -GAME_WALL + 0.5; x < -GAME_WALL + 6.0; x += 1.0){
-			Entity* enemy = new Entity("enemy1", enemyTex1);
+			Entity* enemy = new Entity("enemy", enemyTexture);
 
 			enemy->setPosition(0, 0, 0);
 			enemy->setVelocity(0, 0, 0);
@@ -159,36 +233,43 @@ int main(int argc, char *argv[])
 			enemy->setBoundingType(SQUARE);
 			enemy->setRotation(0);
 			enemy->setCanCollide(true);
+			enemy->setDoRender(true);
 
 			CompositeEntity* Enemy = new EnemyShip(enemy, 2.5);
 
-			Enemy->setPosition(x, y);
-			Enemy->setVelocity(0.8, 0);
-			Enemy->setScale(0.5, 0.5);
+			Enemy->setStartingPosition(x, y);
+			Enemy->setStartingVelocity(0.8, 0);
+			Enemy->setStartingScale(0.5, 0.5);
 			Enemy->setRotation(0);
 			Enemy->setBoundingType(SQUARE);
-			Enemy->setEntityType(ACTOR_ENEMY);
+			Enemy->setEntityType( ACTOR_ENEMY);
 			Enemy->setCollisionBehavior(DEACTIVATE);
-			Enemy->setBoundaryBehavior(BOUND_TURN_AND_DOWN);
-			Enemy->setIsActive(true);
+			Enemy->setBoundaryBehavior(BOUND_NOTHING);
+			Enemy->setIsActive(false);
 			Enemy->setCanCollide(true);
+			Enemy->setEntityID("enemy");
+			Enemy->updateBounding();
 			gameEngine.addGameEntity(Enemy);
 		}
 	}
 
 
-	gameEngine.addGameEntity(X2);
-	gameEngine.addGameEntity(X1);
+	gameEngine.addGameEntity(lifeIcon);
+	gameEngine.addGameEntity(lifeIcon2);
+	gameEngine.addGameEntity(lifeIcon3);
+	gameEngine.addGameEntity(playerShip);
+	gameEngine.addGameEntity(titleText);
+	gameEngine.addGameEntity(textSelection1);
+	gameEngine.addGameEntity(pointsIndicator);
+	gameEngine.addGameEntity(staticTestComp);
 
+	CollisionListener* enemyWithProjectile = new CollisionListener( ACTOR_ENEMY,  PLAYER_PROJECTILE);
+	CollisionListener* playerWithProjectile = new CollisionListener( ACTOR_PLAYER,  ENEMY_PROJECTILE);
 
-	CollisionListener* testCollision = new CollisionListener(ACTOR_PLAYER, ICON_ENTITY);
-	CollisionListener* enemyWithProjectile = new CollisionListener(ACTOR_ENEMY, PLAYER_PROJECTILE);
-	CollisionListener* playerWithProjectile = new CollisionListener(ACTOR_PLAYER, ENEMY_PROJECTILE);
-
-	gameEngine.addCollisionEvent(testCollision);
 	gameEngine.addCollisionEvent(enemyWithProjectile);
 	gameEngine.addCollisionEvent(playerWithProjectile);
 
+	gameEngine.start();
 	//Game Loop:
 	SDL_Event event;
 	int gameState = TITLE_SCREEN;
@@ -208,10 +289,9 @@ int main(int argc, char *argv[])
 		const Uint8 *state = SDL_GetKeyboardState(NULL);
 		program.setProjectionMatrix(projectionMatrix);
 		program.setViewMatrix(viewMatrix);
+
+		gameEngine.updateEntities(elapsed, state, event, &program);
 		
-
-		gameEngine.updateEntities(elapsed, state, &program);
-
 		done = gameEngine.getGameOver();
 
 		SDL_GL_SwapWindow(displayWindow);

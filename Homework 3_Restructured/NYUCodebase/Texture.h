@@ -17,7 +17,7 @@ class Texture
 protected:
 	//For all texture types:
 	GLuint textureID;
-	unsigned textureType;
+	TEXTURE_TYPE textureType;
 	unsigned textureLayer;
 	std::vector<GLfloat> textureCoordinates;
 	std::vector<GLfloat> objectVertices;

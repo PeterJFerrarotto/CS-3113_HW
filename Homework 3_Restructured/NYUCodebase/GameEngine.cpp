@@ -2,10 +2,13 @@
 #include "CompositeEntity.h"
 #include "CollisionListener.h"
 #include "Texture.h"
+#include "Entity.h"
 using namespace std;
 
-GameEngine::GameEngine(Texture* projectileTexture) : gameOver(false), projectileTexture(projectileTexture)
+GameEngine::GameEngine(Texture* projectileTexture) : gameOver(false), projectileTexture(projectileTexture), titleSelection(0)
 {
+	changeState(TITLE_SCREEN);
+	enemyCount = 0;
 }
 
 GameEngine::~GameEngine()
@@ -22,9 +25,12 @@ void GameEngine::render(ShaderProgram* program){
 }
 
 void GameEngine::addGameEntity(CompositeEntity* entity){
-	gameEntities[entity->getEntityType()].push_back(entity);
+	gameEntities[entity->getEntityType()].push_back(entity);	
 	if (entity->getEntityType() == ACTOR_PLAYER){
 		playerEntity = entity;
+	}
+	if (entity->getEntityType() == ACTOR_ENEMY){
+		enemyCount++;
 	}
 }
 
@@ -38,44 +44,99 @@ void GameEngine::collisionCheck(float elapsed){
 	}
 }
 
-void GameEngine::handleInput(const Uint8* input){
-	gameOver = input[SDL_SCANCODE_ESCAPE];
+void GameEngine::checkStaticCollisions(){
+	for (size_t i = 0; i < gameEntities.size(); i++){
+		for (CompositeEntity* entity : gameEntities[i]){
+			if (entity->getEntityType() == STATIC_ENTITY){
+				return;
+			}
+			if (entity->getCanCollide() && entity->getIsActive()){
+				for (CompositeEntity* staticEntity : gameEntities[STATIC_INDEX]){
+					if (staticEntity->getIsActive() && staticEntity->getCanCollide()){
+						if (entity->isColliding(staticEntity)){
+							float penetrationY = fabs((entity->getPosition().y - staticEntity->getPosition().y) - entity->getTotalBounding().y / 2 - staticEntity->getTotalBounding().y / 2);
+							entity->collideWithStatic(penetrationY, Y);
+							float penetrationX = fabs(fabs(entity->getPosition().x - staticEntity->getPosition().x) - entity->getTotalBounding().x - staticEntity->getTotalBounding().x);
+							entity->collideWithStatic(penetrationX, X);
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
+void GameEngine::handleInput(const Uint8* input, SDL_Event input2){
+	if (input[SDL_SCANCODE_ESCAPE]){
+		gameState = GAME_QUIT;
+	}
 
 	if (input[SDL_SCANCODE_LEFT] && !input[SDL_SCANCODE_RIGHT]){
-		if (playerEntity->getVelocity().x <= -PLAYER_TOP_SPEED){
-			playerEntity->setAcceleration(0, 0);
-			playerEntity->setVelocity(-PLAYER_TOP_SPEED, 0);
-		}
-		else{
-			playerEntity->setAcceleration(-PLAYER_ACCELERATION, 0);
+		if (playerEntity->getIsActive()){
+			if (playerEntity->getVelocity().x <= -PLAYER_TOP_SPEED){
+				playerEntity->setAcceleration(0, 0);
+				playerEntity->setVelocity(-PLAYER_TOP_SPEED, 0);
+			}
+			else{
+				playerEntity->setAcceleration(-PLAYER_ACCELERATION, 0);
+			}
 		}
 	}
 
 	if (input[SDL_SCANCODE_RIGHT] && !input[SDL_SCANCODE_LEFT]){
-		if (playerEntity->getVelocity().x >= PLAYER_TOP_SPEED){
-			playerEntity->setAcceleration(0, 0);
-			playerEntity->setVelocity(PLAYER_TOP_SPEED, 0);
-		}
-		else{
-			playerEntity->setAcceleration(PLAYER_ACCELERATION, 0);
+		if (playerEntity->getIsActive()){
+			if (playerEntity->getVelocity().x >= PLAYER_TOP_SPEED){
+				playerEntity->setAcceleration(0, 0);
+				playerEntity->setVelocity(PLAYER_TOP_SPEED, 0);
+			}
+			else{
+				playerEntity->setAcceleration(PLAYER_ACCELERATION, 0);
+			}
 		}
 	}
 
 	if (!input[SDL_SCANCODE_LEFT] && !input[SDL_SCANCODE_RIGHT]){
-		if (!playerEntity->atScreenBoundary(GAME_WALL, GAME_CEILING)){
-			if (playerEntity->getVelocity().x > 0){
-				playerEntity->setAcceleration(-PLAYER_ACCELERATION / 2, 0);
-			}
-			else if (playerEntity->getVelocity().x < 0){
-				playerEntity->setAcceleration(PLAYER_ACCELERATION / 2, 0);
+		if (playerEntity->getIsActive()){
+			if (!playerEntity->atScreenBoundary(GAME_WALL, GAME_CEILING)){
+				if (playerEntity->getVelocity().x > 0){
+					playerEntity->setAcceleration(-PLAYER_ACCELERATION / 2, 0);
+				}
+				else if (playerEntity->getVelocity().x < 0){
+					playerEntity->setAcceleration(PLAYER_ACCELERATION / 2, 0);
+				}
 			}
 		}
 	}
 
 	if (input[SDL_SCANCODE_SPACE]){
-		CompositeEntity* projectile = playerEntity->fire(projectileTexture);
-		if (projectile != nullptr){
-			addGameEntity(projectile);
+		if (gameState == GAME_PLAY){
+			CompositeEntity* projectile = playerEntity->fire(projectileTexture);
+			if (projectile != nullptr){
+				addGameEntity(projectile);
+			}
+		}
+	}
+
+	if (input2.type == SDL_KEYDOWN){
+		if (gameState == TITLE_SCREEN){
+			if (input2.key.keysym.scancode == SDL_SCANCODE_UP || input2.key.keysym.scancode == SDL_SCANCODE_DOWN){
+				if (titleSelection == 0){
+					titleSelection = 1;
+				}
+				else{
+					titleSelection = 0;
+				}
+				changeTitleSelection();
+			}
+
+			if (input2.key.keysym.scancode == SDL_SCANCODE_RETURN){
+				if (titleSelection == 0){
+					changeState(GAME_BEGIN);
+				}
+				else{
+					changeState(GAME_QUIT);
+				}
+			}
 		}
 	}
 }
@@ -84,6 +145,9 @@ void GameEngine::deleteFlagged(){
 	for (unordered_map<unsigned, vector<CompositeEntity*>>::iterator itr = gameEntities.begin(); itr != gameEntities.end(); itr++){
 		for (vector<CompositeEntity*>::iterator itr2 = itr->second.begin(); itr2 != itr->second.end(); itr2++){
 			if ((*itr2)->getDoDelete()){
+				if ((*itr2)->getEntityType() == ACTOR_ENEMY_SAUCER){
+					points += 250;
+				}
 				vector<CompositeEntity*>::iterator newItr = itr->second.erase(itr2);
 				itr2 = newItr;
 				if (itr2 == itr->second.end()){
@@ -94,8 +158,42 @@ void GameEngine::deleteFlagged(){
 	}
 }
 
-void GameEngine::updateEntities(float elapsed, const Uint8* input, ShaderProgram* program){
-	handleInput(input);
+void GameEngine::moveAll(unsigned entityType, float x, float y, float z){
+	for (CompositeEntity* entity : gameEntities[entityType]){
+		float posX = entity->getPosition().x + x;
+		float posY = entity->getPosition().y + y;
+		float posZ = entity->getPosition().z + z;
+
+		entity->setPosition(posX, posY, posZ);
+	}
+}
+
+void GameEngine::turnAll(unsigned entityType, bool turnX, bool turnY, bool turnZ){
+	for (CompositeEntity* entity : gameEntities[entityType]){
+		float velX = turnX ? -entity->getVelocity().x : entity->getVelocity().x;
+		float velY = turnY ? -entity->getVelocity().y : entity->getVelocity().y;
+		float velZ = turnZ ? -entity->getVelocity().z : entity->getVelocity().z;
+
+		entity->setVelocity(velX, velY, velZ);
+	}
+}
+
+void GameEngine::updateEntities(float elapsed, const Uint8* input, SDL_Event input2, ShaderProgram* program){
+	handleInput(input, input2);
+	float fixedElapsed = elapsed;
+	if (fixedElapsed >= FIXED_TIMESTEP * MAX_TIMESTEP){
+		fixedElapsed = FIXED_TIMESTEP * MAX_TIMESTEP;
+	}
+
+	while (fixedElapsed >= FIXED_TIMESTEP){
+		fixedElapsed -= FIXED_TIMESTEP;
+		update(FIXED_TIMESTEP, program);
+	}
+	update(fixedElapsed, program);
+}
+
+void GameEngine::update(float elapsed, ShaderProgram* program){
+	unsigned enemiesKilled = 0;
 	for (unordered_map<unsigned, vector<CompositeEntity*>>::iterator itr = gameEntities.begin(); itr != gameEntities.end(); itr++){
 		for (CompositeEntity* entity : itr->second){
 			entity->move(elapsed);
@@ -104,9 +202,34 @@ void GameEngine::updateEntities(float elapsed, const Uint8* input, ShaderProgram
 			}
 			entity->addToTimeSinceFiring(elapsed);
 			CompositeEntity* lastProjectile = gameEntities[ENEMY_PROJECTILE].size() != 0 ? gameEntities[ENEMY_PROJECTILE][gameEntities[ENEMY_PROJECTILE].size() - 1] : nullptr;
-			CompositeEntity* projectile = entity->logic(playerEntity, projectileTexture, lastProjectile);
+			CompositeEntity* projectile = entity->getIsActive() ? entity->logic(playerEntity, projectileTexture, lastProjectile) : nullptr;
 			if (projectile != nullptr){
 				addGameEntity(projectile);
+			}
+			if (entity->getEntityType() == ACTOR_ENEMY && gameState == GAME_PLAY){
+				if (!entity->getIsActive()){
+					enemiesKilled++;
+				}
+			}
+			points = enemiesKilled * 50;
+
+			if (entity->getEntityType() == POINTS_INDICATOR && entity->getIsActive()){
+				entity->setDisplayText("Points: " + std::to_string(points));
+			}
+		}
+	}
+
+	if (enemiesKilled == enemyCount && gameState == GAME_PLAY){
+		changeState(GAME_END);
+	}
+
+	if (gameState == GAME_PLAY){
+		for (CompositeEntity* entity : gameEntities[ACTOR_ENEMY]){
+			if (entity->getIsActive() && entity->atScreenBoundary(GAME_WALL, GAME_CEILING)){
+				float moveX = entity->getPosition().x > 0 ? -0.02 : 0.02;
+				moveAll(ACTOR_ENEMY, moveX, -0.125);
+				turnAll(ACTOR_ENEMY, true, false);
+				break;
 			}
 		}
 	}
@@ -114,12 +237,131 @@ void GameEngine::updateEntities(float elapsed, const Uint8* input, ShaderProgram
 	deleteFlagged();
 
 	collisionCheck(elapsed);
+	checkStaticCollisions();
+
+	if (gameState == GAME_PLAY && !playerEntity->getIsActive()){
+		if (lives > 1){
+			lives--;
+			gameEntities[LIFE_ICON_ENTITY][lives]->setIsActive(false);
+			playerEntity->setIsActive(true);
+			blinkCount = 0;
+			blinkTime = BLINK_TIMING;
+			playerEntity->setisInvincible(true);
+		}
+		else{
+			changeState(GAME_END);
+		}
+	}
+
+	if (blinkCount <= MAX_BLINK_COUNT && gameState == GAME_PLAY){
+		if (blinkTime >= BLINK_TIMING){
+			blinkTime = 0;
+			blinkCount++;
+			playerEntity->blink();
+		}
+		blinkTime += elapsed;
+	}
+	else if (blinkCount > MAX_BLINK_COUNT && gameState == GAME_PLAY){
+		playerEntity->setisInvincible(false);
+	}
 
 	render(program);
+	gameOver = gameState == GAME_QUIT;
+}
 
-	gameOver = !playerEntity->getIsActive();
+void GameEngine::changeTitleSelection(){
+	if (gameState == TITLE_SCREEN){
+			for (CompositeEntity* entity : gameEntities[TITLE_TEXT_ENTITY]){
+				if (entity->getEntityID() == "Selection01"){
+					if (titleSelection == 0){
+						entity->setDisplayText(">> Begin Game!");
+					}
+					else{
+						entity->setDisplayText("Begin Game!");
+					}
+				}
+
+				if (entity->getEntityID() == "Selection02"){
+					if (titleSelection == 1){
+						entity->setDisplayText(">> Quit");
+					}
+					else{
+						entity->setDisplayText("Quit");
+					}
+				}
+			}
+		}
+}
+
+void GameEngine::changeState(unsigned state){
+	switch (state){
+	case TITLE_SCREEN:
+		for (unordered_map<unsigned, vector<CompositeEntity*>>::iterator itr = gameEntities.begin(); itr != gameEntities.end(); itr++){
+			for (CompositeEntity* entity : itr->second){
+				if (entity->getEntityType() != TITLE_TEXT_ENTITY){
+					entity->setIsActive(false);
+				}
+				else{
+					entity->reset();
+					entity->setIsActive(true);
+				}
+			}
+		}
+		gameState = TITLE_SCREEN;
+		changeTitleSelection();
+		break;
+	case GAME_BEGIN:
+		for (unordered_map<unsigned, vector<CompositeEntity*>>::iterator itr = gameEntities.begin(); itr != gameEntities.end(); itr++){
+			for (CompositeEntity* entity : itr->second){
+				if (entity->getEntityType() != ACTOR_PLAYER && entity->getEntityType() != ACTOR_ENEMY && entity->getEntityType() != GAME_TEXT_ENTITY && entity->getEntityType() != ICON_ENTITY && entity->getEntityType() != POINTS_INDICATOR && entity->getEntityType() != LIFE_ICON_ENTITY && entity->getEntityType() != STATIC_ENTITY){
+					entity->setIsActive(false);
+				}
+				else{
+					entity->reset();
+					entity->setIsActive(true);
+					if (entity->getEntityType() == POINTS_INDICATOR){
+						entity->setDisplayText(entity->getDisplayText() + ' ' + to_string(points));
+					}
+				}
+				if (entity != nullptr){
+					entity->updateBounding();
+				}
+			}
+		}
+		playerEntity->getEntities()->setDoRender(true);
+		gameState = GAME_PLAY;
+		lives = 3;
+		blinkCount = MAX_BLINK_COUNT + 1;
+		break;
+	case GAME_PLAY:
+		break;
+	case GAME_END:
+		changeState(TITLE_SCREEN);
+		break;
+	case GAME_QUIT:
+		break;
+	default:
+		for (unordered_map<unsigned, vector<CompositeEntity*>>::iterator itr = gameEntities.begin(); itr != gameEntities.end(); itr++){
+			for (CompositeEntity* entity : itr->second){
+				if (entity->getEntityType() != TITLE_TEXT_ENTITY){
+					entity->setIsActive(false);
+				}
+				else{
+					entity->reset();
+					entity->setIsActive(true);
+				}
+			}
+		}
+		gameState = TITLE_SCREEN;
+		changeTitleSelection();
+		break;
+	}
 }
 
 bool GameEngine::getGameOver(){
 	return gameOver;
+}
+
+void GameEngine::start(){
+	changeState(TITLE_SCREEN);
 }

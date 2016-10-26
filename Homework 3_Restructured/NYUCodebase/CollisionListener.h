@@ -1,9 +1,10 @@
 #ifndef COLLISION_LISTENER_H
 #define COLLISION_LISTENER_H
 #include <unordered_map>
+#include "EnumClassHash.h"
+#include "CompositeEntity.h"
 #include <vector>
 
-class CompositeEntity;
 class CollisionListener
 {
 protected:

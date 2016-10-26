@@ -12,6 +12,9 @@ CompositeEntity::CompositeEntity(Entity* first){
 
 CompositeEntity::~CompositeEntity()
 {
+	if (first != nullptr){
+		first->freeMemory();
+	}
 }
 
 
@@ -39,10 +42,6 @@ Vector3 CompositeEntity::getScale(){
 	return scale;
 }
 
-int CompositeEntity::getBoundingType(){
-	return boundingType;
-}
-
 float CompositeEntity::getRotation(){
 	return rotation;
 }
@@ -51,19 +50,23 @@ float CompositeEntity::getRotationalVelocity(){
 	return rotationalVelocity;
 }
 
-int CompositeEntity::getEntityType(){
+BOUNDING_TYPE CompositeEntity::getBoundingType(){
+	return boundingType;
+}
+
+ENTITY_TYPE CompositeEntity::getEntityType(){
 	return type;
 }
 
-unsigned CompositeEntity::getCollisionBehavior(){
+COLLISION_BEHAVIOR CompositeEntity::getCollisionBehavior(){
 	return collisionBehavior;
 }
 
-unsigned CompositeEntity::getBoundaryBehavior(){
+BOUNDARY_BEHAVIOR CompositeEntity::getBoundaryBehavior(){
 	return boundaryBehavior;
 }
 
-unsigned CompositeEntity::getState(){
+STATE CompositeEntity::getState(){
 	return state;
 }
 
@@ -79,6 +82,14 @@ bool CompositeEntity::getCanCollide(){
 	return canCollide;
 }
 
+bool CompositeEntity::getisInvincible(){
+	return isInvincible;
+}
+
+const std::string& CompositeEntity::getEntityID(){
+	return entityID;
+}
+
 
 void CompositeEntity::setEntities(Entity* first){
 	this->first = first;
@@ -91,10 +102,22 @@ void CompositeEntity::setPosition(float x, float y, float z){
 	this->position.z = z;
 }
 
+void CompositeEntity::setStartingPosition(float x, float y, float z){
+	this->startingPosition.x = x;
+	this->startingPosition.y = y;
+	this->startingPosition.z = z;
+}
+
 void CompositeEntity::setVelocity(float x, float y, float z){
 	this->velocity.x = x;
 	this->velocity.y = y;
 	this->velocity.z = z;
+}
+
+void CompositeEntity::setStartingVelocity(float x, float y, float z){
+	this->startingVelocity.x = x;
+	this->startingVelocity.y = y;
+	this->startingVelocity.z = z;
 }
 
 void CompositeEntity::setAcceleration(float x, float y, float z){
@@ -103,14 +126,22 @@ void CompositeEntity::setAcceleration(float x, float y, float z){
 	this->acceleration.z = z;
 }
 
+void CompositeEntity::setStartingAcceleration(float x, float y, float z){
+	this->startingAcceleration.x = x;
+	this->startingAcceleration.y = y;
+	this->startingAcceleration.z = z;
+}
+
 void CompositeEntity::setScale(float x, float y, float z){
 	this->scale.x = x;
 	this->scale.y = y;
 	this->scale.z = z;
 }
 
-void CompositeEntity::setBoundingType(int boundingType){
-	this->boundingType = boundingType;
+void CompositeEntity::setStartingScale(float x, float y, float z){
+	this->startingScale.x = x;
+	this->startingScale.y = y;
+	this->startingScale.z = z;
 }
 
 void CompositeEntity::setRotation(float rotation){
@@ -121,19 +152,23 @@ void CompositeEntity::setRotationalVelocity(float rotationalVelocity){
 	this->rotationalVelocity = rotationalVelocity;
 }
 
-void CompositeEntity::setEntityType(int type){
+void CompositeEntity::setBoundingType(BOUNDING_TYPE boundingType){
+	this->boundingType = boundingType;
+}
+
+void CompositeEntity::setEntityType(ENTITY_TYPE type){
 	this->type = type;
 }
 
-void CompositeEntity::setCollisionBehavior(unsigned behavior){
+void CompositeEntity::setCollisionBehavior(COLLISION_BEHAVIOR behavior){
 	this->collisionBehavior = behavior;
 }
 
-void CompositeEntity::setBoundaryBehavior(unsigned behavior){
+void CompositeEntity::setBoundaryBehavior(BOUNDARY_BEHAVIOR behavior){
 	boundaryBehavior = behavior;
 }
 
-void CompositeEntity::setState(unsigned state){
+void CompositeEntity::setState(STATE state){
 	this->state = state;
 }
 
@@ -145,31 +180,62 @@ void CompositeEntity::setCanCollide(bool canCollide){
 	this->canCollide = canCollide;
 }
 
+void CompositeEntity::setEntityID(const std::string& entityID){
+	this->entityID = entityID;
+}
+
+void CompositeEntity::setisInvincible(bool isInvincible){
+	this->isInvincible = isInvincible;
+}
+
+
+void CompositeEntity::reset(){
+	position.x = startingPosition.x;
+	position.y = startingPosition.y;
+	position.z = startingPosition.z;
+
+	velocity.x = startingVelocity.x;
+	velocity.y = startingVelocity.y;
+	velocity.z = startingVelocity.z;
+
+	acceleration.x = startingAcceleration.x;
+	acceleration.y = startingAcceleration.y;
+	acceleration.z = startingAcceleration.z;
+
+	scale.x = startingScale.x;
+	scale.y = startingScale.y;
+	scale.z = startingScale.z;
+	resetFlags();
+}
+
 void CompositeEntity::addEntity(Entity* toAdd){
 	first->addEntity(toAdd);
 	updateBounding();
 }
 
 void CompositeEntity::updateBounding(){
-	Entity* checking = first;
-	if (boundingType == SQUARE){
-		checking->updateBounding();
-		totalBounding.x = first->getBounding().x * scale.x;
-		totalBounding.y = first->getBounding().y * scale.y;
-		totalBounding.z = first->getBounding().z * scale.z;
-		checking = checking->getNext();
-		while (checking != nullptr){
+	if (first != nullptr){
+		Entity* checking = first;
+		if (boundingType == SQUARE){
 			checking->updateBounding();
-			if ((abs(checking->getPosition().x) + checking->getBounding().x) * scale.x > totalBounding.x){
-				totalBounding.x = (abs(checking->getPosition().x) + checking->getBounding().x) * scale.x;
-			}
+			totalBounding.x = first->getBounding().x * scale.x;
+			totalBounding.y = first->getBounding().y * scale.y;
+			totalBounding.z = first->getBounding().z * scale.z;
+			checking = checking->getNext();
+			while (checking != nullptr){
+				checking->updateBounding();
+				if ((abs(checking->getPosition().x) + checking->getBounding().x) * scale.x > totalBounding.x){
+					totalBounding.x = (abs(checking->getPosition().x) + checking->getBounding().x) * scale.x;
+				}
 
-			if ((abs(checking->getPosition().y) + checking->getBounding().y) * scale.y > totalBounding.y){
-				totalBounding.y = (abs(checking->getPosition().y) + checking->getBounding().y) * scale.y;
-			}
+				if ((abs(checking->getPosition().y) + checking->getBounding().y) * scale.y > totalBounding.y){
+					totalBounding.y = (abs(checking->getPosition().y) + checking->getBounding().y) * scale.y;
+				}
 
-			if ((abs(checking->getPosition().z) + checking->getBounding().z) * scale.z > totalBounding.z){
-				totalBounding.z = (abs(checking->getPosition().z) + checking->getBounding().z) * scale.z;
+				if ((abs(checking->getPosition().z) + checking->getBounding().z) * scale.z > totalBounding.z){
+					totalBounding.z = (abs(checking->getPosition().z) + checking->getBounding().z) * scale.z;
+				}
+				checking = checking->getNext();
 			}
 		}
 	}
@@ -219,13 +285,27 @@ bool CompositeEntity::isColliding(CompositeEntity* collidingWith){
 	updateBounding();
 	if (canCollide && collidingWith->getCanCollide() && isActive && collidingWith->getIsActive()){
 		if (boundingType == SQUARE && collidingWith->boundingType == SQUARE){
-			if (!(position.x + totalBounding.x < collidingWith->position.x - collidingWith->totalBounding.x || position.x - totalBounding.x > collidingWith->position.x + collidingWith->totalBounding.x || position.y + totalBounding.y < collidingWith->position.y - collidingWith->totalBounding.y || position.y - totalBounding.y > collidingWith->position.y + collidingWith->totalBounding.y)){
+			if (!(position.x + totalBounding.x < collidingWith->position.x - collidingWith->totalBounding.x || 
+				position.x - totalBounding.x > collidingWith->position.x + collidingWith->totalBounding.x || 
+				position.y + totalBounding.y < collidingWith->position.y - collidingWith->totalBounding.y || 
+				position.y - totalBounding.y > collidingWith->position.y + collidingWith->totalBounding.y)){
 				bool isColliding = subEntitiesColliding(first, collidingWith->first, collidingWith->first);
 				if (isColliding){
-					collideLeft = position.x - totalBounding.x < collidingWith->position.x + collidingWith->totalBounding.x;
-					collideRight = position.x + totalBounding.x > collidingWith->position.x - collidingWith->totalBounding.x;
-					collideBottom = position.y - totalBounding.y < collidingWith->position.y + collidingWith->totalBounding.y;
-					collideTop = position.y + totalBounding.y > collidingWith->position.y - collidingWith->totalBounding.y;
+					collideLeft = position.x - totalBounding.x >= collidingWith->position.x - collidingWith->totalBounding.x;
+					staticCollideLeft = collideLeft && collidingWith->getEntityType() == STATIC_ENTITY;
+					collideLeft = collideLeft && collidingWith->getEntityType() != STATIC_ENTITY;
+
+					collideRight = position.x + totalBounding.x <= collidingWith->position.x + collidingWith->totalBounding.x;
+					staticCollideRight = collideRight && collidingWith->getEntityType() == STATIC_ENTITY;
+					collideRight = collideRight && collidingWith->getEntityType() != STATIC_ENTITY;
+
+					collideBottom = position.y - totalBounding.y >= collidingWith->position.y - collidingWith->totalBounding.y;
+					staticCollideBottom = collideBottom && collidingWith->getEntityType() == STATIC_ENTITY;
+					collideBottom = collideBottom && collidingWith->getEntityType() != STATIC_ENTITY;
+
+					collideTop = position.y + totalBounding.y <= collidingWith->position.y + collidingWith->totalBounding.y;
+					staticCollideTop = collideTop && collidingWith->getEntityType() == STATIC_ENTITY;
+					collideTop = collideTop && collidingWith->getEntityType() != STATIC_ENTITY;
 
 					if (collideLeft && collideRight){
 						collideRight = false;
@@ -233,12 +313,25 @@ bool CompositeEntity::isColliding(CompositeEntity* collidingWith){
 					if (collideTop && collideBottom){
 						collideTop = false;
 					}
+
+					if (staticCollideLeft && staticCollideRight){
+						staticCollideLeft = false;
+						staticCollideRight = false;
+					}
+					if (staticCollideTop && staticCollideBottom){
+						staticCollideTop = false;
+						staticCollideBottom = false;
+					}
 				}
 				else{
 					collideLeft = false;
 					collideRight = false;
 					collideTop = false;
 					collideBottom = false;
+					staticCollideLeft = false;
+					staticCollideRight = false;
+					staticCollideTop = false;
+					staticCollideBottom = false;
 				}
 				return isColliding;
 			}
@@ -250,36 +343,46 @@ bool CompositeEntity::isColliding(CompositeEntity* collidingWith){
 }
 
 
-void CompositeEntity::move(float elapsed){
-	if (state == BOUNCING){
+void CompositeEntity::move(float elapsed, float gravity, float frictionX, float frictionY){
+	resetFlags();
+	if (type != STATIC_ENTITY){
+		if (state == BOUNCING){
 
-	}
-
-	else if (state == BOUNCED){
-		velocity.x = 0;
-		velocity.y = 0;
-		velocity.z = 0;
-		state = STATIONARY;
-	}
-
-	else{
-		position.x += velocity.x * elapsed;
-		position.y += velocity.y * elapsed;
-		position.z += velocity.z * elapsed;
-
-		velocity.x += acceleration.x * elapsed;
-		velocity.y += acceleration.y * elapsed;
-		velocity.z += acceleration.z * elapsed;
-
-		rotation += rotationalVelocity * elapsed;
-		first->move(elapsed);
-
-		if (velocity.x != 0 || velocity.y != 0 || velocity.z != 0){
-			setState(MOVING);
 		}
 
-		if (acceleration.x != 0 || acceleration.y != 0 || acceleration.z != 0){
-			setState(ACCELERATING);
+		else if (state == BOUNCED){
+			velocity.x = 0;
+			velocity.y = 0;
+			velocity.z = 0;
+			state = STATIONARY;
+		}
+
+		else{
+			velocity.x = lerp(velocity.x, 0.0f, elapsed * frictionX);
+			velocity.y = lerp(velocity.y, 0.0f, elapsed * frictionY);
+
+			velocity.x += acceleration.x * elapsed;
+			velocity.y += acceleration.y * elapsed;
+			velocity.z += acceleration.z * elapsed;
+
+			velocity.y += gravity * elapsed;
+
+			position.x += velocity.x * elapsed;
+			position.y += velocity.y * elapsed;
+			position.z += velocity.z * elapsed;
+
+			rotation += rotationalVelocity * elapsed;
+			if (first != nullptr){
+				first->move(elapsed);
+			}
+
+			if (velocity.x != 0 || velocity.y != 0 || velocity.z != 0){
+				setState(MOVING);
+			}
+
+			if (acceleration.x != 0 || acceleration.y != 0 || acceleration.z != 0){
+				setState(ACCELERATING);
+			}
 		}
 	}
 }
@@ -404,10 +507,10 @@ void CompositeEntity::boundaryTurn(float gameWall, float gameCeiling){
 	}
 }
 
-void CompositeEntity::boundaryTurnAndDown(float gameWall, float gameCeiling){
-	boundaryTurn(gameWall, gameCeiling);
-	position.y -= 0.125;
-}
+//void CompositeEntity::boundaryTurnAndDown(float gameWall, float gameCeiling){
+//	boundaryTurn(gameWall, gameCeiling);
+//	position.y -= 0.125;
+//}
 
 //Throws exception if collision behavior unrecognized
 void CompositeEntity::collide(float elapsed, CompositeEntity* bouncingOffOf){
@@ -417,15 +520,65 @@ void CompositeEntity::collide(float elapsed, CompositeEntity* bouncingOffOf){
 		bounce(elapsed, bouncingOffOf);
 		break;
 	case DESTROY:
-		destroy();
+		if (!isInvincible){
+			destroy();
+		}
 		break;
 	case DEACTIVATE:
-		deActivate();
+		if (!isInvincible){
+			deActivate();
+		}
 		break;
 	default:
 		throw "UNRECOGNIZED COLLISION BEHAVIOR!";
 		break;
 	}
+}
+
+void CompositeEntity::collideWithStatic(float penetration, DIRECTION direction){
+	if (collisionBehavior == DESTROY){
+		destroy();
+		return;
+	}
+	if (direction == Y){
+		velocity.y = 0;
+		acceleration.y = 0;
+		if (staticCollideBottom){
+			position.y += penetration + 0.01;
+		}
+
+		if (staticCollideTop){
+			position.y -= penetration + 0.01;
+		}
+	}
+	else if (direction == X){
+		velocity.x = 0;
+		acceleration.x = 0;
+		if (staticCollideLeft){
+			position.x += penetration + 0.01;
+		}
+
+		if (staticCollideRight){
+			position.x -= penetration + 0.01;
+		}
+	}
+}
+
+void CompositeEntity::resetFlags(){
+	boundaryLeft = false;
+	boundaryRight = false;
+	boundaryBottom = false;
+	boundaryTop = false;
+
+	collideLeft = false;
+	collideRight = false;
+	collideBottom = false;
+	collideTop = false;
+
+	staticCollideLeft = false;
+	staticCollideRight = false;
+	staticCollideBottom = false;
+	staticCollideTop = false;
 }
 
 //Throws exception if boundary behavior unrecognized
@@ -445,15 +598,23 @@ void CompositeEntity::boundaryAction(float gameWall, float gameCeiling){
 	case BOUND_DEACTIVATE:
 		deActivate();
 		break;
-	case BOUND_TURN_AND_DOWN:
-		boundaryTurnAndDown(gameWall, gameCeiling);
-		break;
+	//case BOUND_TURN_AND_DOWN:
+	//	boundaryTurnAndDown(gameWall, gameCeiling);
+	//	break;
 	case BOUND_NOTHING:
 		break;
 	default:
 		throw "UNKNOWN BOUNDARY BEHAVIOR!";
 		break;
 	}
+}
+
+float CompositeEntity::lerp(float v0, float v1, float t){
+	return (1 - t)*v0 + t*v1;
+}
+
+void CompositeEntity::blink(){
+	first->blinkAll();
 }
 
 CompositeEntity* CompositeEntity::fire(Texture* projectileTexture){
@@ -466,4 +627,16 @@ void CompositeEntity::addToTimeSinceFiring(float elapsed){
 
 CompositeEntity* CompositeEntity::logic(CompositeEntity* player, Texture* projectileTexture, CompositeEntity* lastProjectile){
 	return nullptr;
+}
+
+void CompositeEntity::setDisplayText(const std::string& text){
+	return;
+}
+
+void CompositeEntity::generateText(){
+	return;
+}
+
+const std::string& CompositeEntity::getDisplayText(){
+	return "";
 }

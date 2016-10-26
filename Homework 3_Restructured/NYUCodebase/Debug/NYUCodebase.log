@@ -1,36 +1,40 @@
-﻿Build started 10/18/2016 6:27:48 PM.
-     1>Project "C:\Users\peter\Desktop\Homework 3_Restructured\NYUCodebase\NYUCodebase.vcxproj" on node 2 (Build target(s)).
+﻿Build started 10/24/2016 11:40:11 AM.
+     1>Project "C:\Users\peter\Documents\CS-3113_HW\Homework 3_Restructured\NYUCodebase\NYUCodebase.vcxproj" on node 2 (Build target(s)).
      1>C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\V120\Microsoft.CppBuild.targets(388,5): warning MSB8028: The intermediate directory (Debug\) contains files shared from another project (Homework 3.vcxproj, testingCodeBase.vcxproj).  This can lead to incorrect clean and rebuild behavior.
      1>ClCompile:
-         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\CL.exe /c /IC:\SDL2\include /IC:\SDL2_image\include /IC:\glew\include /IC:\SDL2_mixer\include /ZI /nologo /W3 /WX- /sdl /Od /Oy- /D _WINDOWS /D _MBCS /D _MBCS /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Debug\\" /Fd"Debug\vc120.pdb" /Gd /TP /analyze- /errorReport:prompt EnemyShip.cpp Matrix.cpp ShaderProgram.cpp Ship.cpp Vector3.cpp
-         Ship.cpp
-     1>c:\users\peter\desktop\homework 3_restructured\nyucodebase\ship.cpp(39): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
-     1>c:\users\peter\desktop\homework 3_restructured\nyucodebase\ship.cpp(40): warning C4305: 'argument' : truncation from 'double' to 'float'
-         EnemyShip.cpp
-     1>c:\users\peter\desktop\homework 3_restructured\nyucodebase\enemyship.cpp(46): warning C4244: 'argument' : conversion from 'double' to 'float', possible loss of data
-     1>c:\users\peter\desktop\homework 3_restructured\nyucodebase\enemyship.cpp(47): warning C4305: 'argument' : truncation from 'double' to 'float'
-     1>c:\users\peter\desktop\homework 3_restructured\nyucodebase\enemyship.cpp(48): warning C4305: 'argument' : truncation from 'double' to 'float'
-         Generating Code...
-         Skipping... (no relevant changes detected)
-         Vector3.cpp
-         ShaderProgram.cpp
-         Matrix.cpp
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\CL.exe /c /IC:\SDL2\include /IC:\SDL2_image\include /IC:\glew\include /IC:\SDL2_mixer\include /ZI /nologo /W3 /WX- /sdl /Od /Oy- /D _WINDOWS /D _MBCS /D _MBCS /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Debug\\" /Fd"Debug\vc120.pdb" /Gd /TP /analyze- /errorReport:prompt main.cpp
+         main.cpp
+     1>c:\users\peter\documents\cs-3113_hw\homework 3_restructured\nyucodebase\main.cpp(86): warning C4305: 'argument' : truncation from 'double' to 'float'
+     1>c:\users\peter\documents\cs-3113_hw\homework 3_restructured\nyucodebase\main.cpp(93): warning C4305: 'argument' : truncation from 'double' to 'float'
+     1>c:\users\peter\documents\cs-3113_hw\homework 3_restructured\nyucodebase\main.cpp(141): warning C4305: 'argument' : truncation from 'double' to 'float'
+     1>c:\users\peter\documents\cs-3113_hw\homework 3_restructured\nyucodebase\main.cpp(142): warning C4305: 'argument' : truncation from 'double' to 'float'
+     1>c:\users\peter\documents\cs-3113_hw\homework 3_restructured\nyucodebase\main.cpp(143): warning C4305: 'argument' : truncation from 'double' to 'float'
+     1>c:\users\peter\documents\cs-3113_hw\homework 3_restructured\nyucodebase\main.cpp(157): warning C4305: 'argument' : truncation from 'double' to 'float'
+     1>c:\users\peter\documents\cs-3113_hw\homework 3_restructured\nyucodebase\main.cpp(169): warning C4305: 'argument' : truncation from 'double' to 'float'
+     1>c:\users\peter\documents\cs-3113_hw\homework 3_restructured\nyucodebase\main.cpp(181): warning C4305: 'argument' : truncation from 'double' to 'float'
+     1>c:\users\peter\documents\cs-3113_hw\homework 3_restructured\nyucodebase\main.cpp(226): warning C4305: 'initializing' : truncation from 'double' to 'float'
+     1>c:\users\peter\documents\cs-3113_hw\homework 3_restructured\nyucodebase\main.cpp(241): warning C4305: 'argument' : truncation from 'double' to 'float'
+     1>c:\users\peter\documents\cs-3113_hw\homework 3_restructured\nyucodebase\rapidxml_utils.hpp(40): warning C4244: 'initializing' : conversion from 'std::streamoff' to 'size_t', possible loss of data
+                 c:\users\peter\documents\cs-3113_hw\homework 3_restructured\nyucodebase\rapidxml_utils.hpp(28) : while compiling class template member function 'rapidxml::file<char>::file(const char *)'
+                 c:\users\peter\documents\cs-3113_hw\homework 3_restructured\nyucodebase\main.cpp(60) : see reference to function template instantiation 'rapidxml::file<char>::file(const char *)' being compiled
+                 c:\users\peter\documents\cs-3113_hw\homework 3_restructured\nyucodebase\main.cpp(60) : see reference to class template instantiation 'rapidxml::file<char>' being compiled
        Link:
-         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"C:\Users\peter\Desktop\Homework 3_Restructured\Debug\Homework 3_Restructured.exe" /INCREMENTAL /NOLOGO /LIBPATH:C:\SDL2_mixer\lib\x86 /LIBPATH:C:\SDL2\lib\x86 /LIBPATH:C:\SDL2_image\lib\x86 /LIBPATH:C:\glew\lib\Release\Win32 SDL2.lib SDL2_mixer.lib glew32.lib SDL2main.lib SDL2_image.lib OpenGL32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"C:\Users\peter\Desktop\Homework 3_Restructured\Debug\Homework 3_Restructured.pdb" /SUBSYSTEM:WINDOWS /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:\Users\peter\Desktop\Homework 3_Restructured\Debug\Homework 3_Restructured.lib" /MACHINE:X86 Debug\CollisionListener.obj
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"C:\Users\peter\Documents\CS-3113_HW\Homework 3_Restructured\Debug\Homework 3_Restructured.exe" /INCREMENTAL /NOLOGO /LIBPATH:C:\SDL2_mixer\lib\x86 /LIBPATH:C:\SDL2\lib\x86 /LIBPATH:C:\SDL2_image\lib\x86 /LIBPATH:C:\glew\lib\Release\Win32 SDL2.lib SDL2_mixer.lib glew32.lib SDL2main.lib SDL2_image.lib OpenGL32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"C:\Users\peter\Documents\CS-3113_HW\Homework 3_Restructured\Debug\Homework 3_Restructured.pdb" /SUBSYSTEM:WINDOWS /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:\Users\peter\Documents\CS-3113_HW\Homework 3_Restructured\Debug\Homework 3_Restructured.lib" /MACHINE:X86 Debug\CollisionListener.obj
          Debug\CompositeEntity.obj
          Debug\EnemyShip.obj
          Debug\Entity.obj
+         Debug\EnumClassHash.obj
          Debug\GameEngine.obj
          Debug\main.obj
          Debug\Matrix.obj
          Debug\ShaderProgram.obj
          Debug\Ship.obj
+         Debug\TextEntity.obj
          Debug\Texture.obj
          Debug\Vector3.obj
-     1>MSVCRTD.lib(cinitexe.obj) : warning LNK4098: defaultlib 'msvcrt.lib' conflicts with use of other libs; use /NODEFAULTLIB:library
-         NYUCodebase.vcxproj -> C:\Users\peter\Desktop\Homework 3_Restructured\Debug\Homework 3_Restructured.exe
-     1>Done Building Project "C:\Users\peter\Desktop\Homework 3_Restructured\NYUCodebase\NYUCodebase.vcxproj" (Build target(s)).
+         NYUCodebase.vcxproj -> C:\Users\peter\Documents\CS-3113_HW\Homework 3_Restructured\Debug\Homework 3_Restructured.exe
+     1>Done Building Project "C:\Users\peter\Documents\CS-3113_HW\Homework 3_Restructured\NYUCodebase\NYUCodebase.vcxproj" (Build target(s)).
 
 Build succeeded.
 
-Time Elapsed 00:00:01.46
+Time Elapsed 00:00:01.86

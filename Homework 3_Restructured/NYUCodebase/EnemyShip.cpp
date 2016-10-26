@@ -9,7 +9,10 @@ EnemyShip::EnemyShip()
 {
 }
 
-EnemyShip::EnemyShip(Entity* first, float firingDelay) : Ship(first, firingDelay){}
+EnemyShip::EnemyShip(Entity* first, float firingDelay) : Ship(first, firingDelay){
+	timeSinceFiring = firingDelay;
+	updateBounding();
+}
 
 EnemyShip::~EnemyShip()
 {
@@ -40,6 +43,7 @@ CompositeEntity* EnemyShip::fire(Texture* projectileTexture){
 		projectile->setBoundingType(SQUARE);
 		projectile->setRotation(0);
 		projectile->setCanCollide(true);
+		projectile->setDoRender(true);
 
 		CompositeEntity* collectiveProjectile = new CompositeEntity(projectile);
 		collectiveProjectile->setVelocity(0, -1.5);

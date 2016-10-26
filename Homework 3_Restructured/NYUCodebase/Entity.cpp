@@ -15,10 +15,25 @@ Entity::Entity()
 	velocity.z = 0;
 }
 
+Entity::~Entity(){
+	freeMemory();
+}
+
 Entity::Entity(const std::string& entityID, Texture* texture){
 	this->entityID = entityID;
 	this->texture = texture;
 	next = nullptr;
+}
+
+void Entity::freeMemory(){
+	if (next != nullptr){
+		next->freeMemory();
+		delete next;
+		next = nullptr;
+	}
+
+	delete texture;
+	texture = nullptr;
 }
 
 const string& Entity::getEntityID(){
@@ -57,12 +72,16 @@ Entity* Entity::getNext(){
 	return next;
 }
 
-int Entity::getBoundingType(){
+BOUNDING_TYPE Entity::getBoundingType(){
 	return boundingType;
 }
 
 bool Entity::getCanCollide(){
 	return canCollide;
+}
+
+bool Entity::getDoRender(){
+	return doRender;
 }
 
 
@@ -116,12 +135,16 @@ void Entity::setObjectVertices(const vector<GLfloat>& objectVertices){
 	this->objectVertices = objectVertices;
 }
 
-void Entity::setBoundingType(int boundingType){
+void Entity::setBoundingType(BOUNDING_TYPE boundingType){
 	this->boundingType = boundingType;
 }
 
 void Entity::setCanCollide(bool canCollide){
 	this->canCollide = canCollide;
+}
+
+void Entity::setDoRender(bool doRender){
+	this->doRender = doRender;
 }
 
 
@@ -149,6 +172,10 @@ void Entity::addEntity(Entity* toAdd){
 	}
 }
 
+void Entity::blink(){
+	doRender = !doRender;
+}
+
 void Entity::transformMatrix(Vector3 positionOffset, Vector3 scaleOffset, float rotationOffset){
 	float posX = position.x + positionOffset.x;
 	float posY = position.y + positionOffset.y;
@@ -172,23 +199,25 @@ void Entity::draw(ShaderProgram* program, Vector3 positionOffset, Vector3 scaleO
 			next->draw(program, positionOffset, scaleOffset, rotationOffset);
 		}
 	}
-	transformMatrix(positionOffset, scaleOffset, rotationOffset);
-	if (texture->getTextureType() == TEXT || texture->getTextureType() == UNEVEN_SPRITESHEET){
-		objectVertices = texture->getObjectCoordinates();
+	if (doRender){
+		transformMatrix(positionOffset, scaleOffset, rotationOffset);
+		if (texture->getTextureType() == TEXT || texture->getTextureType() == UNEVEN_SPRITESHEET){
+			objectVertices = texture->getObjectCoordinates();
+		}
+		textureCoordinates = texture->getTextureCoordinates();
+		glBindTexture(GL_TEXTURE_2D, texture->getTextureID());
+		program->setModelMatrix(modelMatrix);
+
+		glEnableVertexAttribArray(program->positionAttribute);
+		glVertexAttribPointer(program->positionAttribute, 2, GL_FLOAT, false, 0, objectVertices.data());
+
+		glEnableVertexAttribArray(program->texCoordAttribute);
+		glVertexAttribPointer(program->texCoordAttribute, 2, GL_FLOAT, false, 0, textureCoordinates.data());
+
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+		glDisableVertexAttribArray(program->positionAttribute);
+		glDisableVertexAttribArray(program->texCoordAttribute);
 	}
-	textureCoordinates = texture->getTextureCoordinates();
-	glBindTexture(GL_TEXTURE_2D, texture->getTextureID());
-	program->setModelMatrix(modelMatrix);
-
-	glEnableVertexAttribArray(program->positionAttribute);
-	glVertexAttribPointer(program->positionAttribute, 2, GL_FLOAT, false, 0, objectVertices.data());
-
-	glEnableVertexAttribArray(program->texCoordAttribute);
-	glVertexAttribPointer(program->texCoordAttribute, 2, GL_FLOAT, false, 0, textureCoordinates.data());
-
-	glDrawArrays(GL_TRIANGLES, 0, 6);
-	glDisableVertexAttribArray(program->positionAttribute);
-	glDisableVertexAttribArray(program->texCoordAttribute);
 
 	if (next != nullptr){
 		next->draw(program, positionOffset, scaleOffset, rotationOffset);
@@ -218,6 +247,11 @@ void Entity::updateBounding(){
 			bounding.y = (baseSize.y / 2)*scale.y;
 			bounding.z = 0;
 			break;
+		case TEXT:
+			bounding.x = 0;
+			bounding.y = 0;
+			bounding.z = 0;
+			break;
 		default:
 			throw "ERROR: UNKNOWN TEXTURE TYPE!";
 			break;
@@ -225,7 +259,9 @@ void Entity::updateBounding(){
 	}
 }
 
-Entity::~Entity()
-{
-
+void Entity::blinkAll(){
+	if (next != nullptr){
+		next->blinkAll();
+	}
+	blink();
 }
