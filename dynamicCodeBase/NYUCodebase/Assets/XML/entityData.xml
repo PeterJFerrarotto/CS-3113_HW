@@ -1,0 +1,241 @@
+<Entities>
+  <Entity>
+    <Type>8</Type>
+    <EntityID>Player</EntityID>
+    <subEntities>
+      <First>
+        <EntityID>PlayerShip</EntityID>
+        <Texture type="2" layer="3">
+          <UnevenSpritesheet sheetName="sheet.png" atlasName="sheet.xml" Directory="Assets/Space shooter assets (300 assets)/Spritesheet/" spriteName="cockpitBlue_0.png" size="0.5"></UnevenSpritesheet>
+        </Texture>
+        <Details>
+          <Position x="0" y="0" z="0"></Position>
+
+          <Scale x="1.5" y="1" z="1"></Scale>
+
+          <Velocity x="0" y="0" z="0"></Velocity>
+
+          <Acceleration x="0" y="0" z="0"></Acceleration>
+
+          <Rotation>180</Rotation>
+
+          <rotationalVelocity>0</rotationalVelocity>
+
+          <canCollide>1</canCollide>
+
+          <doRender>1</doRender>
+
+          <boundingType>0</boundingType>         
+        </Details>
+        <Sibling>
+          <EntityID>PlayerShipWingL</EntityID>
+          <Texture type="2" layer="2">
+            <UnevenSpritesheet sheetName ="sheet.png" atlasName="sheet.xml" Directory="Assets/Space shooter assets (300 assets)/Spritesheet/" spriteName="wingBlue_0.png" size="0.5"></UnevenSpritesheet>
+          </Texture>
+          <Details>
+            <Position x="-0.25" y="0.0625" z="0"></Position>
+            
+            <Scale x="1" y="1" z="1"></Scale>
+
+            <Rotation>180</Rotation>
+
+            <canCollide>1</canCollide>
+
+            <boundingType>0</boundingType>
+          </Details>
+          <Sibling>
+            <EntityID>PlayerShipWingR</EntityID>
+            <Texture type="2" layer="2">
+              <UnevenSpritesheet sheetName ="sheet.png" atlasName="sheet.xml" Directory="Assets/Space shooter assets (300 assets)/Spritesheet/" spriteName="wingBlue_0.png" size="0.5"></UnevenSpritesheet>
+            </Texture>
+            <Details>
+              <Position x="0.25" y="0.0625"></Position>
+              <doMirror>1</doMirror>
+            </Details>
+          </Sibling>
+        </Sibling>
+      </First>
+    </subEntities>
+    <Details>
+      <firingDelay>1.0</firingDelay>
+      <Position_Offset bottom="1"></Position_Offset>
+      <Velocity x="0" y="0" z="0"></Velocity>
+      <Acceleration x="0" y="0" z="0"></Acceleration>
+      <Scale x="0.75" y="0.375" z="1.0"></Scale>
+      <Rotation>0</Rotation>
+      <RotationalVelocity>0</RotationalVelocity>
+      <isActive>0</isActive>
+      <canCollide>1</canCollide>
+      <isInvincible>0</isInvincible>
+      <falls>0</falls>
+      <BoundingType>0</BoundingType>
+      <CollisionBehavior>3</CollisionBehavior>
+      <BoundaryBehavior>2</BoundaryBehavior>
+      <topSpeed>2.5</topSpeed>
+      <Layer>3</Layer>
+    </Details>
+    <Projectile>
+      <Texture type="2" layer="4">
+        <UnevenSpritesheet sheetName = "sheet.png" atlasName="sheet.xml" Directory="Assets/Space shooter assets (300 assets)/Spritesheet/" spriteName = "laserBlue01.png" size="0.5"></UnevenSpritesheet>
+      </Texture>
+    </Projectile>
+  </Entity>
+  <Entity>
+    <Type>4</Type>
+    <EntityID>menuText</EntityID>
+    <Details>
+      <Position x ="-1" y="0.5" z="0"></Position>
+      <TextSheet sheetPath="Assets/" sheetName="font2.png"></TextSheet>
+      <DisplayText size="0.2" spacing="0.2">Menu</DisplayText>
+    </Details>
+  </Entity>
+  <Entity>
+    <Type>10</Type>
+    <EntityID>Dirt</EntityID>
+    <subEntities>
+      <First>
+        <EntityID>Dirt</EntityID>
+        <Texture type="2" layer="0">
+          <UnevenSpritesheet sheetName ="tiles_spritesheet.png" atlasName="tiles_spritesheet.xml" Directory="Assets/" spriteName="dirt.png" size="0.5"></UnevenSpritesheet>
+        </Texture>
+        <Details>
+          <doRender>1</doRender>
+          <canCollide>1</canCollide>
+        </Details>
+      </First>
+    </subEntities>
+    <Details>
+      <Position x="0" y="-0.25" z="0"></Position>
+      <Scale x="1.0" y="0.5" z="1.0"></Scale>
+      <falls>0</falls>
+      <Layer>0</Layer>
+      <canCollide>1</canCollide>
+    </Details>
+  </Entity>
+  <Entity>
+    <Type>7</Type>
+    <EntityID>Enemy1</EntityID>
+    <subEntities>
+      <First>
+        <EntityID>PlayerShip</EntityID>
+        <Texture type="2" layer="3">
+          <UnevenSpritesheet sheetName="sheet.png" atlasName="sheet.xml" Directory="Assets/Space shooter assets (300 assets)/Spritesheet/" spriteName="enemyRed1.png" size="0.5"></UnevenSpritesheet>
+        </Texture>
+        <Details>
+          <Position x="0" y="0" z="0"></Position>
+
+          <Scale x="1.5" y="1" z="1"></Scale>
+
+          <Velocity x="0" y="0" z="0"></Velocity>
+
+          <Acceleration x="0" y="0" z="0"></Acceleration>
+
+          <Rotation>0</Rotation>
+
+          <rotationalVelocity>0</rotationalVelocity>
+
+          <canCollide>1</canCollide>
+
+          <doRender>1</doRender>
+
+          <boundingType>0</boundingType>
+        </Details>
+      </First>
+    </subEntities>
+    <Details>
+      <firingDelay>2.5</firingDelay>
+      <Position x="-1.5" y="1.8" z="0"></Position>
+      <Velocity x="0.5" y="0" z="0"></Velocity>
+      <Acceleration x="0" y="0" z="0"></Acceleration>
+      <Scale x="0.5" y="0.25"></Scale>
+      <Rotation>0</Rotation>
+      <RotationalVelocity>0</RotationalVelocity>
+      <isActive>0</isActive>
+      <canCollide>1</canCollide>
+      <isInvincible>0</isInvincible>
+      <falls>0</falls>
+      <BoundingType>0</BoundingType>
+      <CollisionBehavior>3</CollisionBehavior>
+      <BoundaryBehavior>5</BoundaryBehavior>
+      <topSpeed>2.5</topSpeed>
+      <Layer>3</Layer>
+    </Details>
+    <Projectile>
+      <Texture type="2" layer="4">
+        <UnevenSpritesheet sheetName = "sheet.png" atlasName="sheet.xml" Directory="Assets/Space shooter assets (300 assets)/Spritesheet/" spriteName = "laserRed02.png" size="0.5"></UnevenSpritesheet>
+      </Texture>
+    </Projectile>
+  </Entity>
+  <Entity>
+    <Type>1</Type>
+    <EntityID>LifeIcon</EntityID>
+    <subEntities>
+      <First>
+        <EntityID>PlayerShip</EntityID>
+        <Texture type="2" layer="3">
+          <UnevenSpritesheet sheetName="sheet.png" atlasName="sheet.xml" Directory="Assets/Space shooter assets (300 assets)/Spritesheet/" spriteName="playerShip2_orange.png" size="0.5"></UnevenSpritesheet>
+        </Texture>
+        <Details>
+          <doRender>1</doRender>
+          <Scale x="1.5"></Scale>
+          <canCollide>0</canCollide>
+        </Details>
+      </First>
+    </subEntities>
+    <Details>
+      <Position x="-3.4" y="-1.8"></Position>
+      <Scale x="0.25" y="0.125"></Scale>
+      <Layer>99</Layer>
+      <canCollide>0</canCollide>
+      <falls>0</falls>
+    </Details>
+  </Entity>
+  <Entity>
+    <Type>1</Type>
+    <EntityID>LifeIcon</EntityID>
+    <subEntities>
+      <First>
+        <EntityID>PlayerShip</EntityID>
+        <Texture type="2" layer="3">
+          <UnevenSpritesheet sheetName="sheet.png" atlasName="sheet.xml" Directory="Assets/Space shooter assets (300 assets)/Spritesheet/" spriteName="playerShip2_orange.png" size="0.5"></UnevenSpritesheet>
+        </Texture>
+        <Details>
+          <doRender>1</doRender>
+          <Scale x="1.5"></Scale>
+          <canCollide>0</canCollide>
+        </Details>
+      </First>
+    </subEntities>
+    <Details>
+      <Position x="-3" y="-1.8"></Position>
+      <Scale x="0.25" y="0.125"></Scale>
+      <Layer>99</Layer>
+      <canCollide>0</canCollide>
+      <falls>0</falls>
+    </Details>
+  </Entity>
+  <Entity>
+    <Type>1</Type>
+    <EntityID>LifeIcon</EntityID>
+    <subEntities>
+      <First>
+        <EntityID>PlayerShip</EntityID>
+        <Texture type="2" layer="3">
+          <UnevenSpritesheet sheetName="sheet.png" atlasName="sheet.xml" Directory="Assets/Space shooter assets (300 assets)/Spritesheet/" spriteName="playerShip2_orange.png" size="0.5"></UnevenSpritesheet>
+        </Texture>
+        <Details>
+          <doRender>1</doRender>
+          <Scale x="1.5"></Scale>
+          <canCollide>0</canCollide>
+        </Details>
+      </First>
+    </subEntities>
+    <Details>
+      <Position x="-2.6" y="-1.8"></Position>
+      <Scale x="0.25" y="0.125"></Scale>
+      <Layer>99</Layer>
+      <canCollide>0</canCollide>
+      <falls>0</falls>
+    </Details>
+  </Entity>
+</Entities>
