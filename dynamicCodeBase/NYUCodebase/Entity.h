@@ -6,6 +6,8 @@
 #include "Vector3.h"
 #include "Matrix.h"
 #include <vector>
+#include "Animation.h"
+#include <unordered_map>
 #include <string>
 
 enum BOUNDING_TYPE{ SQUARE, CIRCLE };
@@ -32,6 +34,7 @@ protected:
 
 	bool canCollide;
 	bool doRender;
+	bool isAnimated;
 	bool doMirror;
 
 	Matrix modelMatrix;
@@ -41,9 +44,10 @@ protected:
 	std::vector<GLfloat> objectVertices;
 	std::vector<GLfloat> textureCoordinates;
 	std::string entityID;
+	std::unordered_map<unsigned, Animation*> animations;
+	ANIMATION_TYPE currentAnimation;
 
 	BOUNDING_TYPE boundingType;
-
 public:
 	Entity();
 	Entity(const std::string& entityID, Texture* texture);
@@ -62,6 +66,7 @@ public:
 	BOUNDING_TYPE getBoundingType();
 	bool getCanCollide();
 	bool getDoRender();
+	bool getIsAnimated();
 	bool getDoMirror();
 
 	void setEntityID(const std::string& entityID);
@@ -79,6 +84,8 @@ public:
 	void setCanCollide(bool canCollide);
 	void setDoRender(bool doRender);
 	void setDoMirror(bool doMirror);
+	void setIsAnimated(bool isAnimated);
+	void addAnimation(Animation* animation);
 
 	void freeMemory();
 	void move(float elapsed);
@@ -89,6 +96,10 @@ public:
 	void blinkAll();
 
 	void updateBounding(float scaleX, float scaleY, float scaleZ);
+
+	void startAnimation(ANIMATION_TYPE animation);
+
+	void runAnimation(float elapsed, float fps);
 };
 
 #endif

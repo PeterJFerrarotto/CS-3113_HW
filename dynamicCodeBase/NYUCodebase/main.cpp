@@ -52,10 +52,7 @@ int main(int argc, char *argv[])
 	Matrix viewMatrix;
 	projectionMatrix.setOrthoProjection(-3.55, 3.55, -2.0f, 2.0f, -1.0f, 1.0f);
 
-	GLuint backGround = loadTexture(RESOURCE_FOLDER"Assets/Space shooter assets (300 assets)/Backgrounds/black.png");
-	Texture* backGroundTexture = new Texture(backGround, 0);
 	GameEngine gameEngine;
-	gameEngine.setBackGroundTexture(backGroundTexture);
 
 	CollisionListener* enemyProjectileWithPlayer = new CollisionListener(ACTOR_PLAYER, ENEMY_PROJECTILE);
 	CollisionListener* playerProjectileWithEnemy = new CollisionListener(ACTOR_ENEMY, PLAYER_PROJECTILE);

@@ -1,10 +1,56 @@
-﻿Build started 10/30/2016 1:07:56 PM.
-     1>Project "C:\Users\peter\Desktop\platformerTest\NYUCodebase\NYUCodebase.vcxproj" on node 2 (Build target(s)).
-     1>C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\V120\Microsoft.CppBuild.targets(388,5): warning MSB8028: The intermediate directory (Debug\) contains files shared from another project (Homework 3.vcxproj, Homework 3_Restructured.vcxproj, testingCodeBase.vcxproj).  This can lead to incorrect clean and rebuild behavior.
-     1>Link:
-         NYUCodebase.vcxproj -> C:\Users\peter\Desktop\platformerTest\Debug\platformerTest.exe
-     1>Done Building Project "C:\Users\peter\Desktop\platformerTest\NYUCodebase\NYUCodebase.vcxproj" (Build target(s)).
+﻿Build started 10/31/2016 11:24:51 AM.
+     1>Project "C:\Users\peter\Documents\CS-3113_HW\dynamicCodeBase\NYUCodebase\NYUCodebase.vcxproj" on node 2 (Build target(s)).
+     1>C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\V120\Microsoft.CppBuild.targets(388,5): warning MSB8028: The intermediate directory (Debug\) contains files shared from another project (Homework 3.vcxproj, Homework 3_Restructured.vcxproj, platformerTest.vcxproj, testingCodeBase.vcxproj).  This can lead to incorrect clean and rebuild behavior.
+     1>ClCompile:
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\CL.exe /c /IC:\SDL2\include /IC:\SDL2_image\include /IC:\glew\include /IC:\SDL2_mixer\include /ZI /nologo /W3 /WX- /sdl /Od /Oy- /D _WINDOWS /D _MBCS /D _MBCS /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Debug\\" /Fd"Debug\vc120.pdb" /Gd /TP /analyze- /errorReport:prompt Animation.cpp GameEngine.cpp main.cpp
+         Animation.cpp
+         Generating Code...
+         Compiling...
+         GameEngine.cpp
+     1>c:\program files (x86)\microsoft visual studio 12.0\vc\include\math.h(1298): warning C4005: 'M_PI' : macro redefinition
+                 c:\sdl2\include\sdl_stdinc.h(350) : see previous definition of 'M_PI'
+     1>c:\users\peter\documents\cs-3113_hw\dynamiccodebase\nyucodebase\gameengine.cpp(130): warning C4305: 'argument' : truncation from 'double' to 'float'
+     1>c:\users\peter\documents\cs-3113_hw\dynamiccodebase\nyucodebase\gameengine.cpp(257): warning C4305: 'argument' : truncation from 'double' to 'float'
+     1>c:\users\peter\documents\cs-3113_hw\dynamiccodebase\nyucodebase\gameengine.cpp(258): warning C4305: 'argument' : truncation from 'double' to 'float'
+     1>c:\users\peter\documents\cs-3113_hw\dynamiccodebase\nyucodebase\gameengine.cpp(259): warning C4305: 'argument' : truncation from 'double' to 'float'
+     1>c:\users\peter\documents\cs-3113_hw\dynamiccodebase\nyucodebase\gameengine.cpp(288): warning C4305: 'argument' : truncation from 'double' to 'float'
+     1>c:\users\peter\documents\cs-3113_hw\dynamiccodebase\nyucodebase\gameengine.cpp(289): warning C4244: 'initializing' : conversion from 'double' to 'float', possible loss of data
+         Generating Code...
+         Compiling...
+         main.cpp
+     1>c:\program files (x86)\microsoft visual studio 12.0\vc\include\math.h(1298): warning C4005: 'M_PI' : macro redefinition
+                 c:\sdl2\include\sdl_stdinc.h(350) : see previous definition of 'M_PI'
+     1>c:\users\peter\documents\cs-3113_hw\dynamiccodebase\nyucodebase\xmlhelper.h(253): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+     1>c:\users\peter\documents\cs-3113_hw\dynamiccodebase\nyucodebase\xmlhelper.h(258): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+     1>c:\users\peter\documents\cs-3113_hw\dynamiccodebase\nyucodebase\xmlhelper.h(364): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+     1>c:\users\peter\documents\cs-3113_hw\dynamiccodebase\nyucodebase\xmlhelper.h(367): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+     1>c:\users\peter\documents\cs-3113_hw\dynamiccodebase\nyucodebase\xmlhelper.h(371): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+     1>c:\users\peter\documents\cs-3113_hw\dynamiccodebase\nyucodebase\xmlhelper.h(374): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+     1>c:\users\peter\documents\cs-3113_hw\dynamiccodebase\nyucodebase\xmlhelper.h(424): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+     1>c:\users\peter\documents\cs-3113_hw\dynamiccodebase\nyucodebase\xmlhelper.h(429): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+     1>c:\users\peter\documents\cs-3113_hw\dynamiccodebase\nyucodebase\main.cpp(53): warning C4305: 'argument' : truncation from 'double' to 'float'
+     1>c:\users\peter\documents\cs-3113_hw\dynamiccodebase\nyucodebase\rapidxml_utils.hpp(40): warning C4244: 'initializing' : conversion from 'std::streamoff' to 'size_t', possible loss of data
+                 c:\users\peter\documents\cs-3113_hw\dynamiccodebase\nyucodebase\rapidxml_utils.hpp(28) : while compiling class template member function 'rapidxml::file<char>::file(const char *)'
+                 c:\users\peter\documents\cs-3113_hw\dynamiccodebase\nyucodebase\xmlhelper.h(48) : see reference to function template instantiation 'rapidxml::file<char>::file(const char *)' being compiled
+                 c:\users\peter\documents\cs-3113_hw\dynamiccodebase\nyucodebase\xmlhelper.h(48) : see reference to class template instantiation 'rapidxml::file<char>' being compiled
+         Generating Code...
+       Link:
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"C:\Users\peter\Documents\CS-3113_HW\dynamicCodeBase\Debug\dynamicCodeBase.exe" /INCREMENTAL /NOLOGO /LIBPATH:C:\SDL2_mixer\lib\x86 /LIBPATH:C:\SDL2\lib\x86 /LIBPATH:C:\SDL2_image\lib\x86 /LIBPATH:C:\glew\lib\Release\Win32 SDL2.lib SDL2_mixer.lib glew32.lib SDL2main.lib SDL2_image.lib OpenGL32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"C:\Users\peter\Documents\CS-3113_HW\dynamicCodeBase\Debug\dynamicCodeBase.pdb" /SUBSYSTEM:WINDOWS /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:\Users\peter\Documents\CS-3113_HW\dynamicCodeBase\Debug\dynamicCodeBase.lib" /MACHINE:X86 Debug\Animation.obj
+         Debug\CollisionListener.obj
+         Debug\CompositeEntity.obj
+         Debug\EnemyShip.obj
+         Debug\Entity.obj
+         Debug\EnumClassHash.obj
+         Debug\GameEngine.obj
+         Debug\main.obj
+         Debug\Matrix.obj
+         Debug\ShaderProgram.obj
+         Debug\TextEntity.obj
+         Debug\Texture.obj
+         Debug\Vector3.obj
+         NYUCodebase.vcxproj -> C:\Users\peter\Documents\CS-3113_HW\dynamicCodeBase\Debug\dynamicCodeBase.exe
+     1>Done Building Project "C:\Users\peter\Documents\CS-3113_HW\dynamicCodeBase\NYUCodebase\NYUCodebase.vcxproj" (Build target(s)).
 
 Build succeeded.
 
-Time Elapsed 00:00:00.06
+Time Elapsed 00:00:06.46

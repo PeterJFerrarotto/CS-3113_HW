@@ -221,6 +221,9 @@ void Entity::draw(ShaderProgram* program, Matrix offset){
 		if (texture->getTextureType() == UNEVEN_SPRITESHEET){
 			objectVertices = texture->getObjectCoordinates();
 		}
+		else if (texture->getTextureType() == EVEN_SPRITESHEET){
+			objectVertices = { -0.5f, -0.5f, 0.5f, 0.5f, -0.5f, 0.5f, 0.5f, 0.5f, -0.5f, -0.5f, 0.5f, -0.5f };
+		}
 		textureCoordinates = texture->getTextureCoordinates();
 		glBindTexture(GL_TEXTURE_2D, texture->getTextureID());
 		program->setModelMatrix(offsetModelMatrix);
@@ -285,4 +288,46 @@ void Entity::blinkAll(){
 		child->blinkAll();
 	}
 	blink();
+}
+
+void Entity::addAnimation(Animation* animation){
+	if (animations.find(animation->getAnimationType()) != animations.end()){
+		throw "Animation already exists for this entity!";
+	}
+	animations[animation->getAnimationType()] = animation;
+}
+
+void Entity::setIsAnimated(bool isAnimated){
+	this->isAnimated = isAnimated;
+}
+
+void Entity::startAnimation(ANIMATION_TYPE animation){
+	if (isAnimated){
+		currentAnimation = animation;
+		if (animations.find(animation) != animations.end()){
+			animations[animation]->restartAnimation();
+			texture = animations[animation]->getTexture();
+		}
+	}
+	if (sibling != nullptr){
+		sibling->startAnimation(animation);
+	}
+	if (child != nullptr){
+		child->startAnimation(animation);
+	}
+}
+
+void Entity::runAnimation(float elapsed, float fps){
+	if (isAnimated){
+		if (animations[currentAnimation] != nullptr){
+			animations[currentAnimation]->runAnimation(elapsed, fps);
+			texture = animations[currentAnimation]->getTexture();
+		}
+	}
+	if (sibling != nullptr){
+		sibling->runAnimation(elapsed, fps);
+	}
+	if (child != nullptr){
+		child->runAnimation(elapsed, fps);
+	}
 }

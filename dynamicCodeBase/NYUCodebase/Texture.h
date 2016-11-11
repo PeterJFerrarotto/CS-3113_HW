@@ -25,7 +25,6 @@ protected:
 
 	//For EVEN_SPRITESHEET:
 	unsigned index;
-	unsigned indexMin, indexMax;
 	unsigned spriteCountX;
 	unsigned spriteCountY;
 	void drawEvenSpriteSheetImage();
@@ -60,7 +59,7 @@ public:
 	//Done
 
 	//Constructor for even spritesheet texture type:
-	Texture(GLuint textureID, unsigned indexMin, unsigned indexMax, unsigned spriteCountX, unsigned spriteCountY, unsigned textureLayer = 0);
+	Texture(GLuint textureID, unsigned spriteCountX, unsigned spriteCountY, unsigned startingIndex, unsigned textureLayer = 0);
 	//Done
 
 	//Constructor for uneven spritesheet texture type (WARNING: can throw exception if nullptr passed in for xmlDoc):

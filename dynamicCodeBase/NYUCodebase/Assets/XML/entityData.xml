@@ -219,14 +219,17 @@
     <EntityID>LifeIcon</EntityID>
     <subEntities>
       <First>
-        <EntityID>PlayerShip</EntityID>
-        <Texture type="2" layer="3">
-          <UnevenSpritesheet sheetName="sheet.png" atlasName="sheet.xml" Directory="Assets/Space shooter assets (300 assets)/Spritesheet/" spriteName="playerShip2_orange.png" size="0.5"></UnevenSpritesheet>
-        </Texture>
+        <EntityID>AnimationTest</EntityID>
+        <Animations>
+          <Animation loop="1" type="0" startingIndex="8" endingIndex="10" Starting="">
+            <Texture type="1" layer="3">
+              <EvenSpritesheet index="8" spriteCountX="8" spriteCountY="4" sheetName="characters_3.png" Directory="Assets/"></EvenSpritesheet>
+            </Texture>
+          </Animation>
+        </Animations>
         <Details>
+          <Position x="1.0"></Position>
           <doRender>1</doRender>
-          <Scale x="1.5"></Scale>
-          <canCollide>0</canCollide>
         </Details>
       </First>
     </subEntities>

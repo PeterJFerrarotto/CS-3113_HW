@@ -20,6 +20,7 @@
 #define MAX_BLINK_COUNT 7
 #define GRAVITY -9.8
 #define STATIC_INDEX 10
+#define FRAMES_PER_SECOND 15.0f
 
 #ifdef _WINDOWS
 #define RESOURCE_FOLDER ""
@@ -45,7 +46,8 @@ private:
 	std::unordered_map<unsigned, std::vector<CompositeEntity*>> gameEntities;
 	std::unordered_map<unsigned, std::vector<CompositeEntity*>> gameEntitiesRenderingOrder;
 	CompositeEntity* playerEntity;
-	Texture* backGroundTexture;
+	std::unordered_map<unsigned, Texture*> backGroundTextures;
+	unsigned levelID;
 
 	bool gameOver;
 
@@ -58,6 +60,8 @@ private:
 	unsigned lives;
 	unsigned enemyCount;
 	unsigned blinkCount;
+	unsigned char** levelData;
+	unsigned mapWidth, mapHeight;
 
 	//Checks collisions between dynamic entities
 	void collisionCheck(float elapsed);
@@ -76,6 +80,8 @@ private:
 	void changeTitleSelection();
 
 	void update(float elapsed, ShaderProgram* program);
+
+
 public:
 	GameEngine();
 	~GameEngine();
@@ -83,12 +89,14 @@ public:
 	void addCollisionEvent(CollisionListener* collisionEvent);
 	void addGameEntity(CompositeEntity* entity);
 	void updateEntities(float elapsed, const Uint8* input, SDL_Event input2, ShaderProgram* program);
-	void setBackGroundTexture(Texture* backGroundTexture);
+	void addBackGroundTexture(unsigned levelID, Texture* backGroundTexture);
+	void setLevel(unsigned levelID);
 
 	void start();
 
 	bool getGameOver();
 	unsigned getPoints();
+
 };
 
 #endif

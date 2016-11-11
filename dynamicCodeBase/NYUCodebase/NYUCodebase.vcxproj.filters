@@ -51,6 +51,12 @@
     <ClCompile Include="EnumClassHash.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Animation.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Level.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Matrix.h">
@@ -101,6 +107,15 @@
     <ClInclude Include="XMLHelper.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Animation.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Level.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Tile.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="fragment.glsl" />
@@ -110,5 +125,6 @@
   </ItemGroup>
   <ItemGroup>
     <Xml Include="Assets\XML\entityData.xml" />
+    <Xml Include="Assets\XML\backGroundTexture.xml" />
   </ItemGroup>
 </Project>

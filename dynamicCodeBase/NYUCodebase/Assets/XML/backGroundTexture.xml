@@ -1,0 +1,5 @@
+<BackGroundTextures isBackGroundFile="1">
+  <Texture levelID="0" type="0" layer="0">
+    <Image Directory="Assets/Space shooter assets (300 assets)/Backgrounds/" imageName="black.png"></Image>
+  </Texture>
+</BackGroundTextures>

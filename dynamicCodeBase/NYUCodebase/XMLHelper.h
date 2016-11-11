@@ -8,6 +8,7 @@
 #include "Entity.h"
 #include "Texture.h"
 #include "EnemyShip.h"
+#include "Animation.h"
 #include <string>
 #include <unordered_map>
 using namespace std;
@@ -64,8 +65,9 @@ inline Texture* enrichTextureInformation(xml_node<>* textureNode){
 		detailsNode = textureNode->first_node("Image");
 		directory = directory + detailsNode->first_attribute("Directory")->value();
 		string imageName = detailsNode->first_attribute("imageName")->value();
-		string imagePath = directory + imagePath;
-		int layer = stoi(detailsNode->first_attribute("layer")->value());
+		string imagePath = directory + imageName;
+		int layer = stoi(textureNode->first_attribute("layer")->value());
+
 		if (loadedFilesWithoutXML.find(imagePath) == loadedFilesWithoutXML.end()){
 			textureID = loadTexture(imagePath.c_str());
 			loadedFilesWithoutXML[imagePath] = textureID;
@@ -78,6 +80,22 @@ inline Texture* enrichTextureInformation(xml_node<>* textureNode){
 	}
 	else if (textureType == EVEN_SPRITESHEET){
 		detailsNode = textureNode->first_node("EvenSpritesheet");
+		directory = directory + detailsNode->first_attribute("Directory")->value();
+		string sheetName = detailsNode->first_attribute("sheetName")->value();
+		string sheetPath = directory + sheetName;
+		int layer = stoi(textureNode->first_attribute("layer")->value());
+		unsigned index = stoi(detailsNode->first_attribute("index")->value());
+		unsigned spriteCountX = stoi(detailsNode->first_attribute("spriteCountX")->value());
+		unsigned spriteCountY = stoi(detailsNode->first_attribute("spriteCountY")->value());
+		if (loadedFilesWithoutXML.find(sheetPath) == loadedFilesWithoutXML.end()){
+			textureID = loadTexture(sheetPath.c_str());
+			loadedFilesWithoutXML[sheetPath] = textureID;
+		}
+		else{
+			textureID = loadedFilesWithoutXML[sheetPath];
+		}
+		Texture* tex = new Texture(textureID, spriteCountX, spriteCountY, index, layer);
+		return tex;
 	}
 	else if (textureType == UNEVEN_SPRITESHEET){
 		detailsNode = textureNode->first_node("UnevenSpritesheet");
@@ -109,13 +127,59 @@ inline Texture* enrichTextureInformation(xml_node<>* textureNode){
 	}
 }
 
+inline Animation* enrichAnimationInformation(xml_node<>* animationNode){
+	bool loop = false;
+	ANIMATION_TYPE animationType = ANIMATION_IDLE;
+	unsigned startingIndex = 0, endingIndex = 0;
+	if (animationNode->first_attribute("loop") != nullptr){
+		loop = stoi(animationNode->first_attribute("loop")->value()) == 1;
+	}
+
+	if (animationNode->first_attribute("type") != nullptr){
+		animationType = static_cast<ANIMATION_TYPE>(stoi(animationNode->first_attribute("type")->value()));
+	}
+
+	if (animationNode->first_attribute("startingIndex") != nullptr){
+		startingIndex = stoi(animationNode->first_attribute("startingIndex")->value());
+	}
+
+	if (animationNode->first_attribute("endingIndex") != nullptr){
+		endingIndex = stoi(animationNode->first_attribute("endingIndex")->value());
+	}
+
+	Animation* anim = new Animation(animationType, startingIndex, endingIndex);
+	anim->setDoLoop(loop);
+	Texture* tex;
+	if (animationNode->first_node("Texture") != nullptr){
+		tex = enrichTextureInformation(animationNode->first_node("Texture"));
+		anim->setTexture(tex);
+	}
+	return anim;
+}
+
 inline Entity* enrichEntityInformation(xml_node<>* entityNode){
 	if (entityNode == nullptr){
 		return nullptr;
 	}
-	Texture* tex = enrichTextureInformation(entityNode->first_node("Texture"));
+	Texture* tex = nullptr;
+	if (entityNode->first_node("Texture") != nullptr){
+		tex = enrichTextureInformation(entityNode->first_node("Texture"));
+	}
 	string entityID = entityNode->first_node("EntityID")->value();
 	Entity* entity = new Entity(entityID, tex);
+	entity->setIsAnimated(false);
+	if (entityNode->first_node("Animations") != nullptr){
+		entity->setIsAnimated(true);
+		xml_node<>* animationNode = entityNode->first_node("Animations")->first_node("Animation");
+		do{
+			Animation* animation = enrichAnimationInformation(animationNode);
+			entity->addAnimation(animation);
+			if (animationNode->first_attribute("Starting") != nullptr){
+				entity->startAnimation(animation->getAnimationType());
+			}
+			animationNode = animationNode->next_sibling();
+		} while (animationNode != nullptr);
+	}
 	xml_node<>* detailsNode = entityNode->first_node("Details");
 	if (detailsNode == nullptr){
 		throw "Empty subEntity tag!";
@@ -469,12 +533,23 @@ inline void loadXMLData(GameEngine& engine){
 			strcpy_s(fileDirec, RESOURCE_FOLDER"Assets/XML/");
 			strcat_s(fileDirec, fileName);
 			xml_document<>* doc = loadXMLFile(fileDirec);
-			xml_node<>* entityNode = doc->first_node()->first_node();
-			do{
-				CompositeEntity* toAdd = enrichXMLData(entityNode);
-				engine.addGameEntity(toAdd);
-				entityNode = entityNode->next_sibling();
-			} while (entityNode != nullptr);
+			if (doc->first_node()->first_attribute("isBackGroundFile") != nullptr){
+				xml_node<>* textureNode = doc->first_node()->first_node();
+				do{
+					Texture* backGroundTexture = enrichTextureInformation(textureNode);
+					unsigned levelID = stoi(textureNode->first_attribute("levelID")->value());
+					engine.addBackGroundTexture(levelID, backGroundTexture);
+					textureNode = textureNode->next_sibling();
+				} while (textureNode != nullptr);
+			}
+			else{
+				xml_node<>* entityNode = doc->first_node()->first_node();
+				do{
+					CompositeEntity* toAdd = enrichXMLData(entityNode);
+					engine.addGameEntity(toAdd);
+					entityNode = entityNode->next_sibling();
+				} while (entityNode != nullptr);
+			}
 		}
 	}
 }

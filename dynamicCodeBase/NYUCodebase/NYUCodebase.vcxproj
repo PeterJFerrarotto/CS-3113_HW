@@ -13,7 +13,7 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{49111BA2-C0AC-4ADA-A952-A55E3AF00AC8}</ProjectGuid>
     <RootNamespace>NYUCodebase</RootNamespace>
-    <ProjectName>platformerTest</ProjectName>
+    <ProjectName>dynamicCodeBase</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -75,12 +75,14 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Animation.cpp" />
     <ClCompile Include="CollisionListener.cpp" />
     <ClCompile Include="CompositeEntity.cpp" />
     <ClCompile Include="EnemyShip.cpp" />
     <ClCompile Include="Entity.cpp" />
     <ClCompile Include="EnumClassHash.cpp" />
     <ClCompile Include="GameEngine.cpp" />
+    <ClCompile Include="Level.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Matrix.cpp" />
     <ClCompile Include="ShaderProgram.cpp" />
@@ -89,12 +91,14 @@
     <ClCompile Include="Vector3.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Animation.h" />
     <ClInclude Include="CollisionListener.h" />
     <ClInclude Include="CompositeEntity.h" />
     <ClInclude Include="EnemyShip.h" />
     <ClInclude Include="Entity.h" />
     <ClInclude Include="EnumClassHash.h" />
     <ClInclude Include="GameEngine.h" />
+    <ClInclude Include="Level.h" />
     <ClInclude Include="Matrix.h" />
     <ClInclude Include="rapidxml.hpp" />
     <ClInclude Include="rapidxml_iterators.hpp" />
@@ -103,6 +107,7 @@
     <ClInclude Include="ShaderProgram.h" />
     <ClInclude Include="TextEntity.h" />
     <ClInclude Include="Texture.h" />
+    <ClInclude Include="Tile.h" />
     <ClInclude Include="Vector3.h" />
     <ClInclude Include="XMLHelper.h" />
   </ItemGroup>
@@ -113,6 +118,7 @@
     <None Include="vertex_textured.glsl" />
   </ItemGroup>
   <ItemGroup>
+    <Xml Include="Assets\XML\backGroundTexture.xml" />
     <Xml Include="Assets\XML\entityData.xml">
       <SubType>Designer</SubType>
     </Xml>

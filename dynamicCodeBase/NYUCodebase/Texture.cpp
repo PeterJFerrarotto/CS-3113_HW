@@ -16,14 +16,13 @@ Texture::Texture(GLuint textureID, unsigned textureLayer){
 	xmlDoc = nullptr;
 }
 
-Texture::Texture(GLuint textureID, unsigned indexMin, unsigned indexMax, unsigned spriteCountX, unsigned spriteCountY, unsigned textureLayer){
+Texture::Texture(GLuint textureID, unsigned spriteCountX, unsigned spriteCountY, unsigned startingIndex, unsigned textureLayer){
 	this->textureID = textureID;
 	textureType = EVEN_SPRITESHEET;
-	this->indexMin = indexMin;
-	this->indexMax = indexMax;
 	this->spriteCountX = spriteCountX;
 	this->spriteCountY = spriteCountY;
 	this->textureLayer = textureLayer;
+	index = startingIndex;
 	xmlDoc = nullptr;
 }
 
@@ -62,9 +61,6 @@ void Texture::setIndex(unsigned index){
 	if (textureType != EVEN_SPRITESHEET){
 		throw "Index is reserved for an even spritesheet!";
 	}
-	if (indexMax > index || indexMin < index){
-		throw "Index is out of range!";
-	}
 	this->index = index;
 }
 
@@ -73,9 +69,6 @@ void Texture::incrementIndex(){
 		throw "Index is reserved for an even spritesheet!";
 	}
 	index++;
-	if (index > indexMax){
-		index = indexMin;
-	}
 }
 
 void Texture::decrementIndex(){
@@ -83,9 +76,6 @@ void Texture::decrementIndex(){
 		throw "Index is reserved for an even spritesheet!";
 	}
 	index--;
-	if (index < indexMin){
-		index = indexMax;
-	}
 }
 
 void Texture::setXmlDoc(rapidxml::xml_document<>* xmlDoc){

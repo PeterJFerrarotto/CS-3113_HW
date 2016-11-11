@@ -200,7 +200,29 @@ void CompositeEntity::setBoundaryBehavior(BOUNDARY_BEHAVIOR behavior){
 }
 
 void CompositeEntity::setState(STATE state){
-	this->state = state;
+	if (this->state != state){
+		this->state = state;
+		switch (state){
+		case IDLE:
+			changeAnimation(ANIMATION_IDLE);
+			break;
+		case MOVING:
+			changeAnimation(ANIMATION_WALK);
+			break;
+		case ACCELERATING:
+			changeAnimation(ANIMATION_RUN);
+			break;
+		case JUMPING:
+			changeAnimation(ANIMATION_JUMP);
+			break;
+		case FALLING:
+			changeAnimation(ANIMATION_FALL);
+			break;
+		default:
+			changeAnimation(ANIMATION_IDLE);
+			break;
+		}
+	}
 }
 
 void CompositeEntity::setIsActive(bool isActive){
@@ -451,13 +473,14 @@ void CompositeEntity::move(float elapsed, float gravity, float frictionX, float 
 			if (first != nullptr){
 				first->move(elapsed);
 			}
-
-			if (velocity.x != 0 || velocity.y != 0 || velocity.z != 0){
-				setState(MOVING);
-			}
-
 			if (acceleration.x != 0 || acceleration.y != 0 || acceleration.z != 0){
 				setState(ACCELERATING);
+			}
+			else if (velocity.x != 0 || velocity.y != 0 || velocity.z != 0){
+				setState(MOVING);
+			}
+			else{
+				setState(STATIONARY);
 			}
 		}
 	}
@@ -772,4 +795,16 @@ const std::string& CompositeEntity::getDisplayText(){
 
 void CompositeEntity::setTextSheet(GLuint textSheet){
 	return;
+}
+
+void CompositeEntity::changeAnimation(ANIMATION_TYPE animationType){
+	if (first != nullptr && isActive){
+		first->startAnimation(animationType);
+	}
+}
+
+void CompositeEntity::runAnimation(float elapsed, float fps){
+	if (first != nullptr && isActive){
+		first->runAnimation(elapsed, fps);
+	}
 }

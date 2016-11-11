@@ -8,7 +8,6 @@ using namespace std;
 
 GameEngine::GameEngine() : gameOver(false), titleSelection(0)
 {
-	changeState(TITLE_SCREEN);
 	enemyCount = 0;
 }
 
@@ -17,9 +16,9 @@ GameEngine::~GameEngine()
 }
 
 void GameEngine::render(ShaderProgram* program){
-	if (backGroundTexture != nullptr){
-		vector<GLfloat> textureCoordinates = backGroundTexture->getTextureCoordinates();
-		glBindTexture(GL_TEXTURE_2D, backGroundTexture->getTextureID());
+	if (backGroundTextures[levelID] != nullptr){
+		vector<GLfloat> textureCoordinates = backGroundTextures[levelID]->getTextureCoordinates();
+		glBindTexture(GL_TEXTURE_2D, backGroundTextures[levelID]->getTextureID());
 		Matrix backGroundMatrix;
 		program->setModelMatrix(backGroundMatrix);
 
@@ -64,30 +63,37 @@ void GameEngine::collisionCheck(float elapsed){
 	}
 }
 
-void GameEngine::setBackGroundTexture(Texture* backGroundTexture){
-	this->backGroundTexture = backGroundTexture;
+void GameEngine::addBackGroundTexture(unsigned levelID, Texture* backGroundTexture){
+	backGroundTextures[levelID] = backGroundTexture;
+}
+
+void GameEngine::setLevel(unsigned levelID){
+	if (backGroundTextures.find(levelID) == backGroundTextures.end()){
+		throw "Unknown levelID!";
+	}
+	this->levelID = levelID;
 }
 
 void GameEngine::checkStaticCollisions(){
-	for (size_t i = 0; i < gameEntities.size(); i++){
-		for (CompositeEntity* entity : gameEntities[i]){
-			if (entity->getEntityType() == STATIC_ENTITY){
-				return;
-			}
-			if (entity->getCanCollide() && entity->getIsActive()){
-				for (CompositeEntity* staticEntity : gameEntities[STATIC_INDEX]){
-					if (staticEntity->getIsActive() && staticEntity->getCanCollide()){
-						if (entity->isColliding(staticEntity)){
-							float penetrationY = fabs(fabs(entity->getPosition().y - staticEntity->getPosition().y) - entity->getTotalBounding().y - staticEntity->getTotalBounding().y);
-							entity->collideWithStatic(penetrationY, Y);
-							float penetrationX = fabs(fabs(entity->getPosition().x - staticEntity->getPosition().x) - entity->getTotalBounding().x - staticEntity->getTotalBounding().x);
-							entity->collideWithStatic(penetrationX, X);
-						}
-					}
-				}
-			}
-		}
-	}
+	//for (size_t i = 0; i < gameEntities.size(); i++){
+	//	for (CompositeEntity* entity : gameEntities[i]){
+	//		if (entity->getEntityType() == STATIC_ENTITY){
+	//			return;
+	//		}
+	//		if (entity->getCanCollide() && entity->getIsActive()){
+	//			for (CompositeEntity* staticEntity : gameEntities[STATIC_INDEX]){
+	//				if (staticEntity->getIsActive() && staticEntity->getCanCollide()){
+	//					if (entity->isColliding(staticEntity)){
+	//						float penetrationY = fabs(fabs(entity->getPosition().y - staticEntity->getPosition().y) - entity->getTotalBounding().y - staticEntity->getTotalBounding().y);
+	//						entity->collideWithStatic(penetrationY, Y);
+	//						float penetrationX = fabs(fabs(entity->getPosition().x - staticEntity->getPosition().x) - entity->getTotalBounding().x - staticEntity->getTotalBounding().x);
+	//						entity->collideWithStatic(penetrationX, X);
+	//					}
+	//				}
+	//			}
+	//		}
+	//	}
+	//}
 }
 
 void GameEngine::handleInput(const Uint8* input, SDL_Event input2){
@@ -268,6 +274,8 @@ void GameEngine::update(float elapsed, ShaderProgram* program){
 			if (entity->getEntityType() == POINTS_INDICATOR && entity->getIsActive()){
 				entity->setDisplayText("Points: " + std::to_string(points));
 			}
+
+			entity->runAnimation(elapsed, FRAMES_PER_SECOND);
 		}
 	}
 
@@ -416,4 +424,6 @@ bool GameEngine::getGameOver(){
 
 void GameEngine::start(){
 	changeState(TITLE_SCREEN);
+	levelID = backGroundTextures.begin()->first;
 }
+
