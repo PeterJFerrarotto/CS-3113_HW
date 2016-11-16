@@ -182,32 +182,33 @@ void Level::fillCollisionData(xml_node<>* tileNode){
 	}
 	static const char* collideCheck = "canCollide";
 	static const char* trueCheck = "true";
+	static const char* typeCheck = "tileType";
 	unsigned tileIndex = stoi(tileNode->first_attribute("id")->value());
 	float x = 0, y = 0;
 	float width = 0, height = 0;
 	bool canCollide = false;
-	xml_node<>* collisionNode = tileNode->first_node("properties");
-	if (collisionNode == nullptr){
-		collisionNode = tileNode->first_node()->first_node("properties");
-		if (collisionNode == nullptr){
+	TILE_TYPE tileType = SOLID;
+	xml_node<>* propertyNode = tileNode->first_node("properties");
+	if (propertyNode == nullptr){
+		//If properties added using Tiled's "Edit Tile Collision" tool, they will be contained within an "object" tag
+		propertyNode = tileNode->first_node()->first_node("properties");
+		if (propertyNode == nullptr){
 			throw "Properties not found!";
 		}
 	}
-	collisionNode = collisionNode->first_node("property");
-	if (collisionNode != nullptr){
-		while (strcmp(collisionNode->first_attribute("name")->value(), collideCheck) != 0){
-			collisionNode = collisionNode->next_sibling();
-			if (collisionNode == nullptr){
-				break;
-			}
+	propertyNode = propertyNode->first_node("property");
+	do{
+		if (propertyNode == nullptr){
+			break;
 		}
-		//Might seem reduntant, but required due to above while loop!
-		if (collisionNode != nullptr){
-			if (collisionNode->first_attribute("value") != nullptr){
-				canCollide = strcmp(collisionNode->first_attribute("value")->value(), trueCheck) == 0;
-			}
+		if (strcmp(collideCheck, propertyNode->first_attribute("name")->value()) == 0){
+			canCollide = strcmp(trueCheck, propertyNode->first_attribute("value")->value()) == 0;
 		}
-	}
+		else if (strcmp(typeCheck, propertyNode->first_attribute("name")->value()) == 0){
+			tileType = static_cast<TILE_TYPE>(stoi(propertyNode->first_attribute("value")->value()));
+		}
+		propertyNode = propertyNode->next_sibling("property");
+	} while (propertyNode != nullptr);
 
 	xml_node<>* objectNode = tileNode->first_node();
 	if (objectNode->first_node("object") != nullptr){
@@ -226,6 +227,7 @@ void Level::fillCollisionData(xml_node<>* tileNode){
 	collisionData[tileIndex]->x = x;
 	collisionData[tileIndex]->y = y;
 	collisionData[tileIndex]->canCollide = canCollide;
+	collisionData[tileIndex]->tileType = tileType;
 	fillCollisionData(tileNode->next_sibling());
 }
 

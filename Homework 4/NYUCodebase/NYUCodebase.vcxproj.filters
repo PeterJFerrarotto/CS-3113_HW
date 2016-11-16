@@ -112,6 +112,5 @@
     <Xml Include="Assets\XML\entityData.xml" />
     <Xml Include="Assets\XML\backGroundTexture.xml" />
     <Xml Include="Assets\Levels\level_index.xml" />
-    <Xml Include="Assets\Levels\level_01\level_01.xml" />
   </ItemGroup>
 </Project>

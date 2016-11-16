@@ -328,7 +328,7 @@ inline CompositeEntity* enrichXMLData(xml_node<>* rootNode){
 	float rotation = 0;
 	float rotationalVelocity = 0;
 	float firingDelay = 0;
-	bool canCollide = false, isInvincible = false, isActive = true, falls = false;
+	bool canCollide = false, isInvincible = false, isActive = true, falls = false, isStatic = false;
 	float topSpeed = 1.0;
 	float textSize = 1.0, textSpacing = 1.0;
 	unsigned layer = 0;
@@ -481,6 +481,11 @@ inline CompositeEntity* enrichXMLData(xml_node<>* rootNode){
 		textSheet = loadTexture(textSheetDirectory.c_str());
 	}
 
+	currentDetail = detailsNode->first_node("isStatic");
+	if (currentDetail != nullptr){
+		isStatic = stoi(currentDetail->value()) == 1;
+	}
+
 	currentDetail = detailsNode->first_node("Layer");
 	if (currentDetail != nullptr){
 		layer = stoi(currentDetail->value());
@@ -507,6 +512,7 @@ inline CompositeEntity* enrichXMLData(xml_node<>* rootNode){
 	tmp->setTextSheet(textSheet);
 	tmp->setTileCollisionBehavior(tileCollisionBehavior);
 	tmp->setJumpSpeed(jumpSpeed);
+	tmp->setIsStatic(isStatic);
 	if (rootNode->first_node("subEntities") != nullptr){
 		tmp->setEntities(enrichEntityInformation(rootNode->first_node("subEntities")->first_node("First")));
 	}
@@ -635,13 +641,29 @@ inline void readEntityData(std::ifstream &stream, Level* level, GameEngine& engi
 			string xPosition, yPosition;
 			getline(lineStream, xPosition, ',');
 			getline(lineStream, yPosition, ',');
-			float placeX = atoi(xPosition.c_str())*level->getTileSize();
-			float placeY = atoi(yPosition.c_str())*-(level->getTileSize());
+			float placeX = (atoi(xPosition.c_str()) + 0.5)*level->getTileSize();
+			float placeY = (atoi(yPosition.c_str()) - 0.5)*-(level->getTileSize());
 			entity->setStartingPosition(placeX, placeY);
 		}
 		else if (key == "text"){
 			string text = value;
 			entity->setDisplayText(text);
+		}
+		else if (key == "size"){
+			float size = stof(value);
+			entity->setSize(size);
+		}
+		else if (key == "spacing"){
+			float spacing = stof(value);
+			entity->setSpacing(spacing);
+		}
+		else if (key == "isStatic"){
+			bool isStatic = value == "true";
+			entity->setIsStatic(isStatic);
+		}
+		else if (key == "renderLayer"){
+			unsigned layer = stoi(value);
+			entity->setLayer(layer);
 		}
 	}
 	engine.addGameEntity(level->getLevelID(), entity);

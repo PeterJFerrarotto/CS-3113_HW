@@ -59,12 +59,14 @@ int main(int argc, char *argv[])
 	CollisionListener* playerWithEnemy = new CollisionListener(ACTOR_PLAYER, ACTOR_ENEMY_PATROL_TURN, DEACTIVATE, NOTHING, false, true, true, true);
 	CollisionListener* playerWithEnemyFromAbove = new CollisionListener(ACTOR_PLAYER, ACTOR_ENEMY_PATROL_TURN, BOUNCE_HIGH, DEACTIVATE, true, false, false, false);
 	CollisionListener* enemyWithPlayerProjectile = new CollisionListener(PLAYER_PROJECTILE, ACTOR_ENEMY_PATROL_TURN, DESTROY, DEACTIVATE);
+	CollisionListener* playerWithCoin = new CollisionListener(ACTOR_PLAYER, ENTITY_COIN, NOTHING, DEACTIVATE);
 
 	gameEngine.addCollisionEvent(enemyProjectileWithPlayer);
 	gameEngine.addCollisionEvent(playerProjectileWithEnemy);
 	gameEngine.addCollisionEvent(playerWithEnemyFromAbove);
 	gameEngine.addCollisionEvent(playerWithEnemy);
 	gameEngine.addCollisionEvent(enemyWithPlayerProjectile);
+	gameEngine.addCollisionEvent(playerWithCoin);
 
 	loadXMLData(gameEngine);
 	loadLevelData(gameEngine);

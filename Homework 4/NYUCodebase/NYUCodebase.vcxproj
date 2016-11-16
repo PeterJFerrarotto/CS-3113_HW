@@ -13,7 +13,7 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{49111BA2-C0AC-4ADA-A952-A55E3AF00AC8}</ProjectGuid>
     <RootNamespace>NYUCodebase</RootNamespace>
-    <ProjectName>tileTest</ProjectName>
+    <ProjectName>Homework 4</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -45,7 +45,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>C:\SDL2\include;C:\SDL2_image\include;C:\glew\include;C:\SDL2_mixer\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\SDL2_mixer\include;C:\SDL2\include;C:\SDL2_image\include;C:\glew\include;C:\SDL2_mixer\include</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_WINDOWS;_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
@@ -113,7 +113,6 @@
     <None Include="vertex_textured.glsl" />
   </ItemGroup>
   <ItemGroup>
-    <Xml Include="Assets\Levels\level_01\level_01.xml" />
     <Xml Include="Assets\Levels\level_index.xml" />
     <Xml Include="Assets\XML\backGroundTexture.xml" />
     <Xml Include="Assets\XML\entityData.xml">

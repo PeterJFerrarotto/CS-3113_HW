@@ -93,7 +93,7 @@
       <CollisionBehavior>3</CollisionBehavior>
       <TileCollisionBehavior>0</TileCollisionBehavior>
       <BoundaryBehavior>5</BoundaryBehavior>
-      <topSpeed>50</topSpeed>
+      <topSpeed>75</topSpeed>
       <Layer>1</Layer>
       <jumpSpeed>75</jumpSpeed>
     </Details>
@@ -117,6 +117,7 @@
     <EntityID>menuText</EntityID>
     <Details>
       <Position x ="-1" y="0.5" z="0"></Position>
+      <DisplayText size="16" spacing="2"></DisplayText>
       <TextSheet sheetPath="Assets/" sheetName="font2.png"></TextSheet>
     </Details>
   </Entity>
@@ -247,6 +248,44 @@
       <Layer>99</Layer>
       <canCollide>0</canCollide>
       <falls>0</falls>
+    </Details>
+  </Entity>
+  <Entity>
+    <Type>12</Type>
+    <EntityID>Coin</EntityID>
+    <subEntities>
+      <First>
+        <EntityID>PlayerLegs</EntityID>
+        <Animations>
+          <Animation loop="1" type="0" startingIndex="51" endingIndex="54" Starting="1">
+            <Texture type="1" layer="1">
+              <EvenSpritesheet Directory="Assets/Levels/Spritesheets/" index="51" sheetName="arne_sprites.png" layer="1" spriteCountX="16" spriteCountY="8"></EvenSpritesheet>
+            </Texture>
+          </Animation>
+        </Animations>
+        <Details>
+          <Position x="0" y="0"></Position>
+          <Scale x="1" y="1"></Scale>
+          <doRender>1</doRender>
+          <canCollide>1</canCollide>
+        </Details>
+      </First>
+    </subEntities>
+    <Details>
+      <falls>0</falls>
+      <isStatic>1</isStatic>
+      <canCollide>1</canCollide>
+      <isActive>1</isActive>
+      <rotationalVelocity>45</rotationalVelocity>
+      <Scale x="16" y="16" z="1"></Scale>
+    </Details>
+  </Entity>
+  <Entity>
+    <EntityID>pointsIndicator</EntityID>
+    <Type>6</Type>
+    <Details>
+      <DisplayText size="16" spacing="2"></DisplayText>
+      <TextSheet sheetPath="Assets/" sheetName="font2.png"></TextSheet>
     </Details>
   </Entity>
 </Entities>

@@ -46,10 +46,6 @@ Vector3 CompositeEntity::getAcceleration(){
 	return acceleration;
 }
 
-//Vector3 CompositeEntity::getTotalSize(){
-//	return totalSize;
-//}
-
 Vector3 CompositeEntity::getSizePositive(){
 	return sizePositive;
 }
@@ -331,6 +327,8 @@ void CompositeEntity::reset(){
 	scale.x = startingScale.x;
 	scale.y = startingScale.y;
 	scale.z = startingScale.z;
+
+	checkPointPosition = startingPosition;
 
 	rotation = startingRotation;
 
@@ -645,8 +643,11 @@ void CompositeEntity::jump(){
 	setState(JUMPING);
 }
 
-void CompositeEntity::drawText(ShaderProgram* program, Matrix matrix){
-	float texture_size = 1.0 / 16.0f; std::vector<float> vertexData; std::vector<float> texCoordData;
+void CompositeEntity::drawText(ShaderProgram* program, Matrix matrix, float elapsed, float fps){
+	float texture_size = 1.0 / 16.0f; 
+	std::vector<float> vertexData; 
+	std::vector<float> texCoordData;
+	Matrix offsetMatrix;
 	for (int i = 0; i < text.size(); i++) {
 		float texture_x = (float)(((int)text[i]) % 16) / 16.0f;
 		float texture_y = (float)(((int)text[i]) / 16) / 16.0f;
@@ -656,17 +657,29 @@ void CompositeEntity::drawText(ShaderProgram* program, Matrix matrix){
 			texture_x, texture_y + texture_size, texture_x + texture_size, texture_y, texture_x + texture_size, texture_y + texture_size, texture_x + texture_size, texture_y, texture_x, texture_y + texture_size,
 		});
 	}
-	program->setModelMatrix(matrix);
+	if (type == TITLE_TEXT_ENTITY || isStatic){
+		transformMatrix();
+		program->setModelMatrix(modelMatrix);
+		offsetMatrix = modelMatrix;
+	}
+	else{
+		program->setModelMatrix(matrix);
+		offsetMatrix = matrix;
+	}
 	glUseProgram(program->programID);
 	glVertexAttribPointer(program->positionAttribute, 2, GL_FLOAT, false, 0, vertexData.data());
 	glEnableVertexAttribArray(program->positionAttribute);
 	glVertexAttribPointer(program->texCoordAttribute, 2, GL_FLOAT, false, 0, texCoordData.data());
 	glEnableVertexAttribArray(program->texCoordAttribute);
 	glBindTexture(GL_TEXTURE_2D, textSheet);
-	glDrawArrays(GL_TRIANGLES, 0, text.size() * 6);
+	glDrawArrays(GL_TRIANGLES, 0, vertexData.size()/2);
 
 	glDisableVertexAttribArray(program->positionAttribute);
 	glDisableVertexAttribArray(program->texCoordAttribute);
+
+	if (first != nullptr){
+		first->draw(program, offsetMatrix, elapsed, fps);
+	}
 }
 
 void CompositeEntity::draw(ShaderProgram* program, Matrix matrix, float elapsed, float fps){
@@ -674,7 +687,7 @@ void CompositeEntity::draw(ShaderProgram* program, Matrix matrix, float elapsed,
 	case GAME_TEXT_ENTITY:
 	case TITLE_TEXT_ENTITY:
 	case POINTS_INDICATOR:
-		drawText(program, matrix);
+		drawText(program, matrix, elapsed, fps);
 		break;
 	default:
 		transformMatrix();
@@ -1051,9 +1064,17 @@ Matrix& CompositeEntity::getMatrix(){
 	return modelMatrix;
 }
 
+bool CompositeEntity::getIsStatic(){
+	return isStatic;
+}
+
 
 void CompositeEntity::setTileCollisionBehavior(TILE_COLLISION_BEHAVIOR behavior){
 	tileCollisionBehavior = behavior;
+}
+
+void CompositeEntity::setIsStatic(bool isStatic){
+	this->isStatic = isStatic;
 }
 
 TILE_COLLISION_BEHAVIOR CompositeEntity::getTileCollisionBehavior(){
@@ -1061,6 +1082,14 @@ TILE_COLLISION_BEHAVIOR CompositeEntity::getTileCollisionBehavior(){
 }
 
 void CompositeEntity::bounceHigh(float elapsed, CompositeEntity* bouncingOffOf){
-	bounce(elapsed, bouncingOffOf);
-	velocity.y = 20;
+	velocity.y = jumpSpeed + 5;
+	setState(JUMPING);
+}
+
+void CompositeEntity::checkPoint(){
+	checkPointPosition = position;
+}
+
+void CompositeEntity::resetToCheckpoint(){
+	position = checkPointPosition;
 }

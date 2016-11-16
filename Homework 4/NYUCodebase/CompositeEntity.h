@@ -4,7 +4,7 @@
 #include "Vector3.h"
 #include "Entity.h"
 
-enum ENTITY_TYPE { ICON_ENTITY, LIFE_ICON_ENTITY, PLAYER_PROJECTILE, ENEMY_PROJECTILE, TITLE_TEXT_ENTITY, GAME_TEXT_ENTITY, POINTS_INDICATOR, ACTOR_ENEMY, ACTOR_PLAYER, ACTOR_ENEMY_PATROL_TURN, STATIC_ENTITY, BACKGROUND_ENTITY, ENTITY_TYPE_SIZE };
+enum ENTITY_TYPE { ICON_ENTITY, LIFE_ICON_ENTITY, PLAYER_PROJECTILE, ENEMY_PROJECTILE, TITLE_TEXT_ENTITY, GAME_TEXT_ENTITY, POINTS_INDICATOR, ACTOR_ENEMY, ACTOR_PLAYER, ACTOR_ENEMY_PATROL_TURN, STATIC_ENTITY, BACKGROUND_ENTITY, ENTITY_COIN, ENTITY_TYPE_SIZE };
 enum STATE {MOVING, ACCELERATING, STATIONARY, BOUNCING, BOUNCED, IDLE, JUMPING, FALLING, DESTROYING, STATE_COUNT};
 enum COLLISION_BEHAVIOR { BOUNCE, STOP, DESTROY, DEACTIVATE, NOTHING, BOUNCE_HIGH, COLLISION_BEHAVIOR_SIZE };
 enum BOUNDARY_BEHAVIOR {BOUND_BOUNCE, BOUND_TURN, BOUND_STOP, BOUND_DESTROY, BOUND_DEACTIVATE, BOUND_NOTHING};
@@ -51,6 +51,7 @@ public:
 	bool getCollDownFlag();
 	bool getCollLeftFlag();
 	bool getCollRightFlag();
+	bool getIsStatic();
 	unsigned getLayer();
 
 	const std::string& getEntityID();
@@ -87,16 +88,19 @@ public:
 	void setTopSpeed(float topSpeed);
 	void setLayer(unsigned layer);
 	void setOnTileGround(bool onTileGround);
+	void setIsStatic(bool isStatic);
+	void checkPoint();
 
 	void jump();
 	void updateBounding();
 	void updateBoundingRecurse(Entity* check, float offsetX = 0, float offsetY = 0, float offsetZ = 0);
 	void reset();
+	void resetToCheckpoint();
 	bool isColliding(CompositeEntity* collidingCheck);
 	bool atScreenBoundary(float gameWall, float gameCeiling);
 	void move(float elapsed, float gravity = 0.0f, float frictionX = 0.0f, float frictionY = 0.0f);
 	virtual void draw(ShaderProgram* program, Matrix matrix, float elapsed, float fps);
-	void drawText(ShaderProgram* program, Matrix matrix);
+	void drawText(ShaderProgram* program, Matrix matrix, float elapsed, float fps);
 	void collide(float elapsed, CompositeEntity* bouncingOffOf, COLLISION_BEHAVIOR collisionBehavior = COLLISION_BEHAVIOR_SIZE);
 	void collideWithStatic(float penetration, DIRECTION direction);
 	void boundaryAction(float gameWall, float gameCeiling);
@@ -134,7 +138,7 @@ protected:
 	Vector3 startingVelocity;
 	Vector3 acceleration;
 	Vector3 startingAcceleration;
-	//Vector3 totalSize;
+	Vector3 checkPointPosition;
 	Vector3 sizePositive;
 	Vector3 sizeNegative;
 	Vector3 scale;
@@ -174,6 +178,7 @@ protected:
 	bool isInvincible;
 	bool onTileGround;
 	bool doMirror;
+	bool isStatic;
 
 
 	void bounce(float elapsed, CompositeEntity* bouncingOffOf);
