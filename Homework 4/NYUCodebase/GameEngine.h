@@ -16,7 +16,7 @@
 #define MAX_TIMESTEP 6
 #define BLINK_TIMING 0.25f
 #define MAX_BLINK_COUNT 7
-#define GRAVITY -50
+#define GRAVITY -100
 #define STATIC_INDEX 10
 #define FRAMES_PER_SECOND 6.0f
 
@@ -42,7 +42,7 @@ private:
 	std::unordered_map<std::string, std::unordered_map<unsigned, std::vector<CompositeEntity*>>> gameEntitiesRenderingOrder;
 	std::unordered_map<std::string, Level*> levels;
 	CompositeEntity* playerEntity;
-	std::unordered_map<std::string, Texture*> backGroundTextures;
+	std::vector<CompositeEntity*> userInterface;
 
 	bool gameOver;
 
@@ -71,6 +71,7 @@ private:
 	void checkTileCollisions();
 	void deleteFlagged();
 	void handleInput(const Uint8* input, SDL_Event input2);
+	bool downPressed;
 
 	void render(ShaderProgram* program, float elapsed, float fps);
 
@@ -83,15 +84,15 @@ private:
 
 	void update(float elapsed, ShaderProgram* program);
 
-	float getTilePenetrationLeft(float posX, float sizeX, int tileX);
-	float getTilePenetrationRight(float posX, float sizeX, int tileX);
-	float getTilePenetrationUp(float posY, float sizeY, int tileY);
-	float getTilePenetrationDown(float posY, float sizeY, int tileY);
+	float getTilePenetrationLeft(float posX, float sizeX, int tileX, float hitX, float hitWidth);
+	float getTilePenetrationRight(float posX, float sizeX, int tileX, float hitX, float hitWidth);
+	float getTilePenetrationUp(float posY, float sizeY, int tileY, float hitY, float hitHeight);
+	float getTilePenetrationDown(float posY, float sizeY, int tileY, float hitY, float hitHeight);
 
-	bool tileCollisionUp(float posY, float sizeYPos, float sizeYNeg, int tileY);
-	bool tileCollisionDown(float posY, float sizeYNeg, float sizeYPos, int tileY);
-	bool tileCollisionLeft(float posX, float sizeXNeg, float sizeXPos, int tileX);
-	bool tileCollisionRight(float posX, float sizeXPos, float sizeXNeg, int tileX);
+	bool tileCollisionUp(float posY, float sizeYPos, float sizeYNeg, int tileY, float hitY, float hitHeight);
+	bool tileCollisionDown(float posY, float sizeYNeg, float sizeYPos, int tileY, float hitY, float hitHeight);
+	bool tileCollisionLeft(float posX, float sizeXNeg, float sizeXPos, int tileX, float hitX, float hitWidth);
+	bool tileCollisionRight(float posX, float sizeXPos, float sizeXNeg, int tileX, float hitX, float hitWidth);
 
 	float checkBottomTileCollisions(CompositeEntity* entity);
 	float checkTopTileCollisions(CompositeEntity* entity);
@@ -100,6 +101,14 @@ private:
 
 	void resolveYCollisions(CompositeEntity* entity);
 	void resolveXCollisions(CompositeEntity* entity);
+
+	void resolveXYCollision(CompositeEntity* entity);
+
+	Vector3 checkAllTileCollisions(CompositeEntity* entity);
+
+	void checkIfShouldWarp();
+	void deActivateLevelEntities();
+	void activateLevelEntities();
 public:
 	GameEngine();
 	~GameEngine();
@@ -107,7 +116,6 @@ public:
 	void addCollisionEvent(CollisionListener* collisionEvent);
 	void addGameEntity(const std::string& level, CompositeEntity* entity);
 	void run(float elapsed, const Uint8* input, SDL_Event input2, ShaderProgram* program);
-	void addBackGroundTexture(const std::string& levelID, Texture* backGroundTexture);
 	void setLevel(const std::string& levelID);
 	void addLevel(Level* level);
 

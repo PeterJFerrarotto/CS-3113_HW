@@ -26,14 +26,16 @@ protected:
 	float tileWidth, tileHeight;
 	float tileSize;
 	std::string levelID;
+	std::string spriteSheetName;
 	std::unordered_map<unsigned, std::vector<float>> vertexData;
 	std::unordered_map<unsigned, std::vector<float>> texCoordData;
 
-	std::unordered_map<unsigned, Tile*> collisionData;
+	static std::unordered_map<GLuint, std::unordered_map<unsigned, Tile*>> collisionData;
+	
+	CompositeEntity* playerEntity;
 
 	void fillVertexArrays();
 	void fillCollisionData(rapidxml::xml_node<>* tileNode);
-
 
 public:
 	Level();
@@ -57,7 +59,9 @@ public:
 	float getTileSize();
 	void setTileSet(GLuint tileSet);
 	void setTileSize(float tileSize);
+	void setPlayerEntity(CompositeEntity* playerEntity);
 	Tile* getTile(unsigned layer, int gridX, int gridY);
+	CompositeEntity* getPlayerEntity();
 
 	const std::unordered_map<unsigned, unsigned char**> getLevelData();
 	void fillSpriteSheetData(rapidxml::xml_node<>* tileNode);

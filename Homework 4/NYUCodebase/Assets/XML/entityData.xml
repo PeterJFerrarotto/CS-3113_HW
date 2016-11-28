@@ -62,7 +62,7 @@
 
             <boundingType>0</boundingType>
           </Details>
-          <Child>
+          <!--<Child>
            <EntityID>PlayerHead</EntityID>
           <Texture type="1" layer="2">
             <EvenSpritesheet Directory="Assets/Levels/Spritesheets/" index="82" sheetName="arne_sprites.png" layer="1" spriteCountX="16" spriteCountY="8"></EvenSpritesheet>
@@ -73,7 +73,7 @@
             <Position x="0" y="1" z="0"></Position>
             <doRender>1</doRender>
           </Details>
-          </Child>
+          </Child>-->
         </Child>
       </First>
     </subEntities>
@@ -92,10 +92,10 @@
       <BoundingType>0</BoundingType>
       <CollisionBehavior>3</CollisionBehavior>
       <TileCollisionBehavior>0</TileCollisionBehavior>
-      <BoundaryBehavior>5</BoundaryBehavior>
+      <BoundaryBehavior>6</BoundaryBehavior>
       <topSpeed>75</topSpeed>
       <Layer>1</Layer>
-      <jumpSpeed>75</jumpSpeed>
+      <jumpSpeed>100</jumpSpeed>
     </Details>
     <Projectile>
       <Animations>
@@ -262,6 +262,11 @@
               <EvenSpritesheet Directory="Assets/Levels/Spritesheets/" index="51" sheetName="arne_sprites.png" layer="1" spriteCountX="16" spriteCountY="8"></EvenSpritesheet>
             </Texture>
           </Animation>
+          <Animation loop ="0" type="6" startingIndex="48" endingIndex="50">
+            <Texture type="1" layer="1">
+              <EvenSpritesheet Directory="Assets/Levels/Spritesheets/" index="48" sheetName="arne_sprites.png" layer="1" spriteCountX="16" spriteCountY="8"></EvenSpritesheet>
+            </Texture>
+          </Animation>
         </Animations>
         <Details>
           <Position x="0" y="0"></Position>
@@ -276,7 +281,7 @@
       <isStatic>1</isStatic>
       <canCollide>1</canCollide>
       <isActive>1</isActive>
-      <rotationalVelocity>45</rotationalVelocity>
+      <rotationalVelocity>0</rotationalVelocity>
       <Scale x="16" y="16" z="1"></Scale>
     </Details>
   </Entity>
@@ -284,8 +289,12 @@
     <EntityID>pointsIndicator</EntityID>
     <Type>6</Type>
     <Details>
-      <DisplayText size="16" spacing="2"></DisplayText>
+      <DisplayText size="16" spacing="1"></DisplayText>
       <TextSheet sheetPath="Assets/" sheetName="font2.png"></TextSheet>
     </Details>
+  </Entity>
+  <Entity>
+    <EntityID>warp</EntityID>
+    <Type>13</Type>
   </Entity>
 </Entities>

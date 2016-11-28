@@ -4,10 +4,10 @@
 #include "Vector3.h"
 #include "Entity.h"
 
-enum ENTITY_TYPE { ICON_ENTITY, LIFE_ICON_ENTITY, PLAYER_PROJECTILE, ENEMY_PROJECTILE, TITLE_TEXT_ENTITY, GAME_TEXT_ENTITY, POINTS_INDICATOR, ACTOR_ENEMY, ACTOR_PLAYER, ACTOR_ENEMY_PATROL_TURN, STATIC_ENTITY, BACKGROUND_ENTITY, ENTITY_COIN, ENTITY_TYPE_SIZE };
-enum STATE {MOVING, ACCELERATING, STATIONARY, BOUNCING, BOUNCED, IDLE, JUMPING, FALLING, DESTROYING, STATE_COUNT};
-enum COLLISION_BEHAVIOR { BOUNCE, STOP, DESTROY, DEACTIVATE, NOTHING, BOUNCE_HIGH, COLLISION_BEHAVIOR_SIZE };
-enum BOUNDARY_BEHAVIOR {BOUND_BOUNCE, BOUND_TURN, BOUND_STOP, BOUND_DESTROY, BOUND_DEACTIVATE, BOUND_NOTHING};
+enum ENTITY_TYPE { ICON_ENTITY, LIFE_ICON_ENTITY, PLAYER_PROJECTILE, ENEMY_PROJECTILE, TITLE_TEXT_ENTITY, GAME_TEXT_ENTITY, POINTS_INDICATOR, ACTOR_ENEMY, ACTOR_PLAYER, ACTOR_ENEMY_PATROL_TURN, STATIC_ENTITY, BACKGROUND_ENTITY, ENTITY_COIN, WARP_ENTITY, ENTITY_TYPE_SIZE };
+enum STATE {MOVING, ACCELERATING, STATIONARY, BOUNCING, BOUNCED, IDLE, JUMPING, FALLING, DESTROYING, DEACTIVATING, STATE_COUNT};
+enum COLLISION_BEHAVIOR { BOUNCE, STOP, DESTROY, DEACTIVATE, NOTHING, BOUNCE_HIGH, WARP, COLLISION_BEHAVIOR_SIZE };
+enum BOUNDARY_BEHAVIOR {BOUND_BOUNCE, BOUND_TURN, BOUND_STOP, BOUND_DESTROY, BOUND_DEACTIVATE, BOUND_NOTHING, BOUND_STOP_X};
 enum TILE_COLLISION_BEHAVIOR {T_STOP, T_BOUNCE, T_TURN};
 enum DIRECTION {UP, DOWN, LEFT, RIGHT, X, Y, DIRECTION_SIZE};
 
@@ -53,6 +53,7 @@ public:
 	bool getCollRightFlag();
 	bool getIsStatic();
 	unsigned getLayer();
+	const std::string& getWarpDestination();
 
 	const std::string& getEntityID();
 
@@ -89,6 +90,7 @@ public:
 	void setLayer(unsigned layer);
 	void setOnTileGround(bool onTileGround);
 	void setIsStatic(bool isStatic);
+	void setWarpDestination(const std::string& level);
 	void checkPoint();
 
 	void jump();
@@ -97,15 +99,19 @@ public:
 	void reset();
 	void resetToCheckpoint();
 	bool isColliding(CompositeEntity* collidingCheck);
-	bool atScreenBoundary(float gameWall, float gameCeiling);
+	bool atScreenBoundary(float gameWallLeft, float gameWallRight, float gameFloor, float gameCeiling);
 	void move(float elapsed, float gravity = 0.0f, float frictionX = 0.0f, float frictionY = 0.0f);
 	virtual void draw(ShaderProgram* program, Matrix matrix, float elapsed, float fps);
 	void drawText(ShaderProgram* program, Matrix matrix, float elapsed, float fps);
 	void collide(float elapsed, CompositeEntity* bouncingOffOf, COLLISION_BEHAVIOR collisionBehavior = COLLISION_BEHAVIOR_SIZE);
 	void collideWithStatic(float penetration, DIRECTION direction);
-	void boundaryAction(float gameWall, float gameCeiling);
+	void boundaryAction(float gameWallLeft, float gameWallRight, float gameFloor, float gameCeiling);
 	void setJumpSpeed(float jumpSpeed);
+	void setDoMirror(bool doMirror);
+	void setOverrideMirroring(bool overrideMirroring);
 	void blink();
+
+	void setAllRender(bool doRender);
 
 	void changeAnimation(ANIMATION_TYPE animationType);
 	void runAnimation(float elapsed, float fps);
@@ -126,6 +132,7 @@ public:
 	virtual void deepCopy(CompositeEntity* toCopy);
 
 	virtual void destroy();
+	void deActivate();
 
 	Matrix& getMatrix();
 
@@ -178,22 +185,24 @@ protected:
 	bool isInvincible;
 	bool onTileGround;
 	bool doMirror;
+	bool overrideMirroring;
 	bool isStatic;
 
 
 	void bounce(float elapsed, CompositeEntity* bouncingOffOf);
 	void bounceHigh(float elapsed, CompositeEntity* bouncingOffOf);
 	void stop();
-	void deActivate();
 	void resetFlags();
 	void transformMatrix();
 
 	std::string entityID;
 	std::string text;
+	std::string warpLevelDestination;
 
 	float lerp(float v0, float v1, float t);
-	void boundaryStop(float gameWall, float gameCeiling);
-	void boundaryTurn(float gameWall, float gameCeiling);
+	void boundaryStop(float gameWallLeft, float gameWallRight, float gameFloor, float gameCeiling);
+	void boundaryStopAtWall(float gameWallLeft, float gameWallRight);
+	void boundaryTurn(float gameWallLeft, float gameWallRight, float gameFloor, float gameCeiling);
 };
 
 #endif

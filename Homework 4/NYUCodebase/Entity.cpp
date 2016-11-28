@@ -413,3 +413,14 @@ void Entity::deepCopy(Entity* toCopy){
 		this->child->deepCopy(toCopy->child);
 	}
 }
+
+
+void Entity::setAllDoRender(bool doRender){
+	this->doRender = doRender;
+	if (child != nullptr){
+		child->setAllDoRender(doRender);
+	}
+	if (sibling != nullptr){
+		sibling->setAllDoRender(doRender);
+	}
+}

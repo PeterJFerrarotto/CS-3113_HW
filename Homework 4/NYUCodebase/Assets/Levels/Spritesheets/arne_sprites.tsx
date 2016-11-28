@@ -4,43 +4,43 @@
  <tile id="0">
   <properties>
    <property name="canCollide" type="bool" value="true"/>
-   <property name="tileType" type="int" value="1"/>
+   <property name="tileType" type="int" value="8"/>
   </properties>
  </tile>
  <tile id="1">
   <properties>
    <property name="canCollide" type="bool" value="true"/>
-   <property name="tileType" type="int" value="1"/>
+   <property name="tileType" type="int" value="8"/>
   </properties>
  </tile>
  <tile id="2">
   <properties>
    <property name="canCollide" type="bool" value="true"/>
-   <property name="tileType" type="int" value="1"/>
+   <property name="tileType" type="int" value="8"/>
   </properties>
  </tile>
  <tile id="3">
   <properties>
    <property name="canCollide" type="bool" value="true"/>
-   <property name="tileType" type="int" value="0"/>
+   <property name="tileType" type="int" value="8"/>
   </properties>
  </tile>
  <tile id="4">
   <properties>
    <property name="canCollide" type="bool" value="true"/>
-   <property name="tileType" type="int" value="0"/>
+   <property name="tileType" type="int" value="8"/>
   </properties>
  </tile>
  <tile id="5">
   <properties>
    <property name="canCollide" type="bool" value="true"/>
-   <property name="tileType" type="int" value="0"/>
+   <property name="tileType" type="int" value="8"/>
   </properties>
  </tile>
  <tile id="6">
   <properties>
    <property name="canCollide" type="bool" value="true"/>
-   <property name="tileType" type="int" value="0"/>
+   <property name="tileType" type="int" value="8"/>
   </properties>
  </tile>
  <tile id="7">
@@ -100,25 +100,25 @@
  <tile id="16">
   <properties>
    <property name="canCollide" type="bool" value="true"/>
-   <property name="tileType" type="int" value="1"/>
+   <property name="tileType" type="int" value="8"/>
   </properties>
  </tile>
  <tile id="17">
   <properties>
    <property name="canCollide" type="bool" value="true"/>
-   <property name="tileType" type="int" value="1"/>
+   <property name="tileType" type="int" value="8"/>
   </properties>
  </tile>
  <tile id="18">
   <properties>
    <property name="canCollide" type="bool" value="true"/>
-   <property name="tileType" type="int" value="1"/>
+   <property name="tileType" type="int" value="8"/>
   </properties>
  </tile>
  <tile id="19">
   <properties>
    <property name="canCollide" type="bool" value="true"/>
-   <property name="tileType" type="int" value="1"/>
+   <property name="tileType" type="int" value="8"/>
   </properties>
  </tile>
  <tile id="20">
@@ -584,13 +584,13 @@
  <tile id="96">
   <properties>
    <property name="canCollide" type="bool" value="false"/>
-   <property name="tileType" type="int" value="0"/>
+   <property name="tileType" type="int" value="8"/>
   </properties>
  </tile>
  <tile id="97">
   <properties>
    <property name="canCollide" type="bool" value="false"/>
-   <property name="tileType" type="int" value="0"/>
+   <property name="tileType" type="int" value="8"/>
   </properties>
  </tile>
  <tile id="98">
@@ -680,25 +680,25 @@
  <tile id="112">
   <properties>
    <property name="canCollide" type="bool" value="false"/>
-   <property name="tileType" type="int" value="0"/>
+   <property name="tileType" type="int" value="8"/>
   </properties>
  </tile>
  <tile id="113">
   <properties>
    <property name="canCollide" type="bool" value="false"/>
-   <property name="tileType" type="int" value="0"/>
+   <property name="tileType" type="int" value="8"/>
   </properties>
  </tile>
  <tile id="114">
   <properties>
    <property name="canCollide" type="bool" value="false"/>
-   <property name="tileType" type="int" value="0"/>
+   <property name="tileType" type="int" value="8"/>
   </properties>
  </tile>
  <tile id="115">
   <properties>
    <property name="canCollide" type="bool" value="false"/>
-   <property name="tileType" type="int" value="0"/>
+   <property name="tileType" type="int" value="8"/>
   </properties>
  </tile>
  <tile id="116">

@@ -15,6 +15,7 @@
 using namespace std;
 using namespace rapidxml;
 
+//#define _CRT_SECURE_NO_WARNINGS
 #ifdef _WINDOWS
 #define RESOURCE_FOLDER ""
 #else
@@ -31,7 +32,7 @@ static const char* pngExt = ".png";
 static const char* separator = "/";
 
 inline GLuint loadTexture(const char* imagePath){
-	static unordered_map<const char*, GLuint> loadedTextures;
+	static unordered_map<string, GLuint> loadedTextures;
 	if (loadedTextures.find(imagePath) == loadedTextures.end()){
 		SDL_Surface *surface = IMG_Load(imagePath);
 		GLuint textureID;
@@ -47,7 +48,9 @@ inline GLuint loadTexture(const char* imagePath){
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, surface->w, surface->h, 0, externalFormat, GL_UNSIGNED_BYTE, surface->pixels);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-		loadedTextures[imagePath] = textureID;
+		char* x = new char[360];
+		strcpy(x, imagePath);
+		loadedTextures[x] = textureID;
 		loadedTextureSizes[textureID] = { surface->w, surface->h };
 		return textureID;
 	}
@@ -341,154 +344,161 @@ inline CompositeEntity* enrichXMLData(xml_node<>* rootNode){
 	TILE_COLLISION_BEHAVIOR tileCollisionBehavior = T_STOP;
 	BOUNDARY_BEHAVIOR boundaryBehavior = BOUND_STOP;
 	tmp->setEntityType(entityType);
+	if (entityType != WARP_ENTITY){
+		xml_node<>* detailsNode = rootNode->first_node("Details");
+		if (detailsNode == nullptr){
+			throw "Error: Empty Entity tag!!";
+		}
+		xml_node<>* currentDetail = detailsNode->first_node("firingDelay");
+		if (currentDetail != nullptr){
+			firingDelay = stof(currentDetail->value());
+		}
 
-	xml_node<>* detailsNode = rootNode->first_node("Details");
-	if (detailsNode == nullptr){
-		throw "Error: Empty Entity tag!!";
-	}
-	xml_node<>* currentDetail = detailsNode->first_node("firingDelay");
-	if (currentDetail != nullptr){
-		firingDelay = stof(currentDetail->value());
-	}
+		currentDetail = detailsNode->first_node("tileCollisionBehavior");
+		if (currentDetail != nullptr){
+			tileCollisionBehavior = static_cast<TILE_COLLISION_BEHAVIOR>(stoi(currentDetail->value()));
+		}
 
-	currentDetail = detailsNode->first_node("tileCollisionBehavior");
-	if (currentDetail != nullptr){
-		tileCollisionBehavior = static_cast<TILE_COLLISION_BEHAVIOR>(stoi(currentDetail->value()));
-	}
+		currentDetail = detailsNode->first_node("Position");
+		if (currentDetail != nullptr){
+			if (currentDetail->first_attribute("x") != nullptr){
+				posX = stof(currentDetail->first_attribute("x")->value());
+			}
+			if (currentDetail->first_attribute("y") != nullptr){
+				posY = stof(currentDetail->first_attribute("y")->value());
+			}
+			if (currentDetail->first_attribute("z") != nullptr){
+				posZ = stof(currentDetail->first_attribute("z")->value());
+			}
+		}
 
-	currentDetail = detailsNode->first_node("Position");
-	if (currentDetail != nullptr){
-		if (currentDetail->first_attribute("x") != nullptr){
-			posX = stof(currentDetail->first_attribute("x")->value());
+		currentDetail = detailsNode->first_node("Velocity");
+		if (currentDetail != nullptr){
+			if (currentDetail->first_attribute("x") != nullptr){
+				velX = stof(currentDetail->first_attribute("x")->value());
+			}
+			if (currentDetail->first_attribute("y") != nullptr){
+				velY = stof(currentDetail->first_attribute("y")->value());
+			}
+			if (currentDetail->first_attribute("z") != nullptr){
+				velZ = stof(currentDetail->first_attribute("z")->value());
+			}
 		}
-		if (currentDetail->first_attribute("y") != nullptr){
-			posY = stof(currentDetail->first_attribute("y")->value());
-		}
-		if (currentDetail->first_attribute("z") != nullptr){
-			posZ = stof(currentDetail->first_attribute("z")->value());
-		}
-	}
 
-	currentDetail = detailsNode->first_node("Velocity");
-	if (currentDetail != nullptr){
-		if (currentDetail->first_attribute("x") != nullptr){
-			velX = stof(currentDetail->first_attribute("x")->value());
+		currentDetail = detailsNode->first_node("Acceleration");
+		if (currentDetail != nullptr){
+			if (currentDetail->first_attribute("x") != nullptr){
+				accX = stof(currentDetail->first_attribute("x")->value());
+			}
+			if (currentDetail->first_attribute("y") != nullptr){
+				accY = stof(currentDetail->first_attribute("y")->value());
+			}
+			if (currentDetail->first_attribute("z") != nullptr){
+				accZ = stof(currentDetail->first_attribute("z")->value());
+			}
 		}
-		if (currentDetail->first_attribute("y") != nullptr){
-			velY = stof(currentDetail->first_attribute("y")->value());
-		}
-		if (currentDetail->first_attribute("z") != nullptr){
-			velZ = stof(currentDetail->first_attribute("z")->value());
-		}
-	}
 
-	currentDetail = detailsNode->first_node("Acceleration");
-	if (currentDetail != nullptr){
-		if (currentDetail->first_attribute("x") != nullptr){
-			accX = stof(currentDetail->first_attribute("x")->value());
+		currentDetail = detailsNode->first_node("Scale");
+		if (currentDetail != nullptr){
+			if (currentDetail->first_attribute("x") != nullptr){
+				scaleX = stof(currentDetail->first_attribute("x")->value());
+			}
+			if (currentDetail->first_attribute("y") != nullptr){
+				scaleY = stof(currentDetail->first_attribute("y")->value());
+			}
+			if (currentDetail->first_attribute("z") != nullptr){
+				scaleZ = stof(currentDetail->first_attribute("z")->value());
+			}
 		}
-		if (currentDetail->first_attribute("y") != nullptr){
-			accY = stof(currentDetail->first_attribute("y")->value());
-		}
-		if (currentDetail->first_attribute("z") != nullptr){
-			accZ = stof(currentDetail->first_attribute("z")->value());
-		}
-	}
 
-	currentDetail = detailsNode->first_node("Scale");
-	if (currentDetail != nullptr){
-		if (currentDetail->first_attribute("x") != nullptr){
-			scaleX = stof(currentDetail->first_attribute("x")->value());
+		currentDetail = detailsNode->first_node("topSpeed");
+		if (currentDetail != nullptr){
+			topSpeed = stof(currentDetail->value());
 		}
-		if (currentDetail->first_attribute("y") != nullptr){
-			scaleY = stof(currentDetail->first_attribute("y")->value());
+
+		currentDetail = detailsNode->first_node("jumpSpeed");
+		if (currentDetail != nullptr){
+			jumpSpeed = stof(currentDetail->value());
 		}
-		if (currentDetail->first_attribute("z") != nullptr){
-			scaleZ = stof(currentDetail->first_attribute("z")->value());
+
+		currentDetail = detailsNode->first_node("Rotation");
+		if (currentDetail != nullptr){
+			rotation = (M_PI / 180) * stof(currentDetail->value());
 		}
-	}
 
-	currentDetail = detailsNode->first_node("topSpeed");
-	if (currentDetail != nullptr){
-		topSpeed = stof(currentDetail->value());
-	}
+		currentDetail = detailsNode->first_node("rotationalVelocity");
+		if (currentDetail != nullptr){
+			rotationalVelocity = (M_PI / 180) * stof(currentDetail->value());
+		}
+		else{
+			rotationalVelocity = 0;
+		}
 
-	currentDetail = detailsNode->first_node("jumpSpeed");
-	if (currentDetail != nullptr){
-		jumpSpeed = stof(currentDetail->value());
-	}
+		currentDetail = detailsNode->first_node("canCollide");
+		if (currentDetail != nullptr){
+			canCollide = stoi(currentDetail->value()) == 1;
+		}
 
-	currentDetail = detailsNode->first_node("Rotation");
-	if (currentDetail != nullptr){
-		rotation = (M_PI/180) * stof(currentDetail->value());
-	}
+		currentDetail = detailsNode->first_node("isActive");
+		if (currentDetail != nullptr){
+			isActive = stoi(currentDetail->value()) == 1;
+		}
 
-	currentDetail = detailsNode->first_node("rotationalVelocity");
-	if (currentDetail != nullptr){
-		rotationalVelocity = (M_PI / 180) * stof(currentDetail->value());
+		currentDetail = detailsNode->first_node("falls");
+		if (currentDetail != nullptr){
+			falls = stoi(currentDetail->value()) == 1;
+		}
+
+		currentDetail = detailsNode->first_node("isInvincible");
+		if (currentDetail != nullptr){
+			isInvincible = stoi(currentDetail->value()) == 1;
+		}
+
+		currentDetail = detailsNode->first_node("CollisionBehavior");
+		if (currentDetail != nullptr){
+			collisionBehavior = static_cast<COLLISION_BEHAVIOR>(stoi(currentDetail->value()));
+		}
+
+		currentDetail = detailsNode->first_node("BoundaryBehavior");
+		if (currentDetail != nullptr){
+			boundaryBehavior = static_cast<BOUNDARY_BEHAVIOR>(stoi(currentDetail->value()));
+		}
+
+		currentDetail = detailsNode->first_node("BoundingType");
+		if (currentDetail != nullptr){
+			boundingType = static_cast<BOUNDING_TYPE>(stoi(currentDetail->value()));
+		}
+
+		currentDetail = detailsNode->first_node("DisplayText");
+		if (currentDetail != nullptr){
+			displayText = currentDetail->value();
+
+			textSize = stof(currentDetail->first_attribute("size")->value());
+			textSpacing = stof(currentDetail->first_attribute("spacing")->value());
+		}
+
+		currentDetail = detailsNode->first_node("TextSheet");
+		if (currentDetail != nullptr){
+			textSheetDirectory = RESOURCE_FOLDER;
+			textSheetDirectory = textSheetDirectory + currentDetail->first_attribute("sheetPath")->value() + currentDetail->first_attribute("sheetName")->value();
+			textSheet = loadTexture(textSheetDirectory.c_str());
+		}
+
+		currentDetail = detailsNode->first_node("isStatic");
+		if (currentDetail != nullptr){
+			isStatic = stoi(currentDetail->value()) == 1;
+		}
+
+		currentDetail = detailsNode->first_node("Layer");
+		if (currentDetail != nullptr){
+			layer = stoi(currentDetail->value());
+		}
 	}
 	else{
-		rotationalVelocity = 0;
-	}
-
-	currentDetail = detailsNode->first_node("canCollide");
-	if (currentDetail != nullptr){
-		canCollide = stoi(currentDetail->value()) == 1;
-	}
-
-	currentDetail = detailsNode->first_node("isActive");
-	if (currentDetail != nullptr){
-		isActive = stoi(currentDetail->value()) == 1;
-	}
-
-	currentDetail = detailsNode->first_node("falls");
-	if (currentDetail != nullptr){
-		falls = stoi(currentDetail->value()) == 1;
-	}
-
-	currentDetail = detailsNode->first_node("isInvincible");
-	if (currentDetail != nullptr){
-		isInvincible = stoi(currentDetail->value()) == 1;
-	}
-
-	currentDetail = detailsNode->first_node("CollisionBehavior");
-	if (currentDetail != nullptr){
-		collisionBehavior = static_cast<COLLISION_BEHAVIOR>(stoi(currentDetail->value()));
-	}
-
-	currentDetail = detailsNode->first_node("BoundaryBehavior");
-	if (currentDetail != nullptr){
-		boundaryBehavior = static_cast<BOUNDARY_BEHAVIOR>(stoi(currentDetail->value()));
-	}
-
-	currentDetail = detailsNode->first_node("BoundingType");
-	if (currentDetail != nullptr){
-		boundingType = static_cast<BOUNDING_TYPE>(stoi(currentDetail->value()));
-	}
-
-	currentDetail = detailsNode->first_node("DisplayText");
-	if (currentDetail != nullptr){
-		displayText = currentDetail->value();
-
-		textSize = stof(currentDetail->first_attribute("size")->value());
-		textSpacing = stof(currentDetail->first_attribute("spacing")->value());
-	}
-
-	currentDetail = detailsNode->first_node("TextSheet");
-	if (currentDetail != nullptr){
-		textSheetDirectory = RESOURCE_FOLDER;
-		textSheetDirectory = textSheetDirectory + currentDetail->first_attribute("sheetPath")->value() + currentDetail->first_attribute("sheetName")->value();
-		textSheet = loadTexture(textSheetDirectory.c_str());
-	}
-
-	currentDetail = detailsNode->first_node("isStatic");
-	if (currentDetail != nullptr){
-		isStatic = stoi(currentDetail->value()) == 1;
-	}
-
-	currentDetail = detailsNode->first_node("Layer");
-	if (currentDetail != nullptr){
-		layer = stoi(currentDetail->value());
+		canCollide = true;
+		falls = false;
+		isStatic = true;
+		boundingType = SQUARE;
 	}
 
 	tmp->setStartingPosition(posX, posY, posZ);
@@ -593,26 +603,15 @@ inline void loadXMLData(GameEngine& engine){
 			strcpy_s(fileDirec, RESOURCE_FOLDER"Assets/XML/");
 			strcat_s(fileDirec, fileName);
 			xml_document<>* doc = loadXMLFile(fileDirec);
-			if (doc->first_node()->first_attribute("isBackGroundFile") != nullptr){
-				xml_node<>* textureNode = doc->first_node()->first_node();
-				do{
-					Texture* backGroundTexture = enrichTextureInformation(textureNode);
-					string levelID = textureNode->first_attribute("levelID")->value();
-					engine.addBackGroundTexture(levelID, backGroundTexture);
-					textureNode = textureNode->next_sibling();
-				} while (textureNode != nullptr);
-			}
-			else{
-				xml_node<>* entityNode = doc->first_node()->first_node();
-				do{
-					CompositeEntity* toAdd = enrichXMLData(entityNode);
-					if (entityTypes.find(toAdd->getEntityType()) != entityTypes.end()){
-						throw "Entity type already exists!";
-					}
-					entityTypes[toAdd->getEntityType()] = toAdd;
-					entityNode = entityNode->next_sibling();
-				} while (entityNode != nullptr);
-			}
+			xml_node<>* entityNode = doc->first_node()->first_node();
+			do{
+				CompositeEntity* toAdd = enrichXMLData(entityNode);
+				if (entityTypes.find(toAdd->getEntityType()) != entityTypes.end()){
+					throw "Entity type already exists!";
+				}
+				entityTypes[toAdd->getEntityType()] = toAdd;
+				entityNode = entityNode->next_sibling();
+			} while (entityNode != nullptr);
 		}
 	}
 }
@@ -665,6 +664,13 @@ inline void readEntityData(std::ifstream &stream, Level* level, GameEngine& engi
 			unsigned layer = stoi(value);
 			entity->setLayer(layer);
 		}
+		else if (key == "warpDestination"){
+			string destination = value;
+			entity->setWarpDestination(destination);
+		}
+	}
+	if (type == ACTOR_PLAYER){
+		level->setPlayerEntity(entity);
 	}
 	engine.addGameEntity(level->getLevelID(), entity);
 }
@@ -674,7 +680,7 @@ inline Level* loadLevel(const char* levelFile, const char* tileData, const char*
 	ifstream infile(levelFile);
 	string line;
 	level->setLevelID(levelName);
-	level->setTileSize(16);
+	//level->setTileSize(16);
 	while (getline(infile, line)) {
 		if (line == "[header]") {
 			if (!level->readHeader(levelFile, infile)) {

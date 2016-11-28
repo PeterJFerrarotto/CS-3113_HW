@@ -24,38 +24,43 @@ void GameEngine::render(ShaderProgram* program, float elapsed, float fps){
 	uIMatrix.identity();
 	viewMatrix.identity();
 	viewMatrix.setScale(0.02, 0.01, 1);
-	if (playerEntity->getPosition().x >= 176 && playerEntity->getPosition().x <= mapWidth - 176){
+	if (playerEntity->getPosition().x >= 180 && playerEntity->getPosition().x <= mapWidth - 180){
 		viewMatrix.Translate(-playerEntity->getPosition().x, 0, 0);
-		uIMatrix.Translate(playerEntity->getPosition().x - 32, 0, 0);
+		uIMatrix.Translate(playerEntity->getPosition().x - 172, 0, 0);
 	}
-	else if (playerEntity->getPosition().x < 176){
-		viewMatrix.Translate(-176, 0, 0);
-		uIMatrix.Translate(144, 0, 0);
+	else if (playerEntity->getPosition().x < 180){
+		viewMatrix.Translate(-180, 0, 0);
+		uIMatrix.Translate(8, 0, 0);
 	}
-	else if (playerEntity->getPosition().x > mapWidth - 176){
-		viewMatrix.Translate(-(int)(mapWidth - 176), 0, 0);
-		uIMatrix.Translate((int)(mapWidth - 144), 0, 0);
+	else if (playerEntity->getPosition().x > mapWidth - 180){
+		viewMatrix.Translate(-(int)(mapWidth - 180), 0, 0);
+		uIMatrix.Translate((int)(mapWidth - 160), 0, 0);
 	}
 	
-	if (playerEntity->getPosition().y >= -(int)(mapHeight - 320) && playerEntity->getPosition().y <= -16){
+	if (playerEntity->getPosition().y >= -(int)(mapHeight - 200) && playerEntity->getPosition().y <= -16){
 		viewMatrix.Translate(0, -playerEntity->getPosition().y, 0);
+		uIMatrix.Translate(0, playerEntity->getPosition().y + 180, 0);
 	}
-	else if (playerEntity->getPosition().y < -(int)(mapHeight - 320)){
-		viewMatrix.Translate(0, mapHeight - 320, 0);
+	else if (playerEntity->getPosition().y < -(int)(mapHeight - 200)){
+		viewMatrix.Translate(0, mapHeight - 200, 0);
+		uIMatrix.Translate(0, -(int)(mapHeight - 380), 0);
 	}
 	else if (playerEntity->getPosition().y > -16){
 		viewMatrix.Translate(0, 16, 0);
+		uIMatrix.Translate(0, -32, 0);
 	}
-	uIMatrix.Translate(0, playerEntity->getPosition().y + 160, 0);
 
 	program->setViewMatrix(viewMatrix);
 	Level* lvl = levels[currentLevel];
 	for (size_t i = 0; i < gameEntitiesRenderingOrder[currentLevel].size(); i++){
 		levels[currentLevel]->draw(program, i);
 		for (vector<CompositeEntity*>::const_iterator itr = gameEntitiesRenderingOrder[currentLevel][i].begin(); itr != gameEntitiesRenderingOrder[currentLevel][i].end(); itr++){
-			if ((*itr)->getIsActive())
+			if ((*itr)->getIsActive() && (*itr)->getEntityType() != POINTS_INDICATOR) 
 				(*itr)->draw(program, uIMatrix, elapsed, fps);
 		}
+	}
+	for (size_t i = 0; i < userInterface.size(); i++){
+		userInterface[i]->draw(program, uIMatrix, elapsed, fps);
 	}
 }
 
@@ -63,11 +68,14 @@ void GameEngine::addGameEntity(const std::string& level, CompositeEntity* entity
 	if (entity->getEntityType() != BACKGROUND_ENTITY){
 		gameEntities[level][entity->getEntityType()].push_back(entity);
 		gameEntitiesRenderingOrder[level][entity->getLayer()].push_back(entity);
-		if (entity->getEntityType() == ACTOR_PLAYER){
-			playerEntity = entity;
-		}
+		//if (entity->getEntityType() == ACTOR_PLAYER){
+		//	playerEntity = entity;
+		//}
 		if (entity->getEntityType() == ACTOR_ENEMY){
 			enemyCount++;
+		}
+		if (entity->getEntityType() == POINTS_INDICATOR){
+			userInterface.push_back(entity);
 		}
 	}
 }
@@ -78,22 +86,20 @@ void GameEngine::addCollisionEvent(CollisionListener* collisionEvent){
 
 void GameEngine::collisionCheck(float elapsed){
 	for (size_t i = 0; i < collisionEvents.size(); i++){
-		(*collisionEvents[i])(elapsed, gameEntities[currentLevel]);
+		(*collisionEvents[i])(elapsed, gameEntities[currentLevel]);		
 	}
-}
-
-void GameEngine::addBackGroundTexture(const string& levelID, Texture* backGroundTexture){
-	backGroundTextures[levelID] = backGroundTexture;
 }
 
 void GameEngine::setLevel(const std::string& levelID){
 	//if (backGroundTextures.find(levelID) == backGroundTextures.end()){
 	//	throw "Unknown levelID!";
 	//}
+	deActivateLevelEntities();
 	this->currentLevel = levelID;
+	activateLevelEntities();
 	this->mapHeight = levels[levelID]->getMapHeight();
 	this->mapWidth = levels[levelID]->getMapLength();
-	//backGroundVertices = { -gameWall, -gameCeiling, -gameWall, gameCeiling, gameWall, gameCeiling, gameWall, gameCeiling, -gameWall, -gameCeiling, gameWall, -gameCeiling };
+	this->playerEntity = levels[levelID]->getPlayerEntity();
 }
 
 void GameEngine::addLevel(Level* level){
@@ -103,42 +109,42 @@ void GameEngine::addLevel(Level* level){
 	levels[level->getLevelID()] = level;
 }
 
-float GameEngine::getTilePenetrationDown(float posY, float sizeY, int tileY){
-	return abs(posY - sizeY) - (levels[currentLevel]->getTileSize() * (tileY)) + 0.001;
+float GameEngine::getTilePenetrationDown(float posY, float sizeY, int tileY, float hitY, float hitHeight){
+	return abs(posY - sizeY) - (levels[currentLevel]->getTileSize() * (tileY) + hitY) + 0.001;
 }
 
-float GameEngine::getTilePenetrationUp(float posY, float sizeY, int tileY){
-	return ((posY + sizeY)) - (-levels[currentLevel]->getTileSize() * (tileY + 1)) + 0.001;
+float GameEngine::getTilePenetrationUp(float posY, float sizeY, int tileY, float hitY, float hitHeight){
+	return ((posY + sizeY)) - (-(levels[currentLevel]->getTileSize() * (tileY) + (hitHeight - hitY))) + 0.001;
 }
 
-float GameEngine::getTilePenetrationLeft(float posX, float sizeX, int tileX){
-	return ((levels[currentLevel]->getTileSize() * (tileX + 1))) - (posX - sizeX) + 0.001;
+float GameEngine::getTilePenetrationLeft(float posX, float sizeX, int tileX, float hitX, float hitWidth){
+	return ((levels[currentLevel]->getTileSize() * (tileX)) + (hitWidth - hitX)) - (posX - sizeX) + 0.001;
 }
 
-float GameEngine::getTilePenetrationRight(float posX, float sizeX, int tileX){
-	return (posX + sizeX) - (levels[currentLevel]->getTileSize() * tileX) + 0.001;
+float GameEngine::getTilePenetrationRight(float posX, float sizeX, int tileX, float hitX, float hitWidth){
+	return (posX + sizeX) - ((levels[currentLevel]->getTileSize() * tileX) + hitX) + 0.001;
 }
 
 //Tile collision up if top of object is higher than bottom of tile and bottom of tile is higher than bottom of object
-bool GameEngine::tileCollisionUp(float posY, float sizeYPos, float sizeYNeg, int tileY){
-	return ((posY + sizeYPos) >= (-((tileY + 1) * levels[currentLevel]->getTileSize()))) && ((-(tileY + 1) * levels[currentLevel]->getTileSize()) >= (posY - sizeYNeg));
+bool GameEngine::tileCollisionUp(float posY, float sizeYPos, float sizeYNeg, int tileY, float hitY, float hitHeight){
+	return ((posY + sizeYPos) >= (-((tileY) * levels[currentLevel]->getTileSize() + (hitHeight - hitY)))) && ((-((tileY) * levels[currentLevel]->getTileSize() + (hitHeight - hitY))) >= (posY - sizeYNeg));
 }
 
 //Tile collision down if top of tile is higher than bottom of object and top of object is higher than top of tile
-bool GameEngine::tileCollisionDown(float posY, float sizeYNeg, float sizeYPos, int tileY){
+bool GameEngine::tileCollisionDown(float posY, float sizeYNeg, float sizeYPos, int tileY, float hitY, float hitHeight){
 	//return posY - sizeYNeg >= (-(tileY + 1) * levels[currentLevel]->getTileSize());
-	return (-(tileY)* levels[currentLevel]->getTileSize() >= posY - sizeYNeg) && (posY + sizeYPos >= -(tileY)*levels[currentLevel]->getTileSize());
+	return (-((tileY)* levels[currentLevel]->getTileSize() + hitY) >= posY - sizeYNeg) && (posY + sizeYPos >= -((tileY)*levels[currentLevel]->getTileSize() + hitY));
 }
 
 //Tile collision left if left of object is farther right than left of tile
-bool GameEngine::tileCollisionLeft(float posX, float sizeXNeg, float sizeXPos, int tileX){
-	return posX - sizeXNeg >= ((tileX) * levels[currentLevel]->getTileSize());
+bool GameEngine::tileCollisionLeft(float posX, float sizeXNeg, float sizeXPos, int tileX, float hitX, float hitWidth){
+	return posX - sizeXNeg >= ((tileX) * levels[currentLevel]->getTileSize() + hitX);
 }
 
 //Tile collision right if right of tile is farther right than right of object
-bool GameEngine::tileCollisionRight(float posX, float sizeXPos, float sizeXNeg, int tileX){
+bool GameEngine::tileCollisionRight(float posX, float sizeXPos, float sizeXNeg, int tileX, float hitX, float hitWidth){
 	//return ((tileX) * levels[currentLevel]->getTileSize()) >= posX + sizeX;
-	return ((tileX + 1) * levels[currentLevel]->getTileSize()) >= posX + sizeXPos;
+	return ((tileX) * levels[currentLevel]->getTileSize() + (hitWidth - hitX)) >= posX + sizeXPos;
 }
 
 float GameEngine::checkBottomTileCollisions(CompositeEntity* entity){
@@ -160,10 +166,33 @@ float GameEngine::checkBottomTileCollisions(CompositeEntity* entity){
 		for (int i = gridLeft; i <= gridRight; i++){
 			tmpTile = tmp->getTile(layer, i, gridBottom);
 			if (tmpTile != nullptr){
-				if ((tmpTile->tileType == SOLID || tmpTile->tileType == SOLID_GRASS || tmpTile->tileType == HAZARD_SPIKE_HORIZONTAL) && tmpTile->canCollide){
-					if (tileCollisionDown(posY, sizeY, entity->getSizePositive().y / 2, gridBottom)){
-						if (getTilePenetrationDown(posY, sizeY, gridBottom) > penetration){
-							penetration = getTilePenetrationDown(posY, sizeY, gridBottom);
+				if ((tmpTile->tileType == SOLID_FLOOR || tmpTile->tileType == SOLID_PLATFORM || tmpTile->tileType == SOLID_GRASS) && tmpTile->canCollide){
+					if (tileCollisionDown(posY, sizeY, entity->getSizePositive().y / 2, gridBottom, tmpTile->y, tmpTile->height) && !(tmpTile->tileType == SOLID_PLATFORM && downPressed)){
+						if (!(posY - sizeY < -(gridBottom * tileSize + tileSize / 2))){
+							if (getTilePenetrationDown(posY, sizeY, gridBottom, tmpTile->y, tmpTile->height) > penetration && entity->getVelocity().y <= 0){
+								penetration = getTilePenetrationDown(posY, sizeY, gridBottom, tmpTile->y, tmpTile->height);
+								if (entity->getEntityType() == ACTOR_ENEMY_PATROL_TURN){
+									if (gridLeft * tileSize - (posX - sizeXNeg) <= 0.0001){
+										tmpTile = tmp->getTile(layer, gridLeft, gridBottom);
+										if (tmpTile == nullptr || tmpTile->canCollide == false){
+											tmpTile = tmp->getTile(layer, gridLeft, gridBottom - 1);
+											if (tmpTile == nullptr || tmpTile->canCollide == false){
+												entity->setVelocity(-entity->getVelocity().x, entity->getVelocity().y);
+											}
+										}
+									}
+									if (gridRight * tileSize - (posX + sizeXPos) <= 0.0001){
+										tmpTile = tmp->getTile(layer, gridRight, gridBottom);
+										if (tmpTile == nullptr || tmpTile->canCollide == false){
+											tmpTile = tmp->getTile(layer, gridRight, gridBottom - 1);
+											if (tmpTile == nullptr || tmpTile->canCollide == false){
+												entity->setVelocity(-entity->getVelocity().x, entity->getVelocity().y);
+											}
+										}
+
+									}
+								}
+							}
 						}
 					}
 				}
@@ -202,13 +231,15 @@ float GameEngine::checkTopTileCollisions(CompositeEntity* entity){
 		for (int i = gridLeft; i <= gridRight; i++){
 			tmpTile = tmp->getTile(layer, i, gridTop);
 			if (tmpTile != nullptr){
-				if ((tmpTile->tileType == SOLID || tmpTile->tileType == SOLID_GRASS || tmpTile->tileType == HAZARD_SPIKE_HORIZONTAL) && tmpTile->canCollide){
-					if (tileCollisionUp(posY, sizeY, entity->getSizeNegative().y / 2, gridTop)){
-						if (getTilePenetrationUp(posY, sizeY, gridTop) > penetration){
-							penetration = getTilePenetrationUp(posY, sizeY, gridTop);
+				if ((tmpTile->tileType == SOLID || tmpTile->tileType == SOLID_GRASS || tmpTile->tileType == SOLID_FLOOR || tmpTile->tileType == HAZARD_SPIKE_HORIZONTAL) && tmpTile->canCollide){
+					if (tileCollisionUp(posY, sizeY, entity->getSizeNegative().y / 2, gridTop, tmpTile->y, tmpTile->height)){
+						//Check if object is below half-point of the tile
+						if (getTilePenetrationUp(posY, sizeY, gridTop, tmpTile->y, tmpTile->height) > penetration && getTilePenetrationUp(posY, sizeY, gridTop, tmpTile->y, tmpTile->height) < tileSize){
+							penetration = getTilePenetrationUp(posY, sizeY, gridTop, tmpTile->y, tmpTile->height);
 						}
 					}
 				}
+
 
 				else if (tmpTile->tileType == HAZARD || tmpTile->tileType == HAZARD_FIRE || tmpTile->tileType == HAZARD_SPIKE_HORIZONTAL){
 					entity->setIsActive(false);
@@ -239,13 +270,13 @@ float GameEngine::checkLeftTileCollisions(CompositeEntity* entity){
 
 	Level* tmp = levels[currentLevel];
 	Tile* tmpTile;
-	for (int i = gridTop; i < gridBottom; i++){
+	for (int i = gridTop; i <= gridBottom; i++){
 		tmpTile = tmp->getTile(layer, gridLeft, i);
 		if (tmpTile != nullptr){
-			if ((tmpTile->tileType == SOLID || tmpTile->tileType == SOLID_GRASS || tmpTile->tileType == HAZARD_SPIKE_HORIZONTAL) && tmpTile->canCollide){
-				if (tileCollisionLeft(posX, sizeX, entity->getSizePositive().x / 2, gridLeft)){
-					if (getTilePenetrationLeft(posX, sizeX, gridLeft) > penetration){
-						penetration = getTilePenetrationLeft(posX, sizeX, gridLeft);
+			if ((tmpTile->tileType == SOLID || tmpTile->tileType == SOLID_GRASS || tmpTile->tileType == SOLID_FLOOR || tmpTile->tileType == HAZARD_SPIKE_HORIZONTAL) && tmpTile->canCollide){
+				if (tileCollisionLeft(posX, sizeX, entity->getSizePositive().x / 2, gridLeft, tmpTile->x, tmpTile->width)){
+					if (getTilePenetrationLeft(posX, sizeX, gridLeft, tmpTile->x, tmpTile->width) > penetration){
+						penetration = getTilePenetrationLeft(posX, sizeX, gridLeft, tmpTile->x, tmpTile->width);
 					}
 				}
 			}
@@ -279,13 +310,13 @@ float GameEngine::checkRightTileCollisions(CompositeEntity* entity){
 
 	Level* tmp = levels[currentLevel];
 	Tile* tmpTile;
-	for (int i = gridTop; i < gridBottom; i++){
+	for (int i = gridTop; i <= gridBottom; i++){
 		tmpTile = tmp->getTile(layer, gridRight, i);
 		if (tmpTile != nullptr){
-			if ((tmpTile->tileType == SOLID || tmpTile->tileType == SOLID_GRASS || tmpTile->tileType == HAZARD_SPIKE_HORIZONTAL) && tmpTile->canCollide){
-				if (tileCollisionRight(posX, sizeX, entity->getSizeNegative().x / 2, gridRight)){
-					if (getTilePenetrationRight(posX, sizeX, gridRight) > penetration){
-						penetration = getTilePenetrationRight(posX, sizeX, gridRight);
+			if ((tmpTile->tileType == SOLID || tmpTile->tileType == SOLID_GRASS || tmpTile->tileType == SOLID_FLOOR || tmpTile->tileType == HAZARD_SPIKE_HORIZONTAL) && tmpTile->canCollide){
+				if (tileCollisionRight(posX, sizeX, entity->getSizeNegative().x / 2, gridRight, tmpTile->x, tmpTile->width)){
+					if (getTilePenetrationRight(posX, sizeX, gridRight, tmpTile->x, tmpTile->width) > penetration){
+						penetration = getTilePenetrationRight(posX, sizeX, gridRight, tmpTile->x, tmpTile->width);
 					}
 				}
 			}
@@ -332,6 +363,15 @@ void GameEngine::resolveYCollisions(CompositeEntity* entity){
 				accY = 0;
 				entity->setState(FALLING);
 			}
+			else if (penetrationDown > 0 && penetrationUp > 0){
+				if (entity->getEntityType() == PLAYER_PROJECTILE){
+					entity->destroy();
+					return;
+				}
+				posY += penetrationDown;
+				entity->setOnTileGround(true);
+				accY = 0;
+			}
 			else{
 				entity->setOnTileGround(false);
 			}
@@ -343,12 +383,12 @@ void GameEngine::resolveYCollisions(CompositeEntity* entity){
 }
 
 void GameEngine::resolveXCollisions(CompositeEntity* entity){
-	float posX = entity->getPosition().x;
-	float velX = entity->getVelocity().x;
-	float accX = entity->getAcceleration().x;
-	float penetrationLeft = checkLeftTileCollisions(entity);
-	float penetrationRight = checkRightTileCollisions(entity);
 	if (entity->getIsActive()){
+		float posX = entity->getPosition().x;
+		float velX = entity->getVelocity().x;
+		float accX = entity->getAcceleration().x;
+		float penetrationLeft = checkLeftTileCollisions(entity);
+		float penetrationRight = checkRightTileCollisions(entity);
 		if (penetrationRight <= 0 && penetrationLeft > 0){
 			if (entity->getEntityType() == PLAYER_PROJECTILE){
 				entity->destroy();
@@ -368,15 +408,33 @@ void GameEngine::resolveXCollisions(CompositeEntity* entity){
 			velX = entity->getEntityType() == ACTOR_ENEMY_PATROL_TURN ? -velX : 0;
 			accX = 0;
 		}
+		entity->setPosition(posX, entity->getPosition().y);
+		entity->setVelocity(velX, entity->getVelocity().y);
+		entity->setAcceleration(accX, entity->getAcceleration().y);
 	}
-	entity->setPosition(posX, entity->getPosition().y);
-	entity->setVelocity(velX, entity->getVelocity().y);
-	entity->setAcceleration(accX, entity->getAcceleration().y);
+}
+
+void GameEngine::resolveXYCollision(CompositeEntity* entity){
+	if (entity->getPosition().y - entity->getSizeNegative().y / 2 <= -(int)(mapHeight)){
+		entity->setIsActive(false);
+	}
+	else{
+		float posX = entity->getPosition().x;
+		float velX = entity->getVelocity().x;
+		float accX = entity->getAcceleration().x;
+		float posY = entity->getPosition().y;
+		float velY = entity->getVelocity().y;
+		float accY = entity->getAcceleration().y;
+		
+	}
 }
 
 void GameEngine::checkTileCollisions(){
 	//Using layer, get value of the tile that the evaluated entity is currently touching
 	//for (size_t i = 0; i < gameEntities[currentLevel].size(); i++){
+	if (currentLevel == "level_02"){
+		int x = 5;
+	}
 	for (unordered_map<unsigned, vector<CompositeEntity*>>::iterator itr = gameEntities[currentLevel].begin(); itr != gameEntities[currentLevel].end(); itr++){
 		for (CompositeEntity* entity : itr->second){
 			if (entity->getIsActive() && entity->getCanCollide() && entity->getState() != DESTROYING){
@@ -392,24 +450,46 @@ void GameEngine::handleInput(const Uint8* input, SDL_Event input2){
 		gameState = GAME_QUIT;
 	}
 
+	if (input[SDL_SCANCODE_1]){
+		if (gameState == GAME_PLAY){
+			setLevel("level_01");
+		}
+	}
+
+	if (input[SDL_SCANCODE_2]){
+		if (gameState == GAME_PLAY){
+			setLevel("level_02");
+		}
+	}
+
+	if (input[SDL_SCANCODE_3]){
+		if (gameState == GAME_PLAY){
+			setLevel("level_03");
+		}
+	}
+
 	if (input[SDL_SCANCODE_LEFT] && !input[SDL_SCANCODE_RIGHT]){
 		if (playerEntity->getIsActive()){
+			playerEntity->setDoMirror(true);
+			playerEntity->setOverrideMirroring(true);
 			if (playerEntity->getVelocity().x <= -playerEntity->getTopSpeed()){
 				playerEntity->setAcceleration(0, playerEntity->getAcceleration().y);
 				playerEntity->setVelocity(-playerEntity->getTopSpeed(), playerEntity->getVelocity().y);
 			}
-			else if (playerEntity->getVelocity().x > 0 && playerEntity->getVelocity().x < 5){
+			else if (playerEntity->getVelocity().x > 0 && playerEntity->getVelocity().x < 10){
 				playerEntity->setVelocity(0, playerEntity->getVelocity().y);
 				playerEntity->setAcceleration(-PLAYER_ACCELERATION, playerEntity->getAcceleration().y);
 			}
 			else{
-				playerEntity->setAcceleration(-PLAYER_ACCELERATION, playerEntity->getAcceleration().y);
+				playerEntity->setAcceleration(-PLAYER_ACCELERATION * 5, playerEntity->getAcceleration().y);
 			}
 		}
 	}
 
 	if (input[SDL_SCANCODE_RIGHT] && !input[SDL_SCANCODE_LEFT]){
 		if (playerEntity->getIsActive()){
+			playerEntity->setDoMirror(false);
+			playerEntity->setOverrideMirroring(true);
 			if (playerEntity->getVelocity().x >= playerEntity->getTopSpeed()){
 				playerEntity->setAcceleration(0, playerEntity->getAcceleration().y);
 				playerEntity->setVelocity(playerEntity->getTopSpeed(), playerEntity->getVelocity().y);
@@ -419,14 +499,15 @@ void GameEngine::handleInput(const Uint8* input, SDL_Event input2){
 				playerEntity->setAcceleration(PLAYER_ACCELERATION, playerEntity->getAcceleration().y);
 			}
 			else{
-				playerEntity->setAcceleration(PLAYER_ACCELERATION, playerEntity->getAcceleration().y);
+				playerEntity->setAcceleration(PLAYER_ACCELERATION * 5, playerEntity->getAcceleration().y);
 			}
 		}
 	}
 
 	if (!input[SDL_SCANCODE_LEFT] && !input[SDL_SCANCODE_RIGHT]){
 		if (playerEntity->getIsActive()){
-			if (!playerEntity->atScreenBoundary(mapWidth, mapHeight)){
+			playerEntity->setOverrideMirroring(false);
+			if (!playerEntity->atScreenBoundary(0, mapWidth, -(int)(mapHeight), 0)){
 				if (abs(playerEntity->getVelocity().x) >= 5){
 					if (playerEntity->getVelocity().x > 0){
 						playerEntity->setAcceleration(-PLAYER_ACCELERATION, playerEntity->getAcceleration().y);
@@ -451,6 +532,8 @@ void GameEngine::handleInput(const Uint8* input, SDL_Event input2){
 			}
 		}
 	}
+
+	downPressed = input[SDL_SCANCODE_DOWN];
 
 	if (input[SDL_SCANCODE_UP]){
 		if (gameState == GAME_PLAY && playerEntity->getIsActive()){
@@ -568,8 +651,8 @@ void GameEngine::update(float elapsed, ShaderProgram* program){
 		for (CompositeEntity* entity : itr->second){
 			if (entity->getIsActive()){
 				entity->move(elapsed, GRAVITY);
-				if (entity->atScreenBoundary(mapWidth, mapHeight)){
-					entity->boundaryAction(mapWidth, mapHeight);
+				if (entity->atScreenBoundary(0, mapWidth, -(int)(mapHeight), 0)){
+					entity->boundaryAction(0, mapWidth, -(int)(mapHeight), 0);
 				}
 				CompositeEntity* lastProjectile = gameEntities[currentLevel][ENEMY_PROJECTILE].size() != 0 ? gameEntities[currentLevel][ENEMY_PROJECTILE][gameEntities[currentLevel][ENEMY_PROJECTILE].size() - 1] : nullptr;
 				CompositeEntity* projectile = entity->getIsActive() ? entity->logic(playerEntity, lastProjectile) : nullptr;
@@ -604,7 +687,7 @@ void GameEngine::update(float elapsed, ShaderProgram* program){
 
 	if (gameState == GAME_PLAY){
 		for (CompositeEntity* entity : gameEntities[currentLevel][ACTOR_ENEMY]){
-			if (entity->getIsActive() && entity->atScreenBoundary(mapWidth, mapHeight)){
+			if (entity->getIsActive() && entity->atScreenBoundary(0, mapWidth, -(int)(mapHeight), 0)){
 				float moveX = entity->getPosition().x > 0 ? -0.02 : 0.02;
 				moveAll(ACTOR_ENEMY, moveX, -0.125);
 				turnAll(ACTOR_ENEMY, true, false);
@@ -646,6 +729,7 @@ void GameEngine::update(float elapsed, ShaderProgram* program){
 	}
 
 	gameOver = gameState == GAME_QUIT;
+	checkIfShouldWarp();
 }
 
 void GameEngine::changeTitleSelection(){
@@ -672,6 +756,38 @@ void GameEngine::changeTitleSelection(){
 		}
 }
 
+void GameEngine::deActivateLevelEntities(){
+	for (unordered_map<unsigned, vector<CompositeEntity*>>::iterator itr = gameEntities[currentLevel].begin(); itr != gameEntities[currentLevel].end(); itr++){
+		for (CompositeEntity* entity : itr->second){
+			entity->reset();
+			if (entity->getEntityType() != POINTS_INDICATOR){
+				entity->setIsActive(false);
+			}
+		}
+	}
+}
+
+void GameEngine::activateLevelEntities(){
+	for (unordered_map<unsigned, vector<CompositeEntity*>>::iterator itr = gameEntities[currentLevel].begin(); itr != gameEntities[currentLevel].end(); itr++){
+		for (CompositeEntity* entity : itr->second){
+			if (entity != nullptr){
+				entity->reset();
+				if (entity->getEntityType() != ACTOR_PLAYER && entity->getEntityType() != ACTOR_ENEMY && entity->getEntityType() != GAME_TEXT_ENTITY && entity->getEntityType() != ICON_ENTITY && entity->getEntityType() != POINTS_INDICATOR && entity->getEntityType() != LIFE_ICON_ENTITY && entity->getEntityType() != STATIC_ENTITY && entity->getEntityType() != ACTOR_ENEMY_PATROL_TURN && entity->getEntityType() != ENTITY_COIN){
+					entity->setIsActive(false);
+				}
+				else{
+					entity->setIsActive(true);
+					entity->setAllRender(true);
+					if (entity->getEntityType() == POINTS_INDICATOR){
+						entity->setDisplayText(entity->getDisplayText() + ' ' + to_string(points));
+					}
+					entity->updateBounding();
+				}
+			}
+		}
+	}
+}
+
 void GameEngine::changeState(unsigned state){
 	switch (state){
 	case TITLE_SCREEN:
@@ -688,7 +804,7 @@ void GameEngine::changeState(unsigned state){
 		for (unordered_map<unsigned, vector<CompositeEntity*>>::iterator itr = gameEntities[currentLevel].begin(); itr != gameEntities[currentLevel].end(); itr++){
 			for (CompositeEntity* entity : itr->second){
 				if (entity != nullptr){
-					if (entity->getEntityType() != ACTOR_PLAYER && entity->getEntityType() != ACTOR_ENEMY && entity->getEntityType() != GAME_TEXT_ENTITY && entity->getEntityType() != ICON_ENTITY && entity->getEntityType() != POINTS_INDICATOR && entity->getEntityType() != LIFE_ICON_ENTITY && entity->getEntityType() != STATIC_ENTITY && entity->getEntityType() != ACTOR_ENEMY_PATROL_TURN && entity->getEntityType() != ENTITY_COIN){
+					if (entity->getEntityType() != ACTOR_PLAYER && entity->getEntityType() != ACTOR_ENEMY && entity->getEntityType() != GAME_TEXT_ENTITY && entity->getEntityType() != ICON_ENTITY && entity->getEntityType() != POINTS_INDICATOR && entity->getEntityType() != LIFE_ICON_ENTITY && entity->getEntityType() != STATIC_ENTITY && entity->getEntityType() != ACTOR_ENEMY_PATROL_TURN && entity->getEntityType() != ENTITY_COIN && entity->getEntityType() != WARP_ENTITY){
 						entity->setIsActive(false);
 					}
 					else{
@@ -740,5 +856,12 @@ bool GameEngine::getGameOver(){
 
 void GameEngine::start(){
 	changeState(TITLE_SCREEN);
-	currentLevel = backGroundTextures.begin()->first;
+}
+
+void GameEngine::checkIfShouldWarp(){
+	for (CompositeEntity* entity : gameEntities[currentLevel][WARP_ENTITY]){
+		if (playerEntity->isColliding(entity)){
+			setLevel(entity->getWarpDestination());
+		}
+	}
 }

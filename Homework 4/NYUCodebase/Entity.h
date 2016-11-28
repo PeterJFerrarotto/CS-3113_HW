@@ -96,6 +96,7 @@ public:
 
 	void blink();
 	void blinkAll();
+	void setAllDoRender(bool doRender);
 
 	void updateBounding(float scaleX, float scaleY, float scaleZ);
 

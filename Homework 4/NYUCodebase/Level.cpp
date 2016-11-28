@@ -4,6 +4,8 @@
 using namespace std;
 using namespace rapidxml;
 
+std::unordered_map<GLuint, std::unordered_map<unsigned, Tile*>> Level::collisionData = {};
+
 Level::Level()
 {
 }
@@ -45,6 +47,9 @@ bool Level::readHeader(const char* levelName, std::ifstream &stream) {
 		else if (key == "tileheight"){
 			tileHeight = atoi(value.c_str());
 		}
+	}
+	if (tileWidth == tileHeight){
+		tileSize = tileWidth;
 	}
 	return mapWidth != -1 && mapHeight != -1;
 }
@@ -158,10 +163,10 @@ void Level::setTileSize(float tileSize){
 
 Tile* Level::getTile(unsigned layer, int gridX, int gridY){
 	unsigned char tileIndex = levelData[layer][gridY][gridX];
-	if (collisionData.find(tileIndex) == collisionData.end() || tileIndex == 0){
+	if (collisionData[tileSet].find(tileIndex) == collisionData[tileSet].end() || tileIndex == 0){
 		return nullptr;
 	}
-	return collisionData[tileIndex - 1];
+	return collisionData[tileSet][tileIndex - 1];
 }
 
 float Level::getTileSize(){
@@ -184,17 +189,17 @@ void Level::fillCollisionData(xml_node<>* tileNode){
 	static const char* trueCheck = "true";
 	static const char* typeCheck = "tileType";
 	unsigned tileIndex = stoi(tileNode->first_attribute("id")->value());
+	if (collisionData[tileSet].find(tileIndex) != collisionData[tileSet].end()){
+		return;
+	}
 	float x = 0, y = 0;
-	float width = 0, height = 0;
+	float width = tileSize, height = tileSize;
 	bool canCollide = false;
 	TILE_TYPE tileType = SOLID;
+	//Note: ALWAYS add properties in the tile properties, not in the collision edit dialogue box!
 	xml_node<>* propertyNode = tileNode->first_node("properties");
 	if (propertyNode == nullptr){
-		//If properties added using Tiled's "Edit Tile Collision" tool, they will be contained within an "object" tag
-		propertyNode = tileNode->first_node()->first_node("properties");
-		if (propertyNode == nullptr){
-			throw "Properties not found!";
-		}
+		throw "No properties for tilesheet!";
 	}
 	propertyNode = propertyNode->first_node("property");
 	do{
@@ -209,25 +214,36 @@ void Level::fillCollisionData(xml_node<>* tileNode){
 		}
 		propertyNode = propertyNode->next_sibling("property");
 	} while (propertyNode != nullptr);
+	xml_node<>* objectNode = tileNode->first_node("objectgroup");
+	if (objectNode != nullptr){
+		if ((objectNode = objectNode->first_node("object")) != nullptr){
+			if (objectNode->first_attribute("x") != nullptr){
+				x = stof(objectNode->first_attribute("x")->value());
+			}
 
-	xml_node<>* objectNode = tileNode->first_node();
-	if (objectNode->first_node("object") != nullptr){
-		objectNode = objectNode->first_node("object");
-		x = stof(objectNode->first_attribute("x")->value());
-		y = stof(objectNode->first_attribute("y")->value());
-		width = stof(objectNode->first_attribute("width")->value());
-		height = stof(objectNode->first_attribute("height")->value());
+			if (objectNode->first_attribute("y") != nullptr){
+				y = stof(objectNode->first_attribute("y")->value());
+			}
+
+			if (objectNode->first_attribute("width") != nullptr){
+				width = stof(objectNode->first_attribute("width")->value());
+			}
+
+			if (objectNode->first_attribute("height") != nullptr){
+				width = stof(objectNode->first_attribute("height")->value());
+			}
+		}
 	}
-	if (collisionData.find(tileIndex) != collisionData.end()){
+	if (collisionData[tileSet].find(tileIndex) != collisionData[tileSet].end()){
 		throw "Repeated tile index!";
 	}
-	collisionData[tileIndex] = new Tile();
-	collisionData[tileIndex]->height = height;
-	collisionData[tileIndex]->width = width;
-	collisionData[tileIndex]->x = x;
-	collisionData[tileIndex]->y = y;
-	collisionData[tileIndex]->canCollide = canCollide;
-	collisionData[tileIndex]->tileType = tileType;
+	collisionData[tileSet][tileIndex] = new Tile();
+	collisionData[tileSet][tileIndex]->height = height;
+	collisionData[tileSet][tileIndex]->width = width;
+	collisionData[tileSet][tileIndex]->x = x;
+	collisionData[tileSet][tileIndex]->y = y;
+	collisionData[tileSet][tileIndex]->canCollide = canCollide;
+	collisionData[tileSet][tileIndex]->tileType = tileType;
 	fillCollisionData(tileNode->next_sibling());
 }
 
@@ -244,4 +260,12 @@ void Level::fillSpriteSheetData(xml_node<>* tileNode){
 	}
 	fillCollisionData(tileNode);
 	fillVertexArrays();
+}
+
+void Level::setPlayerEntity(CompositeEntity* playerEntity){
+	this->playerEntity = playerEntity;
+}
+
+CompositeEntity* Level::getPlayerEntity(){
+	return playerEntity;
 }

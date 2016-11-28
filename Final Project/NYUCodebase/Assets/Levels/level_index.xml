@@ -1,0 +1,5 @@
+<Levels>
+  <Level id="level_01" spriteSheet="arne_sprites" startingLevel="1"></Level>
+  <Level id="level_02" spriteSheet="arne_sprites" startingLevel="0"></Level>
+  <Level id="level_03" spriteSheet="ripped_starbound_sprites_solid_floor" startingLevel="0"></Level>
+</Levels>

@@ -261,6 +261,9 @@ void CompositeEntity::setState(STATE state){
 		case DESTROYING:
 			changeAnimation(ANIMATION_DESTROY);
 			break;
+		case DEACTIVATING:
+			changeAnimation(ANIMATION_DEACTIVATE);
+			break;
 		default:
 			changeAnimation(ANIMATION_IDLE);
 			break;
@@ -308,7 +311,13 @@ void CompositeEntity::setOnTileGround(bool onTileGround){
 	this->onTileGround = onTileGround;
 }
 
+void CompositeEntity::setDoMirror(bool doMirror){
+	this->doMirror = doMirror;
+}
 
+void CompositeEntity::setOverrideMirroring(bool overrideMirroring){
+	this->overrideMirroring = overrideMirroring;
+}
 
 void CompositeEntity::reset(){
 	onTileGround = false;
@@ -355,6 +364,12 @@ void CompositeEntity::updateBounding(){
 		if (checking->getChild() != nullptr){
 			updateBoundingRecurse(checking->getChild(), checking->getPosition().x, checking->getPosition().y, checking->getPosition().z);
 		}
+	}
+	if (type == WARP_ENTITY){
+		sizePositive.x = 8;
+		sizePositive.y = 8;
+		sizePositive.z = 0;
+		sizeNegative = sizePositive;
 	}
 }
 
@@ -506,13 +521,13 @@ bool CompositeEntity::subEntitiesColliding(Entity* firstOfThis, Entity* firstOfT
 	return false;
 }
 
-bool CompositeEntity::atScreenBoundary(float gameWall, float gameCeiling){
-	bool atBoundary = (position.x + sizePositive.x/2 >= gameWall || position.x - sizeNegative.x/2 <= - gameWall || position.y + sizePositive.y/2 >= gameCeiling || position.y - sizeNegative.y/2 <= -gameCeiling);
+bool CompositeEntity::atScreenBoundary(float gameWallLeft, float gameWallRight, float gameFloor, float gameCeiling){
+	bool atBoundary = (position.x + sizePositive.x/2 >= gameWallRight || position.x - sizeNegative.x/2 <= gameWallLeft || position.y + sizePositive.y/2 >= gameCeiling || position.y - sizeNegative.y/2 <= gameFloor);
 	if (atBoundary){
-		boundaryLeft = position.x - sizeNegative.x/2 <= 0;
-		boundaryRight = position.x + sizePositive.x/2 >= gameWall;
-		boundaryTop = position.y + sizePositive.y/2 >= gameWall;
-		boundaryBottom = position.y - sizeNegative.y/2 <= -gameWall;
+		boundaryLeft = position.x - sizeNegative.x/2 <= gameWallLeft;
+		boundaryRight = position.x + sizePositive.x / 2 >= gameWallRight;
+		boundaryTop = position.y + sizePositive.y/2 >= gameCeiling;
+		boundaryBottom = position.y - sizeNegative.y/2 <= gameFloor;
 	}
 	else{
 		boundaryLeft = false;
@@ -536,7 +551,7 @@ bool CompositeEntity::isColliding(CompositeEntity* collidingWith){
 				position.x - sizeNegative.x/2 > collidingWith->position.x + collidingWith->sizePositive.x/2 || 
 				position.y + sizePositive.y/2 < collidingWith->position.y - collidingWith->sizeNegative.y/2 || 
 				position.y - sizeNegative.y/2 > collidingWith->position.y + collidingWith->sizePositive.y/2)){
-				bool isColliding = subEntitiesColliding(first, collidingWith->first, collidingWith->first, collidingWith);
+				bool isColliding = (this->first == nullptr || collidingWith->first == nullptr) || subEntitiesColliding(first, collidingWith->first, collidingWith->first, collidingWith);
 				if (isColliding){
 					collideLeft = position.x - sizeNegative.x/2 >= collidingWith->position.x - collidingWith->sizeNegative.x/2;
 					staticCollideLeft = collideLeft && collidingWith->getEntityType() == STATIC_ENTITY;
@@ -594,7 +609,7 @@ bool CompositeEntity::isColliding(CompositeEntity* collidingWith){
 
 void CompositeEntity::move(float elapsed, float gravity, float frictionX, float frictionY){
 	resetFlags();
-	if (type != STATIC_ENTITY && isActive && state != DESTROYING){
+	if (type != STATIC_ENTITY && isActive && state != DESTROYING && state != DEACTIVATING){
 
 		velocity.x = lerp(velocity.x, 0.0f, elapsed * frictionX);
 		velocity.y = lerp(velocity.y, 0.0f, elapsed * frictionY);
@@ -611,7 +626,10 @@ void CompositeEntity::move(float elapsed, float gravity, float frictionX, float 
 			velocity.y += gravity * elapsed;
 		}
 		rotation += rotationalVelocity * elapsed;
-		doMirror = velocity.x < 0 || (velocity.x == 0 && doMirror);
+		doMirror = doMirror;
+		if (!overrideMirroring){
+			doMirror = velocity.x < 0 || (velocity.x == 0 && doMirror);
+		}
 	
 		
 		if (first != nullptr){
@@ -635,6 +653,10 @@ void CompositeEntity::move(float elapsed, float gravity, float frictionX, float 
 	}
 	else if (state == DESTROYING && first->animationComplete(ANIMATION_DESTROY)){
 		doDelete = true;
+	}
+	else if (state == DEACTIVATING && first->animationComplete(ANIMATION_DEACTIVATE)){
+		state = IDLE;
+		isActive = false;
 	}
 }
 
@@ -688,6 +710,8 @@ void CompositeEntity::draw(ShaderProgram* program, Matrix matrix, float elapsed,
 	case TITLE_TEXT_ENTITY:
 	case POINTS_INDICATOR:
 		drawText(program, matrix, elapsed, fps);
+		break;
+	case WARP_ENTITY:
 		break;
 	default:
 		transformMatrix();
@@ -750,22 +774,27 @@ void CompositeEntity::destroy(){
 }
 
 void CompositeEntity::deActivate(){
-	isActive = false;
+	if (first->getIsAnimated() && first->hasAnimation(ANIMATION_DEACTIVATE)){
+		setState(DEACTIVATING);
+	}
+	else{
+		isActive = false;
+	}
 }
 
 
-void CompositeEntity::boundaryStop(float gameWall, float gameCeiling){
+void CompositeEntity::boundaryStop(float gameWallLeft, float gameWallRight, float gameFloor, float gameCeiling){
 	if ((boundaryLeft && velocity.x < 0) || (boundaryRight && velocity.x > 0)){
 		velocity.x = 0;
 		acceleration.x = 0;
 
 
-		if (boundaryLeft && position.x - sizeNegative.x/2 != 0){
-			position.x = 0 + sizePositive.x/2;
+		if (boundaryLeft && position.x - sizeNegative.x/2 != gameWallLeft){
+			position.x = gameWallLeft + sizePositive.x/2;
 		}
 
-		if (boundaryRight && position.x + sizePositive.x/2 != gameWall){
-			position.x = gameWall - sizeNegative.x/2;
+		if (boundaryRight && position.x + sizePositive.x/2 != gameWallRight){
+			position.x = gameWallRight - sizeNegative.x/2;
 		}
 	}
 
@@ -774,29 +803,46 @@ void CompositeEntity::boundaryStop(float gameWall, float gameCeiling){
 		acceleration.y = 0;
 	}
 
-	if (boundaryBottom && position.y - sizeNegative.y/2 != -gameWall){
-		position.y = -gameWall + sizePositive.y/2;
+	if (boundaryBottom && position.y - sizeNegative.y/2 != gameFloor){
+		position.y = gameFloor + sizePositive.y/2;
 	}
 
-	if (boundaryTop && position.y + sizePositive.y/2 != gameWall){
-		position.y = -gameWall + sizePositive.y/2;
+	if (boundaryTop && position.y + sizePositive.y/2 != gameCeiling){
+		position.y = gameCeiling + sizePositive.y/2;
 	}
 	setState(STATIONARY);
 }
 
-void CompositeEntity::boundaryTurn(float gameWall, float gameCeiling){
+void CompositeEntity::boundaryStopAtWall(float gameWallLeft, float gameWallRight){
+	if ((boundaryLeft && velocity.x < 0) || (boundaryRight && velocity.x > 0)){
+		velocity.x = 0;
+		acceleration.x = 0;
+
+
+		if (boundaryLeft && position.x - sizeNegative.x / 2 != gameWallLeft){
+			position.x = gameWallLeft + sizePositive.x / 2;
+		}
+
+		if (boundaryRight && position.x + sizePositive.x / 2 != gameWallRight){
+			position.x = gameWallRight - sizeNegative.x / 2;
+		}
+	}
+	setState(STATIONARY);
+}
+
+void CompositeEntity::boundaryTurn(float gameWallLeft, float gameWallRight, float gameFloor, float gameCeiling){
 	if (boundaryLeft || boundaryRight){
 		velocity.x = -velocity.x;
 		acceleration.x = -acceleration.x;
 	}
 
-	if (boundaryLeft && position.x - sizeNegative.x/2 != -gameWall){
-		position.x = -gameWall + sizePositive.x/2 + 0.01;
+	if (boundaryLeft && position.x - sizeNegative.x/2 != gameWallLeft){
+		position.x = gameWallLeft + sizePositive.x / 2 + 0.01;
 		boundaryLeft = false;
 	}
 
-	if (boundaryRight && position.x + sizePositive.x/2 != gameWall){
-		position.x = gameWall - sizeNegative.x/2 - 0.01;
+	if (boundaryRight && position.x + sizePositive.x/2 != gameWallRight){
+		position.x = gameWallRight - sizeNegative.x / 2 - 0.01;
 		boundaryRight = false;
 	}
 
@@ -805,13 +851,13 @@ void CompositeEntity::boundaryTurn(float gameWall, float gameCeiling){
 		acceleration.y = -acceleration.y;
 	}
 
-	if (boundaryBottom && position.y - sizeNegative.y/2 != -gameWall){
-		position.y = -gameWall + sizePositive.y/2 + 0.01;
+	if (boundaryBottom && position.y - sizeNegative.y/2 != gameFloor){
+		position.y = gameFloor + sizePositive.y/2 + 0.01;
 		boundaryBottom = false;
 	}
 
-	if (boundaryTop && position.y + sizePositive.y/2 != gameWall){
-		position.y = gameWall - sizeNegative.y/2 - 0.01;
+	if (boundaryTop && position.y + sizePositive.y/2 != gameCeiling){
+		position.y = gameCeiling - sizeNegative.y / 2 - 0.01;
 		boundaryTop = false;
 	}
 }
@@ -838,6 +884,7 @@ void CompositeEntity::collide(float elapsed, CompositeEntity* bouncingOffOf, COL
 		}
 		break;
 	case NOTHING:
+	case WARP:
 		break;
 	case COLLISION_BEHAVIOR_SIZE:
 		collide(elapsed, bouncingOffOf, this->collisionBehavior);
@@ -910,15 +957,15 @@ void CompositeEntity::transformMatrix(){
 }
 
 //Throws exception if boundary behavior unrecognized
-void CompositeEntity::boundaryAction(float gameWall, float gameCeiling){
+void CompositeEntity::boundaryAction(float gameWallLeft, float gameWallRight, float gameFloor, float gameCeiling){
 	switch (boundaryBehavior){
 	case BOUND_BOUNCE:
 		break;
 	case BOUND_TURN:
-		boundaryTurn(gameWall, gameCeiling);
+		boundaryTurn(gameWallLeft, gameWallRight, gameFloor, gameCeiling);
 		break;
 	case BOUND_STOP:
-		boundaryStop(gameWall, gameCeiling);
+		boundaryStop(gameWallLeft, gameWallRight, gameFloor, gameCeiling);
 		break;
 	case BOUND_DESTROY:
 		destroy();
@@ -929,6 +976,9 @@ void CompositeEntity::boundaryAction(float gameWall, float gameCeiling){
 	//case BOUND_TURN_AND_DOWN:
 	//	boundaryTurnAndDown(gameWall, gameCeiling);
 	//	break;
+	case BOUND_STOP_X:
+		boundaryStopAtWall(gameWallLeft, gameWallRight);
+		break;
 	case BOUND_NOTHING:
 		break;
 	default:
@@ -942,7 +992,15 @@ float CompositeEntity::lerp(float v0, float v1, float t){
 }
 
 void CompositeEntity::blink(){
-	first->blinkAll();
+	if (first != nullptr){
+		first->blinkAll();
+	}
+}
+
+void CompositeEntity::setAllRender(bool doRender){
+	if (first != nullptr){
+		first->setAllDoRender(doRender);
+	}
 }
 
 CompositeEntity* CompositeEntity::fire(){
@@ -1092,4 +1150,12 @@ void CompositeEntity::checkPoint(){
 
 void CompositeEntity::resetToCheckpoint(){
 	position = checkPointPosition;
+}
+
+void CompositeEntity::setWarpDestination(const std::string& warpDestination){
+	this->warpLevelDestination = warpDestination;
+}
+
+const std::string& CompositeEntity::getWarpDestination(){
+	return warpLevelDestination;
 }
