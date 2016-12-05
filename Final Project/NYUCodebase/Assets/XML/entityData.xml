@@ -96,6 +96,32 @@
       <topSpeed>75</topSpeed>
       <Layer>1</Layer>
       <jumpSpeed>100</jumpSpeed>
+      <ParticleEmitters>
+        <Emitter>
+          <emitterType>2</emitterType>
+          <maxLifeTime>0.125</maxLifeTime>
+          <startSize>8</startSize>
+          <endSize>10</endSize>
+          <startColor r="1.0" b="1.0" g="1.0" a="0.8"></startColor>
+          <endColor r="1.0" b="1.0" g="1.0" a="0.0"></endColor>
+          <maximumParticleCount>4</maximumParticleCount>
+          <Position x="0" y="-1.0" z="0"></Position>
+          <velocityDeviation x="20" y="10" z="0"></velocityDeviation>
+          <Texture type="0" layer="3">
+            <Image Directory="Assets/Textures/" imageName="whitePuff00.png"></Image>
+          </Texture>
+        </Emitter>
+      </ParticleEmitters>
+      <CollisionSounds>
+        <Sound directory="Assets/Sounds/" fileName="land_on_ground.wav" direction="1" collisionStrength="2" soundType="0"></Sound>
+        <Sound directory="Assets/Sounds/" fileName="land_on_ground_soft.wav" direction="1" collisionStrength="0" soundType="0"></Sound>
+        <Sound directory="Assets/Sounds/" fileName="land_on_ground_soft.wav" direction="1" collisionStrength="1" soundType="0"></Sound>
+      </CollisionSounds>
+      <TriggerSounds>
+        <Sound directory="Assets/Sounds/" fileName="jump.wav" soundType="2" soundTrigger="0"></Sound>
+        <Sound directory="Assets/Sounds/" fileName="jump.wav" soundType="2" soundTrigger="7"></Sound>
+        <Sound directory="Assets/Sounds/" fileName="gun_fire_once.wav" soundType="2" soundTrigger="4"></Sound>
+      </TriggerSounds>
     </Details>
     <Projectile>
       <Animations>
@@ -110,6 +136,9 @@
           </Texture>
         </Animation>
       </Animations>
+      <TriggerSounds>
+        <Sound directory="Assets/Sounds/" fileName="projectile_destruction.wav" soundType="2" soundTrigger="1"></Sound>
+      </TriggerSounds>
     </Projectile>
   </Entity>
   <Entity>
@@ -283,6 +312,9 @@
       <isActive>1</isActive>
       <rotationalVelocity>0</rotationalVelocity>
       <Scale x="16" y="16" z="1"></Scale>
+      <TriggerSounds>
+        <Sound directory="Assets/Sounds/" fileName="coin_pickup.wav" soundType="2" soundTrigger="2"></Sound>
+      </TriggerSounds>
     </Details>
   </Entity>
   <Entity>

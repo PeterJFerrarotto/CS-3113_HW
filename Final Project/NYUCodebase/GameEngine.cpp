@@ -3,6 +3,7 @@
 #include "CollisionListener.h"
 #include "Texture.h"
 #include "Entity.h"
+#include "mathHelper.h"
 #include "Level.h"
 #include "Tile.h"
 #include "ShaderProgram.h"
@@ -48,6 +49,22 @@ void GameEngine::render(ShaderProgram* program, float elapsed, float fps){
 		viewMatrix.Translate(0, 16, 0);
 		uIMatrix.Translate(0, -32, 0);
 	}
+	if (shakeScreen && shakeCount < maximumScreenShakes){
+		screenShakeValue += elapsed;
+		screenShakeIntensity = 5;
+		shakeCount++;
+	}
+	else{
+		shakeCount = 0;
+		shakeScreen = false;
+		screenShakeValue += elapsed;
+		screenShakeIntensity = easeOut(screenShakeIntensity, 0, elapsed);
+		if (screenShakeIntensity <= 0.001){
+			screenShakeIntensity = 0;
+		}
+	}
+
+	viewMatrix.Translate(0.0f, sin(screenShakeValue * screenShakeSpeed) * screenShakeIntensity, 0.0f);
 
 	program->setViewMatrix(viewMatrix);
 	Level* lvl = levels[currentLevel];
@@ -352,16 +369,27 @@ void GameEngine::resolveYCollisions(CompositeEntity* entity){
 			float velY = ((penetrationUp <= 0 && penetrationDown > 0) || (penetrationDown <= 0 && penetrationUp > 0)) ? 0 : entity->getVelocity().y;
 			if (penetrationUp <= 0 && penetrationDown > 0){
 				if (entity->getEntityType() == PLAYER_PROJECTILE){
-					entity->destroy();
+					entity->destroy(true, true);
 					return;
 				}
 				posY += penetrationDown;
 				entity->setOnTileGround(true);
+				if (entity->getVelocity().y > -entity->getJumpSpeed() / 2 && entity->getVelocity().y <= -5 && entity->getJumpSpeed() != 0){
+					entity->playCollisionSound(DOWN, WEAK);
+				}
+				else if ((entity->getVelocity().y > -entity->getJumpSpeed() && entity->getVelocity().y <= -entity->getJumpSpeed() / 2) && entity->getJumpSpeed() != 0){
+					entity->playCollisionSound(DOWN, MEDIUM);
+				}
+				else if (entity->getVelocity().y <= -entity->getJumpSpeed() && entity->getJumpSpeed() != 0){
+					entity->hardCollision(DOWN, 4);
+					shakeScreen = true;
+					shakeCount = 0;
+				}
 				accY = 0;
 			}
 			else if (penetrationDown <= 0 && penetrationUp > 0){
 				if (entity->getEntityType() == PLAYER_PROJECTILE){
-					entity->destroy();
+					entity->destroy(true, true);
 					return;
 				}
 				posY -= penetrationUp;
@@ -371,10 +399,22 @@ void GameEngine::resolveYCollisions(CompositeEntity* entity){
 			}
 			else if (penetrationDown > 0 && penetrationUp > 0){
 				if (entity->getEntityType() == PLAYER_PROJECTILE){
-					entity->destroy();
+					entity->destroy(true, true);
 					return;
 				}
 				posY += penetrationDown;
+				entity->setOnTileGround(true);
+				if (entity->getVelocity().y > -entity->getJumpSpeed() / 2 && entity->getVelocity().y <= -5 && entity->getJumpSpeed() != 0){
+					entity->playCollisionSound(DOWN, WEAK);
+				}
+				else if ((entity->getVelocity().y > -entity->getJumpSpeed() && entity->getVelocity().y <= -entity->getJumpSpeed() / 2) && entity->getJumpSpeed() != 0){
+					entity->playCollisionSound(DOWN, MEDIUM);
+				}
+				else if (entity->getVelocity().y <= -entity->getJumpSpeed() && entity->getJumpSpeed() != 0){
+					entity->hardCollision(DOWN, 4);
+					shakeScreen = true;
+					shakeCount = 0;
+				}
 				entity->setOnTileGround(true);
 				accY = 0;
 			}
@@ -397,7 +437,7 @@ void GameEngine::resolveXCollisions(CompositeEntity* entity){
 		float penetrationRight = checkRightTileCollisions(entity);
 		if (penetrationRight <= 0 && penetrationLeft > 0){
 			if (entity->getEntityType() == PLAYER_PROJECTILE){
-				entity->destroy();
+				entity->destroy(true, true);
 				return;
 			}
 			posX += penetrationLeft;
@@ -407,7 +447,7 @@ void GameEngine::resolveXCollisions(CompositeEntity* entity){
 		}
 		else if (penetrationLeft <= 0 && penetrationRight > 0){
 			if (entity->getEntityType() == PLAYER_PROJECTILE){
-				entity->destroy();
+				entity->destroy(true, true);
 				return;
 			}
 			posX -= penetrationRight;
@@ -705,14 +745,16 @@ void GameEngine::update(float elapsed, ShaderProgram* program){
 					points += 10;
 				}
 			}
-			
-
-			if (entity->getEntityType() == POINTS_INDICATOR && entity->getIsActive()){
-				entity->setDisplayText("Points: " + std::to_string(points));
-			}
 
 			entity->runAnimation(elapsed, FRAMES_PER_SECOND);
 		}
+	}
+
+	for (CompositeEntity* entity : userInterface){
+		if (entity->getEntityType() == POINTS_INDICATOR && entity->getIsActive()){
+			entity->setDisplayText("Points: " + std::to_string(points));
+		}
+		entity->runAnimation(elapsed, FRAMES_PER_SECOND);
 	}
 
 	if (gameState == GAME_PLAY){

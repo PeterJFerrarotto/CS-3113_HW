@@ -215,8 +215,8 @@ void Entity::blink(){
 	doRender = !doRender;
 }
 
-void Entity::transformMatrix(){
-	modelMatrix.identity();
+void Entity::transformMatrix(Matrix offset){
+	modelMatrix = offset;
 	modelMatrix.Scale(scale.x, scale.y, scale.z);
 	modelMatrix.Rotate(rotation);
 	modelMatrix.Translate(position.x, position.y, position.z);
@@ -227,8 +227,7 @@ void Entity::transformMatrix(){
 
 void Entity::draw(ShaderProgram* program, Matrix offset, float elapsed, float fps){
 	static vector<float> color;
-	transformMatrix();
-	offsetModelMatrix = modelMatrix * offset;
+	transformMatrix(offset);
 	if (sibling != nullptr){
 		if (sibling->texture->getTextureLayer() < texture->getTextureLayer()){
 			sibling->draw(program, offset, elapsed, fps);
@@ -246,7 +245,7 @@ void Entity::draw(ShaderProgram* program, Matrix offset, float elapsed, float fp
 		}
 		textureCoordinates = texture->getTextureCoordinates();
 		glBindTexture(GL_TEXTURE_2D, texture->getTextureID());
-		program->setModelMatrix(offsetModelMatrix);
+		program->setModelMatrix(modelMatrix);
 
 		glEnableVertexAttribArray(program->positionAttribute);
 		glVertexAttribPointer(program->positionAttribute, 2, GL_FLOAT, false, 0, objectVertices.data());
@@ -275,7 +274,7 @@ void Entity::draw(ShaderProgram* program, Matrix offset, float elapsed, float fp
 		sibling->draw(program, offset, elapsed, fps);
 	}
 	if (child != nullptr && child->texture->getTextureLayer() >= texture->getTextureLayer()){
-		child->draw(program, offsetModelMatrix, elapsed, fps);
+		child->draw(program, modelMatrix, elapsed, fps);
 	}
 }
 

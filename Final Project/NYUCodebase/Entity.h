@@ -43,7 +43,7 @@ protected:
 
 	Matrix modelMatrix;
 	Matrix offsetModelMatrix;
-	void transformMatrix();
+	void transformMatrix(Matrix offset);
 
 	std::vector<GLfloat> objectVertices;
 	std::vector<GLfloat> textureCoordinates;

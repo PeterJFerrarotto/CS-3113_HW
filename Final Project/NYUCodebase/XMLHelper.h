@@ -9,6 +9,8 @@
 #include "Texture.h"
 #include "Animation.h"
 #include "Level.h"
+#include "ParticleEmitter.h"
+#include "SDL_mixer.h"
 #include <string>
 #include <unordered_map>
 #include <sstream>
@@ -48,6 +50,8 @@ inline GLuint loadTexture(const char* imagePath){
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, surface->w, surface->h, 0, externalFormat, GL_UNSIGNED_BYTE, surface->pixels);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 		char* x = new char[360];
 		strcpy(x, imagePath);
 		loadedTextures[x] = textureID;
@@ -171,6 +175,220 @@ inline Animation* enrichAnimationInformation(xml_node<>* animationNode){
 		anim->setTexture(tex);
 	}
 	return anim;
+}
+
+inline ParticleEmitter* enrichParticleEmitterInformation(xml_node<>* emitterNode, float posX = 0, float posY = 0, float posZ = 0){
+	EMITTER_TYPE emitterType = CONSTANT_EMITTER;
+	float maxLifeTime = 0;
+	float startSize = 1, endSize = 1;
+	int maximumParticleCount = 0;
+	Texture* particleTexture = nullptr;
+	Vector3 position, velocity, velocityDeviation;
+	velocity.x = 0;
+	velocity.y = 0;
+	velocity.z = 0;
+	Color endColor, startColor;
+	Vector3 offsetPosition;
+	offsetPosition.x = posX;
+	offsetPosition.y = posY;
+	offsetPosition.z = posZ;
+	startColor.a = 1.0;
+	startColor.b = 1.0;
+	startColor.r = 1.0;
+	startColor.g = 1.0;
+
+	endColor = startColor;
+
+	xml_node<>* currentDetail = emitterNode->first_node("emitterType");
+	if (currentDetail == nullptr){
+		throw "No emitter type!";
+	}
+	emitterType = static_cast<EMITTER_TYPE>(stoi(currentDetail->value()));
+
+	currentDetail = emitterNode->first_node("maxLifeTime");
+	if (currentDetail == nullptr){
+		throw "No max lifetime!";
+	}
+	maxLifeTime = stof(currentDetail->value());
+
+	currentDetail = emitterNode->first_node("startSize");
+	if (currentDetail != nullptr){
+		startSize = stof(currentDetail->value());
+	}
+
+	currentDetail = emitterNode->first_node("endSize");
+	if (currentDetail != nullptr){
+		endSize = stof(currentDetail->value());
+	}
+
+	currentDetail = emitterNode->first_node("maximumParticleCount");
+	if (currentDetail == nullptr){
+		throw "No maximum particle count!";
+	}
+	maximumParticleCount = stoi(currentDetail->value());
+
+	currentDetail = emitterNode->first_node("Position");
+	if (currentDetail != nullptr){
+		if (currentDetail->first_attribute("x") != nullptr){
+			position.x = stof(currentDetail->first_attribute("x")->value());
+		}
+		if (currentDetail->first_attribute("y") != nullptr){
+			position.y = stof(currentDetail->first_attribute("y")->value());
+		}
+		if (currentDetail->first_attribute("z") != nullptr){
+			position.z = stof(currentDetail->first_attribute("z")->value());
+		}
+	}
+
+	currentDetail = emitterNode->first_node("velocityDeviation");
+	if (currentDetail != nullptr){
+		if (currentDetail->first_attribute("x") != nullptr){
+			velocityDeviation.x = stof(currentDetail->first_attribute("x")->value());
+		}
+		if (currentDetail->first_attribute("y") != nullptr){
+			velocityDeviation.y = stof(currentDetail->first_attribute("y")->value());
+		}
+		if (currentDetail->first_attribute("z") != nullptr){
+			velocityDeviation.z = stof(currentDetail->first_attribute("z")->value());
+		}
+	}
+
+	currentDetail = emitterNode->first_node("startColor");
+	if (currentDetail != nullptr){
+		if (currentDetail->first_attribute("r") != nullptr){
+			startColor.r = stof(currentDetail->first_attribute("r")->value());
+		}
+		if (currentDetail->first_attribute("g") != nullptr){
+			startColor.g = stof(currentDetail->first_attribute("g")->value());
+		}
+		if (currentDetail->first_attribute("b") != nullptr){
+			startColor.b = stof(currentDetail->first_attribute("b")->value());
+		}
+		if (currentDetail->first_attribute("a") != nullptr){
+			startColor.a = stof(currentDetail->first_attribute("a")->value());
+		}
+	}
+	
+	currentDetail = emitterNode->first_node("endColor");
+	if (currentDetail != nullptr){
+		if (currentDetail->first_attribute("r") != nullptr){
+			endColor.r = stof(currentDetail->first_attribute("r")->value());
+		}
+		if (currentDetail->first_attribute("g") != nullptr){
+			endColor.g = stof(currentDetail->first_attribute("g")->value());
+		}
+		if (currentDetail->first_attribute("b") != nullptr){
+			endColor.b = stof(currentDetail->first_attribute("b")->value());
+		}
+		if (currentDetail->first_attribute("a") != nullptr){
+			endColor.a = stof(currentDetail->first_attribute("a")->value());
+		}
+	}
+
+	currentDetail = emitterNode->first_node("Texture");
+	if (currentDetail != nullptr){
+		particleTexture = enrichTextureInformation(currentDetail);
+	}
+
+	ParticleEmitter* tmp = new ParticleEmitter();
+	tmp->emitterType = emitterType;
+	tmp->maxLifeTime = maxLifeTime;
+	tmp->startSize = startSize;
+	tmp->endSize = endSize;
+	tmp->maximumParticleCount = maximumParticleCount;
+	tmp->particleTexture = particleTexture;
+	tmp->textured = particleTexture != nullptr;
+	tmp->position = position;
+	tmp->velocity = velocity;
+	tmp->velocityDeviation = velocityDeviation;
+	tmp->startColor = startColor;
+	tmp->endColor = endColor;
+	tmp->offsetPosition = offsetPosition;
+	return tmp;
+}
+
+inline Mix_Chunk* loadSound(const char* fileLocation){
+	static std::unordered_map<std::string, Mix_Chunk*> loadedSounds;
+	Mix_Chunk* sound = new Mix_Chunk();
+	if (loadedSounds.size() == 0 || loadedSounds.find(fileLocation) == loadedSounds.end()){
+		sound = Mix_LoadWAV(fileLocation);
+		loadedSounds[fileLocation] = sound;
+		auto x = Mix_GetError();
+		int y = 5;
+	}
+	else{
+		sound = loadedSounds[fileLocation];
+	}
+	return sound;
+}
+
+inline Mix_Music* loadMusic(const char* fileLocation){
+	static std::unordered_map<std::string, Mix_Music*> loadedMusic;
+	Mix_Music* music;
+	if (loadedMusic.size() == 0 || loadedMusic.find(fileLocation) == loadedMusic.end()){
+		music = Mix_LoadMUS(fileLocation);
+		loadedMusic[fileLocation] = music;
+	}
+	else{
+		music = loadedMusic[fileLocation];
+	}
+	return music;
+}
+
+inline GameSound* enrichSoundInformation(xml_node<>* soundNode){
+	string fileLocation = RESOURCE_FOLDER;
+	SOUND_TYPE soundType;
+	DIRECTION collisionDirection;
+	COLLISION_STRENGTH collisionStrength;
+	SOUND_TRIGGER soundTrigger;
+	int loopCount = 0;
+	Mix_Chunk* sound;
+	GameSound* gameSound = new GameSound();
+
+	if (soundNode->first_attribute("directory") == nullptr){
+		throw "Directory attribute not found!";
+	}
+	fileLocation = fileLocation + soundNode->first_attribute("directory")->value();
+	if (soundNode->first_attribute("fileName") == nullptr){
+		throw "Filename attribute not found!";
+	}
+	fileLocation = fileLocation + soundNode->first_attribute("fileName")->value();
+	sound = loadSound(fileLocation.c_str());
+	gameSound->setSound(sound);
+
+	if (soundNode->first_attribute("soundType") == nullptr){
+		throw "No sound type!";
+	}
+	soundType = static_cast<SOUND_TYPE>(stoi(soundNode->first_attribute("soundType")->value()));
+	gameSound->setSoundType(soundType);
+
+	if (soundType == TRIGGER_SOUND){
+		if (soundNode->first_attribute("soundTrigger") == nullptr){
+			throw "No trigger for triggered sound!";
+		}
+		soundTrigger = static_cast<SOUND_TRIGGER>(stoi(soundNode->first_attribute("soundTrigger")->value()));
+		gameSound->setSoundTrigger(soundTrigger);
+	}
+
+	if (soundType == COLLISION_SOUND){
+		if (soundNode->first_attribute("direction") == nullptr){
+			throw "No direction for collision sound!";
+		}
+		collisionDirection = static_cast<DIRECTION>(stoi(soundNode->first_attribute("direction")->value()));
+		gameSound->setCollisionDirection(collisionDirection);
+
+		if (soundNode->first_attribute("collisionStrength") == nullptr){
+			throw "No strength found for collision sound!";
+		}
+		collisionStrength = static_cast<COLLISION_STRENGTH>(stoi(soundNode->first_attribute("collisionStrength")->value()));
+		gameSound->setCollisionStrength(collisionStrength);
+	}
+
+	if (soundNode->first_attribute("loopCount") != nullptr){
+		loopCount = stoi(soundNode->first_attribute("loopCount")->value());
+	}
+	gameSound->setLoops(loopCount);
+	return gameSound;
 }
 
 inline Entity* enrichEntityInformation(xml_node<>* entityNode){
@@ -493,6 +711,33 @@ inline CompositeEntity* enrichXMLData(xml_node<>* rootNode){
 		if (currentDetail != nullptr){
 			layer = stoi(currentDetail->value());
 		}
+
+		currentDetail = detailsNode->first_node("ParticleEmitters");
+		if (currentDetail != nullptr){
+			xml_node<>* particleEmitterNode = currentDetail->first_node("Emitter");
+			while (particleEmitterNode != nullptr){
+				tmp->addParticleEmitter(enrichParticleEmitterInformation(particleEmitterNode, posX, posY, posZ));
+				particleEmitterNode = particleEmitterNode->next_sibling("Emitter");
+			}
+		}
+
+		currentDetail = detailsNode->first_node("CollisionSounds");
+		if (currentDetail != nullptr){
+			xml_node<>* soundNode = currentDetail->first_node("Sound");
+			while (soundNode != nullptr){
+				tmp->addCollisionSound(enrichSoundInformation(soundNode));
+				soundNode = soundNode->next_sibling("Sound");
+			}
+		}
+
+		currentDetail = detailsNode->first_node("TriggerSounds");
+		if (currentDetail != nullptr){
+			xml_node<>* soundNode = currentDetail->first_node("Sound");
+			while (soundNode != nullptr){
+				tmp->addTriggerSound(enrichSoundInformation(soundNode));
+				soundNode = soundNode->next_sibling("Sound");
+			}
+		}
 	}
 	else{
 		canCollide = true;
@@ -555,7 +800,7 @@ inline CompositeEntity* enrichXMLData(xml_node<>* rootNode){
 		compProjectile->setBoundingType(SQUARE);
 		compProjectile->setEntityType(PLAYER_PROJECTILE);
 		compProjectile->setCollisionBehavior(DESTROY);
-		compProjectile->setBoundaryBehavior(BOUND_DESTROY);
+		compProjectile->setBoundaryBehavior(BOUND_DESTROY_NO_ANIM);
 		compProjectile->setScale(16, 16);
 
 		if (projectileTextureNode->first_node("Texture") != nullptr){
@@ -580,6 +825,22 @@ inline CompositeEntity* enrichXMLData(xml_node<>* rootNode){
 			projectile = nullptr;
 			throw "Error: No animation or texture for projectile!!";
 		}
+
+		if (projectileTextureNode->first_node("TriggerSounds") != nullptr){
+			xml_node<>* soundNode = projectileTextureNode->first_node("TriggerSounds")->first_node("Sound");
+			while (soundNode != nullptr){
+				compProjectile->addTriggerSound(enrichSoundInformation(soundNode));
+				soundNode = soundNode->next_sibling("Sound");
+			}
+		}
+
+		if (projectileTextureNode->first_node("CollisionSounds") != nullptr){
+			xml_node<>* soundNode = projectileTextureNode->first_node("CollisionSounds")->first_node("Sound");
+			while (soundNode != nullptr){
+				compProjectile->addCollisionSound(enrichSoundInformation(soundNode));
+				soundNode = soundNode->next_sibling("Sound");
+			}
+		}
 		compProjectile->setEntities(projectile);
 		compProjectile->setProjectile(nullptr);
 		tmp->setProjectile(compProjectile);
@@ -588,6 +849,56 @@ inline CompositeEntity* enrichXMLData(xml_node<>* rootNode){
 		tmp->setProjectile(nullptr);
 	}
 	return tmp;
+}
+
+inline CollisionListener* enrichCollisionInformation(xml_node<>* collisionNode){
+	unsigned entityType1, entityType2;
+
+	COLLISION_BEHAVIOR behaviorOfEntity1 = COLLISION_BEHAVIOR_SIZE, behaviorOfEntity2 = COLLISION_BEHAVIOR_SIZE;
+
+	GameSound* soundToPlay = nullptr;
+	bool up = true, down = true, left = true, right = true;
+
+	if (collisionNode->first_attribute("entityType1") == nullptr){
+		throw "Entity type not passed!";
+	}
+	entityType1 = stoi(collisionNode->first_attribute("entityType1")->value());
+
+	if (collisionNode->first_attribute("entityType2") == nullptr){
+		throw "Entity type not passed!";
+	}
+	entityType2 = stoi(collisionNode->first_attribute("entityType2")->value());
+
+	if (collisionNode->first_attribute("collisionBehavior1") != nullptr){
+		behaviorOfEntity1 = static_cast<COLLISION_BEHAVIOR>(stoi(collisionNode->first_attribute("collisionBehavior1")->value()));
+	}
+
+	if (collisionNode->first_attribute("collisionBehavior2") != nullptr){
+		behaviorOfEntity2 = static_cast<COLLISION_BEHAVIOR>(stoi(collisionNode->first_attribute("collisionBehavior2")->value()));
+	}
+
+	if (collisionNode->first_attribute("up") != nullptr){
+		up = stoi(collisionNode->first_attribute("up")->value()) == 1;
+	}
+
+	if (collisionNode->first_attribute("down") != nullptr){
+		down = stoi(collisionNode->first_attribute("down")->value()) == 1;
+	}
+
+	if (collisionNode->first_attribute("left") != nullptr){
+		left = stoi(collisionNode->first_attribute("left")->value()) == 1;
+	}
+
+	if (collisionNode->first_attribute("right") != nullptr){
+		right = stoi(collisionNode->first_attribute("right")->value()) == 1;
+	}
+
+	if (collisionNode->first_node("Sound") != nullptr){
+		soundToPlay = enrichSoundInformation(collisionNode->first_node("Sound"));
+	}
+
+	CollisionListener* toAdd = new CollisionListener(entityType1, entityType2, behaviorOfEntity1, behaviorOfEntity2, down, up, left, right, soundToPlay);
+	return toAdd;
 }
 
 inline void loadXMLData(GameEngine& engine){
@@ -604,15 +915,25 @@ inline void loadXMLData(GameEngine& engine){
 			strcpy_s(fileDirec, RESOURCE_FOLDER"Assets/XML/");
 			strcat_s(fileDirec, fileName);
 			xml_document<>* doc = loadXMLFile(fileDirec);
-			xml_node<>* entityNode = doc->first_node()->first_node();
-			do{
-				CompositeEntity* toAdd = enrichXMLData(entityNode);
-				if (entityTypes.find(toAdd->getEntityType()) != entityTypes.end()){
-					throw "Entity type already exists!";
-				}
-				entityTypes[toAdd->getEntityType()] = toAdd;
-				entityNode = entityNode->next_sibling();
-			} while (entityNode != nullptr);
+			if (doc->first_node("Entities") != nullptr){
+				xml_node<>* entityNode = doc->first_node()->first_node();
+				do{
+					CompositeEntity* toAdd = enrichXMLData(entityNode);
+					if (entityTypes.find(toAdd->getEntityType()) != entityTypes.end()){
+						throw "Entity type already exists!";
+					}
+					entityTypes[toAdd->getEntityType()] = toAdd;
+					entityNode = entityNode->next_sibling();
+				} while (entityNode != nullptr);
+			}
+			if (doc->first_node("Collisions") != nullptr){
+				xml_node<>* collisionNode = doc->first_node()->first_node();
+				do{
+					CollisionListener* toAdd = enrichCollisionInformation(collisionNode);
+					engine.addCollisionEvent(toAdd);
+					collisionNode = collisionNode->next_sibling();
+				} while (collisionNode != nullptr);
+			}
 		}
 	}
 }

@@ -50,28 +50,29 @@ int main(int argc, char *argv[])
 	Matrix projectionMatrix;
 	Matrix viewMatrix;
 	projectionMatrix.setOrthoProjection(-3.55, 3.55, -2.0f, 2.0f, -1.0f, 1.0f);
+	Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 4096);
 
 	GameEngine gameEngine;
 
-	CollisionListener* enemyProjectileWithPlayer = new CollisionListener(ACTOR_PLAYER, ENEMY_PROJECTILE, DEACTIVATE, DESTROY);
-	CollisionListener* playerProjectileWithEnemy = new CollisionListener(ACTOR_ENEMY, PLAYER_PROJECTILE, DEACTIVATE, DESTROY);
+	//CollisionListener* enemyProjectileWithPlayer = new CollisionListener(ACTOR_PLAYER, ENEMY_PROJECTILE, DEACTIVATE, DESTROY);
+	//CollisionListener* playerProjectileWithEnemy = new CollisionListener(ACTOR_ENEMY, PLAYER_PROJECTILE, DEACTIVATE, DESTROY);
 
-	CollisionListener* playerWithEnemy = new CollisionListener(ACTOR_PLAYER, ACTOR_ENEMY_PATROL_TURN, DEACTIVATE, NOTHING, false, true, true, true);
-	CollisionListener* playerWithEnemyFromAbove = new CollisionListener(ACTOR_PLAYER, ACTOR_ENEMY_PATROL_TURN, BOUNCE_HIGH, DEACTIVATE, true, false, false, false);
-	CollisionListener* enemyWithPlayerProjectile = new CollisionListener(PLAYER_PROJECTILE, ACTOR_ENEMY_PATROL_TURN, DESTROY, DEACTIVATE);
-	CollisionListener* playerWithCoin = new CollisionListener(ACTOR_PLAYER, ENTITY_COIN, NOTHING, DEACTIVATE);
+	//CollisionListener* playerWithEnemy = new CollisionListener(ACTOR_PLAYER, ACTOR_ENEMY_PATROL_TURN, DEACTIVATE, NOTHING, false, true, true, true);
+	//CollisionListener* playerWithEnemyFromAbove = new CollisionListener(ACTOR_PLAYER, ACTOR_ENEMY_PATROL_TURN, BOUNCE_HIGH, DEACTIVATE, true, false, false, false);
+	//CollisionListener* enemyWithPlayerProjectile = new CollisionListener(PLAYER_PROJECTILE, ACTOR_ENEMY_PATROL_TURN, DESTROY, DEACTIVATE);
+	//CollisionListener* playerWithCoin = new CollisionListener(ACTOR_PLAYER, ENTITY_COIN, NOTHING, DEACTIVATE);
 
-	CollisionListener* playerWithStatic = new CollisionListener(ACTOR_PLAYER, STATIC_ENTITY, STATIC_COLLISION, NOTHING);
-	CollisionListener* playerProjectileWithStatic = new CollisionListener(PLAYER_PROJECTILE, STATIC_ENTITY, DESTROY, NOTHING);
+	//CollisionListener* playerWithStatic = new CollisionListener(ACTOR_PLAYER, STATIC_ENTITY, STATIC_COLLISION, NOTHING);
+	//CollisionListener* playerProjectileWithStatic = new CollisionListener(PLAYER_PROJECTILE, STATIC_ENTITY, DESTROY, NOTHING);
 
-	gameEngine.addCollisionEvent(enemyProjectileWithPlayer);
-	gameEngine.addCollisionEvent(playerProjectileWithEnemy);
-	gameEngine.addCollisionEvent(playerWithEnemyFromAbove);
-	gameEngine.addCollisionEvent(playerWithEnemy);
-	gameEngine.addCollisionEvent(enemyWithPlayerProjectile);
-	gameEngine.addCollisionEvent(playerWithCoin);
-	gameEngine.addCollisionEvent(playerWithStatic);
-	gameEngine.addCollisionEvent(playerProjectileWithStatic);
+	//gameEngine.addCollisionEvent(enemyProjectileWithPlayer);
+	//gameEngine.addCollisionEvent(playerProjectileWithEnemy);
+	//gameEngine.addCollisionEvent(playerWithEnemyFromAbove);
+	//gameEngine.addCollisionEvent(playerWithEnemy);
+	//gameEngine.addCollisionEvent(enemyWithPlayerProjectile);
+	//gameEngine.addCollisionEvent(playerWithCoin);
+	//gameEngine.addCollisionEvent(playerWithStatic);
+	//gameEngine.addCollisionEvent(playerProjectileWithStatic);
 
 	loadXMLData(gameEngine);
 	loadLevelData(gameEngine);

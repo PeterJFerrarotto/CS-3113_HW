@@ -3,18 +3,97 @@
 #include <string>
 #include "Vector3.h"
 #include "Entity.h"
+#include "ParticleEmitter.h"
+#include "GameSound.h"
 
 enum ENTITY_TYPE { ICON_ENTITY, LIFE_ICON_ENTITY, PLAYER_PROJECTILE, ENEMY_PROJECTILE, TITLE_TEXT_ENTITY, GAME_TEXT_ENTITY, POINTS_INDICATOR, ACTOR_ENEMY, ACTOR_PLAYER, ACTOR_ENEMY_PATROL_TURN, STATIC_ENTITY, BACKGROUND_ENTITY, ENTITY_COIN, WARP_ENTITY, ENTITY_TYPE_SIZE };
 enum STATE {MOVING, ACCELERATING, STATIONARY, BOUNCING, BOUNCED, IDLE, JUMPING, FALLING, DESTROYING, DEACTIVATING, STATE_COUNT};
 enum COLLISION_BEHAVIOR { BOUNCE, STOP, DESTROY, DEACTIVATE, NOTHING, BOUNCE_HIGH, WARP, STATIC_COLLISION, COLLISION_BEHAVIOR_SIZE };
-enum BOUNDARY_BEHAVIOR {BOUND_BOUNCE, BOUND_TURN, BOUND_STOP, BOUND_DESTROY, BOUND_DEACTIVATE, BOUND_NOTHING, BOUND_STOP_X};
+enum BOUNDARY_BEHAVIOR {BOUND_BOUNCE, BOUND_TURN, BOUND_STOP, BOUND_DESTROY, BOUND_DEACTIVATE, BOUND_NOTHING, BOUND_STOP_X, BOUND_DESTROY_NO_ANIM};
 enum TILE_COLLISION_BEHAVIOR {T_STOP, T_BOUNCE, T_TURN};
-enum DIRECTION {UP, DOWN, LEFT, RIGHT, X, Y, DIRECTION_SIZE};
 
 class ShaderProgram;
 class Texture;
 class CompositeEntity
 {
+protected:
+	Entity* first;
+
+	std::unordered_map<unsigned, std::vector<ParticleEmitter*>> particleEmitters;
+	//Stores collision sounds based upon direction and collision strength
+	std::unordered_map<unsigned, std::unordered_map<unsigned,GameSound*>> collisionSounds;
+	//Stores triggered sounds based upon trigger
+	std::unordered_map<unsigned, GameSound*> triggerSounds;
+
+	Vector3 position;
+	Vector3 startingPosition;
+	Vector3 velocity;
+	Vector3 startingVelocity;
+	Vector3 acceleration;
+	Vector3 startingAcceleration;
+	Vector3 checkPointPosition;
+	Vector3 sizePositive;
+	Vector3 sizeNegative;
+	Vector3 scale;
+	Vector3 startingScale;
+
+	Matrix modelMatrix;
+
+	unsigned renderLayer;
+	unsigned objectLayer;
+	CompositeEntity* projectile;
+
+	GLuint textSheet;
+	float rotation;
+	float startingRotation;
+	float rotationalVelocity;
+	float startingRotationalVelocity;
+	float topSpeed;
+	float firingDelay;
+	float jumpSpeed;
+	//For TEXT_ENTITY only:
+	float spacing, size;
+
+	ENTITY_TYPE type;
+	BOUNDING_TYPE boundingType;
+	COLLISION_BEHAVIOR collisionBehavior;
+	BOUNDARY_BEHAVIOR boundaryBehavior;
+	STATE state;
+	TILE_COLLISION_BEHAVIOR tileCollisionBehavior;
+
+	bool isActive;
+	bool doDelete;
+	bool collideLeft, collideRight, collideTop, collideBottom;
+	bool staticCollideLeft, staticCollideRight, staticCollideTop, staticCollideBottom;
+	COLLISION_STRENGTH collisionStrength;
+	bool boundaryLeft, boundaryRight, boundaryTop, boundaryBottom;
+	bool canCollide;
+	bool falls;
+	bool subEntitiesColliding(Entity* firstOfThis, Entity* firstOfThat, Entity* originalOfThat, CompositeEntity* that);
+	bool isInvincible;
+	bool onTileGround;
+	bool doMirror;
+	bool overrideMirroring;
+	bool isStatic;
+
+
+	void bounce(float elapsed, CompositeEntity* bouncingOffOf);
+	void bounceHigh(float elapsed, CompositeEntity* bouncingOffOf);
+	void stop();
+	void resetFlags();
+	void transformMatrix();
+
+	void postCollisionAction(GameSound* sound = nullptr);
+
+
+
+	std::string entityID;
+	std::string text;
+	std::string warpLevelDestination;
+
+	void boundaryStop(float gameWallLeft, float gameWallRight, float gameFloor, float gameCeiling);
+	void boundaryStopAtWall(float gameWallLeft, float gameWallRight);
+	void boundaryTurn(float gameWallLeft, float gameWallRight, float gameFloor, float gameCeiling);
 public:
 	CompositeEntity();
 	CompositeEntity(Entity* first);
@@ -34,6 +113,7 @@ public:
 	float getRotationalVelocity();
 	float getTopSpeed();
 	float timeSinceFiring;
+	float getJumpSpeed();
 	BOUNDING_TYPE getBoundingType();
 	ENTITY_TYPE getEntityType();
 	COLLISION_BEHAVIOR getCollisionBehavior();
@@ -80,7 +160,7 @@ public:
 	void setBoundaryBehavior(BOUNDARY_BEHAVIOR behavior);
 	void setTileCollisionBehavior(TILE_COLLISION_BEHAVIOR behavior);
 	void setState(STATE state);
-	void setIsActive(bool isActive);
+	void setIsActive(bool isActive, bool playSound = false);
 	void setCanCollide(bool canCollide);
 	void setisInvincible(bool isInvincible);
 	void setFalls(bool falls);
@@ -103,9 +183,9 @@ public:
 	bool isColliding(CompositeEntity* collidingCheck);
 	bool atScreenBoundary(float gameWallLeft, float gameWallRight, float gameFloor, float gameCeiling);
 	void move(float elapsed, float gravity = 0.0f, float frictionX = 0.0f, float frictionY = 0.0f);
-	virtual void draw(ShaderProgram* program, Matrix matrix, float elapsed, float fps);
+	void draw(ShaderProgram* program, Matrix matrix, float elapsed, float fps);
 	void drawText(ShaderProgram* program, Matrix matrix, float elapsed, float fps);
-	void collide(float elapsed, CompositeEntity* collidingWith, COLLISION_BEHAVIOR collisionBehavior = COLLISION_BEHAVIOR_SIZE);
+	void collide(float elapsed, CompositeEntity* collidingWith, COLLISION_BEHAVIOR collisionBehavior = COLLISION_BEHAVIOR_SIZE, GameSound* sound = nullptr);
 	//void collideWithStatic(float penetration, DIRECTION direction);
 	void collideWithStatic(CompositeEntity* collidingWith, COLLISION_BEHAVIOR behavior = COLLISION_BEHAVIOR_SIZE);
 	void boundaryAction(float gameWallLeft, float gameWallRight, float gameFloor, float gameCeiling);
@@ -113,100 +193,42 @@ public:
 	void setDoMirror(bool doMirror);
 	void setOverrideMirroring(bool overrideMirroring);
 	void blink();
+	void addParticleEmitter(ParticleEmitter* emitter);
 
 	void setAllRender(bool doRender);
 
 	void changeAnimation(ANIMATION_TYPE animationType);
 	void runAnimation(float elapsed, float fps);
 
-	virtual CompositeEntity* fire();
+	void hardCollision(DIRECTION collisionDirection, int particleCount = 3);
+
+	CompositeEntity* fire();
 	void setProjectile(CompositeEntity* projectile);
 
-	virtual void addToTimeSinceFiring(float elapsed);
+	void addToTimeSinceFiring(float elapsed);
 
-	virtual CompositeEntity* logic(CompositeEntity* player, CompositeEntity* lastProjectile = nullptr);
+	 CompositeEntity* logic(CompositeEntity* player, CompositeEntity* lastProjectile = nullptr);
 
-	virtual void setDisplayText(const std::string& text);
+	void setDisplayText(const std::string& text);
 
-	virtual const std::string& getDisplayText();
+	const std::string& getDisplayText();
 
-	virtual void setTextSheet(GLuint textSheet);
+	void setTextSheet(GLuint textSheet);
 
-	virtual void deepCopy(CompositeEntity* toCopy);
+	void deepCopy(CompositeEntity* toCopy);
 
-	virtual void destroy();
+	void destroy(bool doAnimate, bool playSound);
 	void deActivate();
+
+	void addCollisionSound(GameSound* gameSound);
+	void addTriggerSound(GameSound* sound);
+
+	void playCollisionSound(DIRECTION direction = DIRECTION_SIZE, COLLISION_STRENGTH collisionStrength = COLLISION_STRENGTH_SIZE);
+	void playTriggerSound(SOUND_TRIGGER trigger);
+
 
 	Matrix& getMatrix();
 
-protected:
-	Entity* first;
-
-	Vector3 position;
-	Vector3 startingPosition;
-	Vector3 velocity;
-	Vector3 startingVelocity;
-	Vector3 acceleration;
-	Vector3 startingAcceleration;
-	Vector3 checkPointPosition;
-	Vector3 sizePositive;
-	Vector3 sizeNegative;
-	Vector3 scale;
-	Vector3 startingScale;
-
-	Matrix modelMatrix;
-
-	unsigned renderLayer;
-	unsigned objectLayer;
-	CompositeEntity* projectile;
-
-	GLuint textSheet;
-	float rotation;
-	float startingRotation;
-	float rotationalVelocity;
-	float startingRotationalVelocity;
-	float topSpeed;
-	float firingDelay;
-	//For TEXT_ENTITY only:
-	float spacing, size;
-	float jumpSpeed;
-
-	ENTITY_TYPE type;
-	BOUNDING_TYPE boundingType;
-	COLLISION_BEHAVIOR collisionBehavior;
-	BOUNDARY_BEHAVIOR boundaryBehavior;
-	STATE state;
-	TILE_COLLISION_BEHAVIOR tileCollisionBehavior;
-
-	bool isActive;
-	bool doDelete;
-	bool collideLeft, collideRight, collideTop, collideBottom;
-	bool staticCollideLeft, staticCollideRight, staticCollideTop, staticCollideBottom;
-	bool boundaryLeft, boundaryRight, boundaryTop, boundaryBottom;
-	bool canCollide;
-	bool falls;
-	bool subEntitiesColliding(Entity* firstOfThis, Entity* firstOfThat, Entity* originalOfThat, CompositeEntity* that);
-	bool isInvincible;
-	bool onTileGround;
-	bool doMirror;
-	bool overrideMirroring;
-	bool isStatic;
-
-
-	void bounce(float elapsed, CompositeEntity* bouncingOffOf);
-	void bounceHigh(float elapsed, CompositeEntity* bouncingOffOf);
-	void stop();
-	void resetFlags();
-	void transformMatrix();
-
-	std::string entityID;
-	std::string text;
-	std::string warpLevelDestination;
-
-	float lerp(float v0, float v1, float t);
-	void boundaryStop(float gameWallLeft, float gameWallRight, float gameFloor, float gameCeiling);
-	void boundaryStopAtWall(float gameWallLeft, float gameWallRight);
-	void boundaryTurn(float gameWallLeft, float gameWallRight, float gameFloor, float gameCeiling);
 };
 
 #endif

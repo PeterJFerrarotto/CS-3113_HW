@@ -34,6 +34,10 @@ class ShaderProgram;
 class Texture;
 class Level;
 
+static const float screenShakeSpeed = 8.0;
+
+static const int maximumScreenShakes = 99;
+
 class GameEngine final
 {
 private:
@@ -94,6 +98,8 @@ private:
 	bool tileCollisionLeft(float posX, float sizeXNeg, float sizeXPos, int tileX, float hitX, float hitWidth);
 	bool tileCollisionRight(float posX, float sizeXPos, float sizeXNeg, int tileX, float hitX, float hitWidth);
 
+	bool shakeScreen;
+
 	float checkBottomTileCollisions(CompositeEntity* entity);
 	float checkTopTileCollisions(CompositeEntity* entity);
 	float checkLeftTileCollisions(CompositeEntity* entity);
@@ -109,6 +115,10 @@ private:
 	void checkIfShouldWarp();
 	void deActivateLevelEntities();
 	void activateLevelEntities();
+
+	float screenShakeValue, screenShakeIntensity;
+
+	unsigned int shakeCount;
 public:
 	GameEngine();
 	~GameEngine();

@@ -2,7 +2,7 @@
 #include "CompositeEntity.h"
 using namespace std;
 
-CollisionListener::CollisionListener(unsigned entityType1, unsigned entityType2, COLLISION_BEHAVIOR behaviorOfEntity1, COLLISION_BEHAVIOR behaviorOfEntity2, bool entity2Down, bool entity2Up, bool entity2Left, bool entity2Right){
+CollisionListener::CollisionListener(unsigned entityType1, unsigned entityType2, COLLISION_BEHAVIOR behaviorOfEntity1, COLLISION_BEHAVIOR behaviorOfEntity2, bool entity2Down, bool entity2Up, bool entity2Left, bool entity2Right, GameSound* sound){
 	this->entityType1 = entityType1;
 	this->entityType2 = entityType2;
 	this->behaviorOfEntity1 = behaviorOfEntity1;
@@ -12,6 +12,7 @@ CollisionListener::CollisionListener(unsigned entityType1, unsigned entityType2,
 	up = entity2Up;
 	left = entity2Left;
 	right = entity2Right;
+	this->soundToPlay = sound;
 }
 
 CollisionListener::~CollisionListener()
@@ -42,7 +43,7 @@ void CollisionListener::collide(float elapsed, unordered_map<unsigned, vector<Co
 						performCollision = performCollision || tmp1->getCollRightFlag();
 					}
 					if (performCollision){
-						tmp1->collide(elapsed, tmp2, behaviorOfEntity1);
+						tmp1->collide(elapsed, tmp2, behaviorOfEntity1, soundToPlay);
 						tmp2->collide(elapsed, tmp1, behaviorOfEntity2);
 					}
 				}
@@ -70,7 +71,7 @@ void CollisionListener::collide(float elapsed, unordered_map<unsigned, vector<Co
 						performCollision = performCollision || (tmp1->getCollRightFlag() && !tmp1->getCollLeftFlag());
 					}
 					if (performCollision){
-						tmp1->collide(elapsed, tmp2, behaviorOfEntity1);
+						tmp1->collide(elapsed, tmp2, behaviorOfEntity1, soundToPlay);
 						tmp2->collide(elapsed, tmp1, behaviorOfEntity2);
 					}
 				}

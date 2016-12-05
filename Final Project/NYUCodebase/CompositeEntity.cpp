@@ -1,6 +1,7 @@
 #include "CompositeEntity.h"
 #include "ShaderProgram.h"
 #include "Entity.h"
+#include "mathHelper.h"
 
 CompositeEntity::CompositeEntity()
 {
@@ -275,7 +276,7 @@ void CompositeEntity::setState(STATE state){
 	}
 }
 
-void CompositeEntity::setIsActive(bool isActive){
+void CompositeEntity::setIsActive(bool isActive, bool playSound){
 	this->isActive = isActive;
 }
 
@@ -601,10 +602,15 @@ bool CompositeEntity::isColliding(CompositeEntity* collidingWith){
 
 void CompositeEntity::move(float elapsed, float gravity, float frictionX, float frictionY){
 	resetFlags();
-	if (type != STATIC_ENTITY && isActive && state != DESTROYING && state != DEACTIVATING){
+	static float elapsedY;
+	static float elapsedX;
+	if (type != STATIC_ENTITY && isActive && state != DESTROYING && state != DEACTIVATING && !doDelete){
 
-		velocity.x = lerp(velocity.x, 0.0f, elapsed * frictionX);
-		velocity.y = lerp(velocity.y, 0.0f, elapsed * frictionY);
+		//velocity.x = lerp(velocity.x, 0.0f, elapsed * frictionX);
+		//velocity.y = lerp(velocity.y, 0.0f, elapsed * frictionY);
+		
+		//velocity.x = lerp(velocity.x, acceleration.x, elapsed);
+		//velocity.y = lerp(velocity.y, acceleration.y, elapsed);
 
 		velocity.x += acceleration.x * elapsed;
 		velocity.y += acceleration.y * elapsed;
@@ -613,6 +619,9 @@ void CompositeEntity::move(float elapsed, float gravity, float frictionX, float 
 		position.x += velocity.x * elapsed;
 		position.y += velocity.y * elapsed;
 		position.z += velocity.z * elapsed;
+		//position.x = easeIn(position.x, position.x + velocity.x * elapsed, elapsed);
+		//position.y = easeIn(position.y, position.y + velocity.y * elapsed, elapsed);
+		//position.z = easeIn(position.z, position.z + velocity.z * elapsed, elapsed);
 
 		if (falls && !onTileGround){
 			velocity.y += gravity * elapsed;
@@ -650,11 +659,19 @@ void CompositeEntity::move(float elapsed, float gravity, float frictionX, float 
 		state = IDLE;
 		isActive = false;
 	}
+	if (particleEmitters.size() != 0){
+		for (std::unordered_map<unsigned, std::vector<ParticleEmitter*>>::iterator itr = particleEmitters.begin(); itr != particleEmitters.end(); itr++){
+			for (ParticleEmitter* emitter : itr->second){
+				emitter->update(elapsed, gravity, velocity, position);
+			}
+		}
+	}
 }
 
 void CompositeEntity::jump(){
 	velocity.y = jumpSpeed;
 	setState(JUMPING);
+	playTriggerSound(TRIG_JUMP);
 }
 
 void CompositeEntity::drawText(ShaderProgram* program, Matrix matrix, float elapsed, float fps){
@@ -724,6 +741,13 @@ void CompositeEntity::draw(ShaderProgram* program, Matrix matrix, float elapsed,
 		first->draw(program, modelMatrix, elapsed, fps);
 		break;
 	}
+	if (particleEmitters.size() != 0){
+		for (std::unordered_map<unsigned, std::vector<ParticleEmitter*>>::iterator itr = particleEmitters.begin(); itr != particleEmitters.end(); itr++){
+			for (ParticleEmitter* emitter: itr->second){
+				emitter->render(program);
+			}
+		}
+	}
 }
 
 void CompositeEntity::bounce(float elapsed, CompositeEntity* bouncingOffOf){
@@ -731,31 +755,127 @@ void CompositeEntity::bounce(float elapsed, CompositeEntity* bouncingOffOf){
 		position.x = bouncingOffOf->position.x + sizePositive.x/2;
 		if (velocity.x < 0){
 			velocity.x *= -0.8;
+			if (abs(velocity.x) <= 1){
+				collisionStrength = WEAK;
+			}
+			else if (abs(velocity.x) > 1 && abs(velocity.x) <= 5){
+				collisionStrength = MEDIUM;
+			}
+			else if (abs(velocity.x) > 5){
+				collisionStrength = STRONG;
+			}
+			else{
+				collisionStrength = WEAK;
+			}
 		}
-		collideLeft = velocity.x == 0;
+		//collideLeft = velocity.x == 0;
 	}
 	if (collideRight){
 		position.x = bouncingOffOf->position.x - sizeNegative.x/2;
 		if (velocity.x > 0){
 			velocity.x *= -0.8;
+			if (abs(velocity.x) <= 1){
+				collisionStrength = WEAK;
+			}
+			else if (abs(velocity.x) > 1 && abs(velocity.x) <= 5){
+				collisionStrength = MEDIUM;
+			}
+			else if (abs(velocity.x) > 5){
+				collisionStrength = STRONG;
+			}
+			else{
+				collisionStrength = WEAK;
+			}
 		}
-		collideRight = velocity.x == 0;
+		//collideRight = velocity.x == 0;
 	}
 	if (collideTop){
 		position.y = bouncingOffOf->position.y - sizeNegative.y/2;
 		if (velocity.y > 0){
 			velocity.y *= -0.8;
+			if (abs(velocity.y) <= 1){
+				collisionStrength = WEAK;
+			}
+			else if (abs(velocity.y) > 1 && abs(velocity.y) <= 5){
+				collisionStrength = MEDIUM;
+			}
+			else if (abs(velocity.y) > 5){
+				collisionStrength = STRONG;
+			}
+			else{
+				collisionStrength = WEAK;
+			}
 		}
-		collideTop = velocity.y == 0;
+		//collideTop = velocity.y == 0;
 	}
 	if (collideBottom){
 		position.y = bouncingOffOf->position.y + sizePositive.y/2;
 		if (velocity.y < 0){
 			velocity.y *= -0.8;
+			if (abs(velocity.y) <= 1){
+				collisionStrength = WEAK;
+			}
+			else if (abs(velocity.y) > 1 && abs(velocity.y) <= 5){
+				collisionStrength = MEDIUM;
+			}
+			else if (abs(velocity.y) > 5){
+				collisionStrength = STRONG;
+			}
+			else{
+				collisionStrength = WEAK;
+			}
 		}
-		collideBottom = velocity.y == 0;
+		//collideBottom = velocity.y == 0;
 	}
 	setState(BOUNCED);
+}
+
+void CompositeEntity::playCollisionSound(DIRECTION direction, COLLISION_STRENGTH collisionStrength){
+	if (collisionSounds.size() != 0){
+		COLLISION_STRENGTH strengthToUse = this->collisionStrength;
+		DIRECTION directionToUse = DIRECTION_SIZE;
+		if (collisionStrength != COLLISION_STRENGTH_SIZE){
+			strengthToUse = collisionStrength;
+		}
+		if (direction != DIRECTION_SIZE){
+			directionToUse = direction;
+		}
+		else{
+			if (collideTop){
+				directionToUse = UP;
+			}
+			else if (collideBottom){
+				directionToUse = DOWN;
+			}
+			else if (collideLeft){
+				directionToUse = LEFT;
+			}
+			else if (collideRight){
+				directionToUse = RIGHT;
+			}
+			else{
+				directionToUse = DOWN;
+			}
+		}
+		if (collisionSounds.find(strengthToUse) != collisionSounds.end() && collisionSounds[strengthToUse].find(directionToUse) != collisionSounds[strengthToUse].end()){
+			collisionSounds[strengthToUse][directionToUse]->play();
+		}
+	}
+}
+
+void CompositeEntity::playTriggerSound(SOUND_TRIGGER trigger){
+	if (triggerSounds.size() != 0 && triggerSounds.find(trigger) != triggerSounds.end()){
+		triggerSounds[trigger]->play();
+	}
+}
+
+void CompositeEntity::postCollisionAction(GameSound* sound){
+	if (sound == nullptr){
+		playCollisionSound();
+	}
+	else{
+		sound->play();
+	}
 }
 
 void CompositeEntity::stop(){
@@ -770,13 +890,15 @@ void CompositeEntity::stop(){
 	setState(STATIONARY);
 }
 
-void CompositeEntity::destroy(){
-	if (first->getIsAnimated() && first->hasAnimation(ANIMATION_DESTROY)){
+void CompositeEntity::destroy(bool doAnimate, bool playSound){
+	if (doAnimate && (first->getIsAnimated() && first->hasAnimation(ANIMATION_DESTROY))){
 		setState(DESTROYING);
 	}
 	else{
 		doDelete = true;
 	}
+	if (playSound)
+		playTriggerSound(TRIG_DESTROY);
 }
 
 void CompositeEntity::deActivate(){
@@ -786,6 +908,7 @@ void CompositeEntity::deActivate(){
 	else{
 		isActive = false;
 	}
+	playTriggerSound(TRIG_DEACTIVATE);
 }
 
 
@@ -869,7 +992,7 @@ void CompositeEntity::boundaryTurn(float gameWallLeft, float gameWallRight, floa
 }
 
 //Throws exception if collision behavior unrecognized
-void CompositeEntity::collide(float elapsed, CompositeEntity* collidingWith, COLLISION_BEHAVIOR collisionBehavior){
+void CompositeEntity::collide(float elapsed, CompositeEntity* collidingWith, COLLISION_BEHAVIOR collisionBehavior, GameSound* sound){
 	switch (collisionBehavior){
 	case BOUNCE:
 		state = BOUNCING;
@@ -881,7 +1004,7 @@ void CompositeEntity::collide(float elapsed, CompositeEntity* collidingWith, COL
 		break;
 	case DESTROY:
 		if (!isInvincible){
-			destroy();
+			destroy(true, true);
 		}
 		break;
 	case DEACTIVATE:
@@ -905,6 +1028,7 @@ void CompositeEntity::collide(float elapsed, CompositeEntity* collidingWith, COL
 		throw "UNRECOGNIZED COLLISION BEHAVIOR!";
 		break;
 	}
+	postCollisionAction(sound);
 }
 
 void CompositeEntity::collideWithStatic(CompositeEntity* collidingWith, COLLISION_BEHAVIOR behavior){
@@ -1006,7 +1130,7 @@ void CompositeEntity::boundaryAction(float gameWallLeft, float gameWallRight, fl
 		boundaryStop(gameWallLeft, gameWallRight, gameFloor, gameCeiling);
 		break;
 	case BOUND_DESTROY:
-		destroy();
+		destroy(true, false);
 		break;
 	case BOUND_DEACTIVATE:
 		deActivate();
@@ -1019,14 +1143,13 @@ void CompositeEntity::boundaryAction(float gameWallLeft, float gameWallRight, fl
 		break;
 	case BOUND_NOTHING:
 		break;
+	case BOUND_DESTROY_NO_ANIM:
+		destroy(false, false);
+		break;
 	default:
 		throw "UNKNOWN BOUNDARY BEHAVIOR!";
 		break;
 	}
-}
-
-float CompositeEntity::lerp(float v0, float v1, float t){
-	return (1 - t)*v0 + t*v1;
 }
 
 void CompositeEntity::blink(){
@@ -1054,6 +1177,7 @@ CompositeEntity* CompositeEntity::fire(){
 		newProjectile->setState(MOVING);
 
 		timeSinceFiring = 0;
+		playTriggerSound(TRIG_FIRE);
 		return newProjectile;
 	}
 	return nullptr;
@@ -1121,6 +1245,45 @@ void CompositeEntity::deepCopy(CompositeEntity* toCopy){
 		this->projectile = new CompositeEntity();
 		this->projectile->deepCopy(toCopy->projectile);
 	}
+	if (toCopy->particleEmitters.size() != 0){
+		if (toCopy->particleEmitters.find(CONSTANT_EMITTER) != toCopy->particleEmitters.end()){
+			for (size_t i = 0; i < toCopy->particleEmitters[CONSTANT_EMITTER].size(); i++){
+				ParticleEmitter* tmp = new ParticleEmitter;
+				tmp->deepCopy(toCopy->particleEmitters[CONSTANT_EMITTER][i]);
+				particleEmitters[CONSTANT_EMITTER].push_back(tmp);
+			}
+		}
+		if (toCopy->particleEmitters.find(COLLISION_EMITTER) != toCopy->particleEmitters.end()){
+			for (size_t i = 0; i < toCopy->particleEmitters[COLLISION_EMITTER].size(); i++){
+				ParticleEmitter* tmp = new ParticleEmitter;
+				tmp->deepCopy(toCopy->particleEmitters[COLLISION_EMITTER][i]);
+				particleEmitters[COLLISION_EMITTER].push_back(tmp);
+			}
+		}
+		if (toCopy->particleEmitters.find(HARD_COLLISION_EMITTER) != toCopy->particleEmitters.end()){
+			for (size_t i = 0; i < toCopy->particleEmitters[HARD_COLLISION_EMITTER].size(); i++){
+				ParticleEmitter* tmp = new ParticleEmitter;
+				tmp->deepCopy(toCopy->particleEmitters[HARD_COLLISION_EMITTER][i]);
+				particleEmitters[HARD_COLLISION_EMITTER].push_back(tmp);
+			}
+		}
+	}
+
+	if (toCopy->collisionSounds.size() != 0){
+		for (std::unordered_map<unsigned, std::unordered_map<unsigned, GameSound*>>::iterator itr = toCopy->collisionSounds.begin(); itr != toCopy->collisionSounds.end(); itr++){
+			if (itr->second.size() != 0){
+				for (std::unordered_map<unsigned, GameSound*>::iterator soundItr = itr->second.begin(); soundItr != itr->second.end(); soundItr++){
+					addCollisionSound(soundItr->second);
+				}
+			}
+		}
+	}
+
+	if (toCopy->triggerSounds.size() != 0){
+		for (std::unordered_map<unsigned, GameSound*>::iterator itr = toCopy->triggerSounds.begin(); itr != toCopy->triggerSounds.end(); itr++){
+			addTriggerSound(itr->second);
+		}
+	}
 	this->startingPosition = toCopy->startingPosition;
 	this->startingVelocity = toCopy->startingVelocity;
 	this->startingAcceleration = toCopy->startingAcceleration;
@@ -1182,6 +1345,7 @@ TILE_COLLISION_BEHAVIOR CompositeEntity::getTileCollisionBehavior(){
 void CompositeEntity::bounceHigh(float elapsed, CompositeEntity* bouncingOffOf){
 	velocity.y = jumpSpeed + 5;
 	setState(JUMPING);
+	playTriggerSound(TRIG_BOUNCE_HIGH);
 }
 
 void CompositeEntity::checkPoint(){
@@ -1198,4 +1362,78 @@ void CompositeEntity::setWarpDestination(const std::string& warpDestination){
 
 const std::string& CompositeEntity::getWarpDestination(){
 	return warpLevelDestination;
+}
+
+void CompositeEntity::addParticleEmitter(ParticleEmitter* emitter){
+	if (emitter == nullptr){
+		throw "Error: tried to add nullptr emitter!";
+	}
+	particleEmitters[emitter->emitterType].push_back(emitter);
+}
+
+void CompositeEntity::hardCollision(DIRECTION collisionDirection, int particleCount){
+	if (particleEmitters[HARD_COLLISION_EMITTER].size() != 0){
+		for (size_t i = 0; i < particleEmitters[HARD_COLLISION_EMITTER].size(); i++){
+			particleEmitters[HARD_COLLISION_EMITTER][i]->trigger(particleCount);
+		}
+	}
+	playCollisionSound(collisionDirection, STRONG);
+}
+
+void CompositeEntity::addCollisionSound(GameSound* gameSound){
+	if (gameSound->getSoundType() != COLLISION_SOUND){
+		throw "Incorrect sound type!";
+	}
+	DIRECTION direction = gameSound->getCollisionDirection();
+	COLLISION_STRENGTH collisionStrength = gameSound->getCollisionStrength();
+	if (direction == DIRECTION_SIZE){
+		throw "Invalid direction!";
+	}
+	if (collisionStrength == COLLISION_STRENGTH_SIZE){
+		throw "Invlaid collision strength!";
+	}
+	if (direction == ALL_DIRECTIONS){
+		if (collisionSounds.find(collisionStrength) != collisionSounds.end() && collisionSounds[collisionStrength].size() != 0){
+			throw "Entity already has sounds associated with at least one direction!";
+		}
+		collisionSounds[collisionStrength][UP] = gameSound;
+		collisionSounds[collisionStrength][DOWN] = gameSound;
+		collisionSounds[collisionStrength][LEFT] = gameSound;
+		collisionSounds[collisionStrength][RIGHT] = gameSound;
+	}
+	else if (direction == X){
+		if (collisionSounds.find(collisionStrength) != collisionSounds.end() && (collisionSounds[collisionStrength].find(LEFT) != collisionSounds[collisionStrength].end() || collisionSounds[collisionStrength].find(RIGHT) != collisionSounds[collisionStrength].end())){
+			throw "Entity already has collision sounds in X direction for this strength!";
+		}
+		collisionSounds[collisionStrength][LEFT] = gameSound;
+		collisionSounds[collisionStrength][RIGHT] = gameSound;
+	}
+	else if (direction == Y){
+		if (collisionSounds.find(collisionStrength) != collisionSounds.end() && (collisionSounds[collisionStrength].find(DOWN) != collisionSounds[collisionStrength].end() || collisionSounds[collisionStrength].find(UP) != collisionSounds[collisionStrength].end())){
+			throw "Entity already has collision sounds in X direction for this strength!";
+		}
+		collisionSounds[collisionStrength][DOWN] = gameSound;
+		collisionSounds[collisionStrength][UP] = gameSound;
+	}
+	else{
+		if (collisionSounds.find(collisionStrength) != collisionSounds.end() && collisionSounds[collisionStrength].find(direction) != collisionSounds[collisionStrength].end()){
+			throw "Trying to add an already existing sound!";
+		}
+		collisionSounds[collisionStrength][direction] = gameSound;
+	}
+}
+
+void CompositeEntity::addTriggerSound(GameSound* gameSound){
+	if (gameSound->getSoundType() != TRIGGER_SOUND){
+		throw "Incorrect sound type!";
+	}
+	SOUND_TRIGGER soundTrigger = gameSound->getSoundTrigger();
+	if (triggerSounds.find(soundTrigger) != triggerSounds.end()){
+		throw "Trying to add already existing sound!";
+	}
+	triggerSounds[soundTrigger] = gameSound;
+}
+
+float CompositeEntity::getJumpSpeed(){
+	return jumpSpeed;
 }
