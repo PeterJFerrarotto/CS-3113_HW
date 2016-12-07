@@ -165,11 +165,13 @@ bool GameEngine::tileCollisionRight(float posX, float sizeXPos, float sizeXNeg, 
 }
 
 float GameEngine::checkBottomTileCollisions(CompositeEntity* entity){
+	float rC = cos(entity->getRotation());
+	float rS = sin(entity->getRotation());
 	float posX = entity->getPosition().x;
 	float posY = entity->getPosition().y;
-	float sizeXPos = entity->getSizePositive().x/2;
-	float sizeXNeg = entity->getSizeNegative().x / 2;
-	float sizeY = entity->getSizeNegative().y/2;
+	float sizeXPos = entity->getSizePositive().x * rC + entity->getSizePositive().y * rS;
+	float sizeXNeg = entity->getSizeNegative().x * rC - entity->getSizePositive().y * rS;
+	float sizeY = entity->getSizeNegative().y * rC - entity->getSizePositive().y * rS;
 	float tileSize = levels[currentLevel]->getTileSize();
 	int gridRight = (int)((posX + sizeXPos) / tileSize);
 	int gridLeft = (int)((posX - sizeXNeg) / tileSize);
@@ -187,7 +189,7 @@ float GameEngine::checkBottomTileCollisions(CompositeEntity* entity){
 			tmpTile2 = tmp->getTile(layer, i, oneAboveGridBottom);
 			if (tmpTile != nullptr){
 				if ((tmpTile->tileType == SOLID_FLOOR || tmpTile->tileType == SOLID_PLATFORM || tmpTile->tileType == SOLID_GRASS) && tmpTile->canCollide && (tmpTile2 == nullptr || !((tmpTile2->tileType == SOLID_FLOOR || tmpTile2->tileType == SOLID_PLATFORM || tmpTile2->tileType == SOLID || tmpTile2->tileType == SOLID_GRASS) && tmpTile2->canCollide))){
-					if (tileCollisionDown(posY, sizeY, entity->getSizePositive().y / 2, gridBottom, tmpTile->y, tmpTile->height) && !(tmpTile->tileType == SOLID_PLATFORM && downPressed)){
+					if (tileCollisionDown(posY, sizeY, entity->getSizePositive().y, gridBottom, tmpTile->y, tmpTile->height) && !(tmpTile->tileType == SOLID_PLATFORM && downPressed)){
 						if (!(posY - sizeY < -(gridBottom * tileSize + tileSize / 2))){
 							if (getTilePenetrationDown(posY, sizeY, gridBottom, tmpTile->y, tmpTile->height) > penetration && entity->getVelocity().y <= 0){
 								penetration = getTilePenetrationDown(posY, sizeY, gridBottom, tmpTile->y, tmpTile->height);
@@ -231,12 +233,16 @@ float GameEngine::checkBottomTileCollisions(CompositeEntity* entity){
 }
 
 float GameEngine::checkTopTileCollisions(CompositeEntity* entity){
+	float rC = sin(entity->getRotation());
+	if ((int)(entity->getRotation() * (180 / M_PI)) % 90 <= 45){
+		rC = cos(entity->getRotation());
+	}
 	float penetration = 0;
 	float posX = entity->getPosition().x;
 	float posY = entity->getPosition().y;
-	float sizeXNeg = entity->getSizeNegative().x/2;
-	float sizeXPos = entity->getSizePositive().x / 2;
-	float sizeY = entity->getSizePositive().y/2;
+	float sizeXNeg = entity->getSizeNegative().x * rC;
+	float sizeXPos = entity->getSizePositive().x * rC;
+	float sizeY = entity->getSizePositive().y * rC;
 	float tileSize = levels[currentLevel]->getTileSize();
 	int mapHeightTiles = (int)(mapHeight / tileSize);
 	int gridLeft = (int)((posX - sizeXNeg) / tileSize);
@@ -255,7 +261,7 @@ float GameEngine::checkTopTileCollisions(CompositeEntity* entity){
 			tmpTile2 = tmp->getTile(layer, i, oneBelowGridTop);
 			if (tmpTile != nullptr){
 				if ((tmpTile->tileType == SOLID || tmpTile->tileType == SOLID_GRASS || tmpTile->tileType == SOLID_FLOOR || tmpTile->tileType == HAZARD_SPIKE_HORIZONTAL) && tmpTile->canCollide && (tmpTile2 == nullptr || !((tmpTile2->tileType == SOLID_FLOOR || tmpTile2->tileType == SOLID_PLATFORM || tmpTile2->tileType == SOLID || tmpTile2->tileType == SOLID_GRASS) && tmpTile2->canCollide))){
-					if (tileCollisionUp(posY, sizeY, entity->getSizeNegative().y / 2, gridTop, tmpTile->y, tmpTile->height)){
+					if (tileCollisionUp(posY, sizeY, entity->getSizeNegative().y, gridTop, tmpTile->y, tmpTile->height)){
 						//Check if object is below half-point of the tile
 						if (getTilePenetrationUp(posY, sizeY, gridTop, tmpTile->y, tmpTile->height) > penetration && getTilePenetrationUp(posY, sizeY, gridTop, tmpTile->y, tmpTile->height) < tileSize && entity->getVelocity().y > 0){
 							penetration = getTilePenetrationUp(posY, sizeY, gridTop, tmpTile->y, tmpTile->height);
@@ -279,12 +285,16 @@ float GameEngine::checkTopTileCollisions(CompositeEntity* entity){
 }
 
 float GameEngine::checkLeftTileCollisions(CompositeEntity* entity){
+	float rC = sin(entity->getRotation());
+	if ((int)(entity->getRotation() * (180 / M_PI)) % 90 <= 45){
+		rC = cos(entity->getRotation());
+	}
 	float penetration = 0;
 	float posX = entity->getPosition().x;
 	float posY = entity->getPosition().y;
-	float sizeX = entity->getSizeNegative().x/2;
-	float sizeYPos = entity->getSizePositive().y / 2;
-	float sizeYNeg = entity->getSizeNegative().y / 2;
+	float sizeX = entity->getSizeNegative().x * rC;
+	float sizeYPos = entity->getSizePositive().y * rC;
+	float sizeYNeg = entity->getSizeNegative().y * rC;
 	float tileSize = levels[currentLevel]->getTileSize();
 	int gridLeft = (int)((posX - sizeX) / tileSize);
 	int gridBottom = abs((int)((posY - sizeYNeg) / tileSize));
@@ -297,7 +307,7 @@ float GameEngine::checkLeftTileCollisions(CompositeEntity* entity){
 		tmpTile = tmp->getTile(layer, gridLeft, i);
 		if (tmpTile != nullptr){
 			if ((tmpTile->tileType == SOLID || tmpTile->tileType == SOLID_GRASS || tmpTile->tileType == SOLID_FLOOR || tmpTile->tileType == HAZARD_SPIKE_HORIZONTAL) && tmpTile->canCollide){
-				if (tileCollisionLeft(posX, sizeX, entity->getSizePositive().x / 2, gridLeft, tmpTile->x, tmpTile->width)){
+				if (tileCollisionLeft(posX, sizeX, entity->getSizePositive().x, gridLeft, tmpTile->x, tmpTile->width)){
 					if (getTilePenetrationLeft(posX, sizeX, gridLeft, tmpTile->x, tmpTile->width) > penetration){
 						penetration = getTilePenetrationLeft(posX, sizeX, gridLeft, tmpTile->x, tmpTile->width);
 					}
@@ -318,11 +328,16 @@ float GameEngine::checkLeftTileCollisions(CompositeEntity* entity){
 }
 
 float GameEngine::checkRightTileCollisions(CompositeEntity* entity){
+	float rC = sin(entity->getRotation());
+	if ((int)(entity->getRotation() * (180 / M_PI)) % 90 <= 45){
+		rC = cos(entity->getRotation());
+	}
+
 	float posX = entity->getPosition().x;
 	float posY = entity->getPosition().y;
-	float sizeX = entity->getSizePositive().x/2;
-	float sizeYPos = entity->getSizePositive().y/2;
-	float sizeYNeg = entity->getSizeNegative().y / 2;
+	float sizeX = entity->getSizePositive().x * rC;
+	float sizeYPos = entity->getSizePositive().y * rC;
+	float sizeYNeg = entity->getSizeNegative().y * rC;
 	float tileSize = levels[currentLevel]->getTileSize();
 	int mapHeightTiles = (int)(mapHeight / tileSize);
 	int gridRight = (int)((posX + sizeX) / tileSize);
@@ -337,7 +352,7 @@ float GameEngine::checkRightTileCollisions(CompositeEntity* entity){
 		tmpTile = tmp->getTile(layer, gridRight, i);
 		if (tmpTile != nullptr){
 			if ((tmpTile->tileType == SOLID || tmpTile->tileType == SOLID_GRASS || tmpTile->tileType == SOLID_FLOOR || tmpTile->tileType == HAZARD_SPIKE_HORIZONTAL) && tmpTile->canCollide){
-				if (tileCollisionRight(posX, sizeX, entity->getSizeNegative().x / 2, gridRight, tmpTile->x, tmpTile->width)){
+				if (tileCollisionRight(posX, sizeX, entity->getSizeNegative().x, gridRight, tmpTile->x, tmpTile->width)){
 					if (getTilePenetrationRight(posX, sizeX, gridRight, tmpTile->x, tmpTile->width) > penetration){
 						penetration = getTilePenetrationRight(posX, sizeX, gridRight, tmpTile->x, tmpTile->width);
 					}
@@ -357,111 +372,118 @@ float GameEngine::checkRightTileCollisions(CompositeEntity* entity){
 }
 
 void GameEngine::resolveYCollisions(CompositeEntity* entity){
-	if (entity->getPosition().y - entity->getSizeNegative().y/2 <= -(int)(mapHeight)){
-		entity->setIsActive(false);
-	}
-	else{
-		float posY = entity->getPosition().y;
-		float accY = entity->getAcceleration().y;
-		float penetrationUp = checkTopTileCollisions(entity);
-		float penetrationDown = checkBottomTileCollisions(entity);
-		if (entity->getIsActive()){
-			float velY = ((penetrationUp <= 0 && penetrationDown > 0) || (penetrationDown <= 0 && penetrationUp > 0)) ? 0 : entity->getVelocity().y;
-			if (penetrationUp <= 0 && penetrationDown > 0){
-				if (entity->getEntityType() == PLAYER_PROJECTILE){
-					entity->destroy(true, true);
-					return;
+	if (entity->getIsActive()){
+		if (entity->atScreenBoundary(0, mapWidth, -(int)mapHeight, 0)){
+			entity->boundaryAction(0, mapWidth, -(int)mapHeight, 0);
+		}
+		else{
+			float posY = entity->getPosition().y;
+			float accY = entity->getAcceleration().y;
+			float penetrationUp = checkTopTileCollisions(entity);
+			float penetrationDown = checkBottomTileCollisions(entity);
+			if (entity->getIsActive()){
+				float velY = ((penetrationUp <= 0 && penetrationDown > 0) || (penetrationDown <= 0 && penetrationUp > 0)) ? 0 : entity->getVelocity().y;
+				if (penetrationUp <= 0 && penetrationDown > 0){
+					if (entity->getEntityType() == PLAYER_PROJECTILE){
+						entity->destroy(true, true);
+						return;
+					}
+					posY += penetrationDown;
+					entity->setOnTileGround(true);
+					if (entity->getVelocity().y > -entity->getJumpSpeed() / 2 && entity->getVelocity().y <= -5 && entity->getJumpSpeed() != 0){
+						entity->playCollisionSound(DOWN, WEAK);
+					}
+					else if ((entity->getVelocity().y > -entity->getJumpSpeed() && entity->getVelocity().y <= -entity->getJumpSpeed() / 2) && entity->getJumpSpeed() != 0){
+						entity->playCollisionSound(DOWN, MEDIUM);
+					}
+					else if (entity->getVelocity().y <= -entity->getJumpSpeed() && entity->getJumpSpeed() != 0){
+						entity->hardCollision(DOWN, 4);
+						shakeScreen = true;
+						shakeCount = 0;
+					}
+					accY = 0;
 				}
-				posY += penetrationDown;
-				entity->setOnTileGround(true);
-				if (entity->getVelocity().y > -entity->getJumpSpeed() / 2 && entity->getVelocity().y <= -5 && entity->getJumpSpeed() != 0){
-					entity->playCollisionSound(DOWN, WEAK);
+				else if (penetrationDown <= 0 && penetrationUp > 0){
+					if (entity->getEntityType() == PLAYER_PROJECTILE){
+						entity->destroy(true, true);
+						return;
+					}
+					posY -= penetrationUp;
+					entity->setOnTileGround(false);
+					accY = 0;
+					entity->setState(FALLING);
 				}
-				else if ((entity->getVelocity().y > -entity->getJumpSpeed() && entity->getVelocity().y <= -entity->getJumpSpeed() / 2) && entity->getJumpSpeed() != 0){
-					entity->playCollisionSound(DOWN, MEDIUM);
+				else if (penetrationDown > 0 && penetrationUp > 0){
+					if (entity->getEntityType() == PLAYER_PROJECTILE){
+						entity->destroy(true, true);
+						return;
+					}
+					posY += penetrationDown;
+					entity->setOnTileGround(true);
+					if (entity->getVelocity().y > -entity->getJumpSpeed() / 2 && entity->getVelocity().y <= -5 && entity->getJumpSpeed() != 0){
+						entity->playCollisionSound(DOWN, WEAK);
+					}
+					else if ((entity->getVelocity().y > -entity->getJumpSpeed() && entity->getVelocity().y <= -entity->getJumpSpeed() / 2) && entity->getJumpSpeed() != 0){
+						entity->playCollisionSound(DOWN, MEDIUM);
+					}
+					else if (entity->getVelocity().y <= -entity->getJumpSpeed() && entity->getJumpSpeed() != 0){
+						entity->hardCollision(DOWN, 4);
+						shakeScreen = true;
+						shakeCount = 0;
+					}
+					entity->setOnTileGround(true);
+					accY = 0;
 				}
-				else if (entity->getVelocity().y <= -entity->getJumpSpeed() && entity->getJumpSpeed() != 0){
-					entity->hardCollision(DOWN, 4);
-					shakeScreen = true;
-					shakeCount = 0;
+				else{
+					entity->setOnTileGround(false);
 				}
-				accY = 0;
+				entity->setPosition(entity->getPosition().x, posY);
+				entity->setVelocity(entity->getVelocity().x, velY);
+				entity->setAcceleration(entity->getAcceleration().x, accY);
 			}
-			else if (penetrationDown <= 0 && penetrationUp > 0){
-				if (entity->getEntityType() == PLAYER_PROJECTILE){
-					entity->destroy(true, true);
-					return;
-				}
-				posY -= penetrationUp;
-				entity->setOnTileGround(false);
-				accY = 0;
-				entity->setState(FALLING);
-			}
-			else if (penetrationDown > 0 && penetrationUp > 0){
-				if (entity->getEntityType() == PLAYER_PROJECTILE){
-					entity->destroy(true, true);
-					return;
-				}
-				posY += penetrationDown;
-				entity->setOnTileGround(true);
-				if (entity->getVelocity().y > -entity->getJumpSpeed() / 2 && entity->getVelocity().y <= -5 && entity->getJumpSpeed() != 0){
-					entity->playCollisionSound(DOWN, WEAK);
-				}
-				else if ((entity->getVelocity().y > -entity->getJumpSpeed() && entity->getVelocity().y <= -entity->getJumpSpeed() / 2) && entity->getJumpSpeed() != 0){
-					entity->playCollisionSound(DOWN, MEDIUM);
-				}
-				else if (entity->getVelocity().y <= -entity->getJumpSpeed() && entity->getJumpSpeed() != 0){
-					entity->hardCollision(DOWN, 4);
-					shakeScreen = true;
-					shakeCount = 0;
-				}
-				entity->setOnTileGround(true);
-				accY = 0;
-			}
-			else{
-				entity->setOnTileGround(false);
-			}
-			entity->setPosition(entity->getPosition().x, posY);
-			entity->setVelocity(entity->getVelocity().x, velY);
-			entity->setAcceleration(entity->getAcceleration().x, accY);
 		}
 	}
 }
 
 void GameEngine::resolveXCollisions(CompositeEntity* entity){
 	if (entity->getIsActive()){
-		float posX = entity->getPosition().x;
-		float velX = entity->getVelocity().x;
-		float accX = entity->getAcceleration().x;
-		float penetrationLeft = checkLeftTileCollisions(entity);
-		float penetrationRight = checkRightTileCollisions(entity);
-		if (penetrationRight <= 0 && penetrationLeft > 0){
-			if (entity->getEntityType() == PLAYER_PROJECTILE){
-				entity->destroy(true, true);
-				return;
-			}
-			posX += penetrationLeft;
-			velX = entity->getEntityType() == ACTOR_ENEMY_PATROL_TURN ? -velX : 0;
-			accX = 0;
-			entity->setState(STATIONARY);
+		if (entity->atScreenBoundary(0, mapWidth, -(int)mapHeight, 0)){
+			entity->boundaryAction(0, mapWidth, -(int)mapHeight, 0);
 		}
-		else if (penetrationLeft <= 0 && penetrationRight > 0){
-			if (entity->getEntityType() == PLAYER_PROJECTILE){
-				entity->destroy(true, true);
-				return;
+		else{
+			float posX = entity->getPosition().x;
+			float velX = entity->getVelocity().x;
+			float accX = entity->getAcceleration().x;
+			float penetrationLeft = checkLeftTileCollisions(entity);
+			float penetrationRight = checkRightTileCollisions(entity);
+			if (penetrationRight <= 0 && penetrationLeft > 0){
+				if (entity->getEntityType() == PLAYER_PROJECTILE){
+					entity->destroy(true, true);
+					return;
+				}
+				posX += penetrationLeft;
+				velX = entity->getEntityType() == ACTOR_ENEMY_PATROL_TURN ? -velX : 0;
+				accX = 0;
+				entity->setState(STATIONARY);
 			}
-			posX -= penetrationRight;
-			velX = entity->getEntityType() == ACTOR_ENEMY_PATROL_TURN ? -velX : 0;
-			accX = 0;
+			else if (penetrationLeft <= 0 && penetrationRight > 0){
+				if (entity->getEntityType() == PLAYER_PROJECTILE){
+					entity->destroy(true, true);
+					return;
+				}
+				posX -= penetrationRight;
+				velX = entity->getEntityType() == ACTOR_ENEMY_PATROL_TURN ? -velX : 0;
+				accX = 0;
+			}
+			entity->setPosition(posX, entity->getPosition().y);
+			entity->setVelocity(velX, entity->getVelocity().y);
+			entity->setAcceleration(accX, entity->getAcceleration().y);
 		}
-		entity->setPosition(posX, entity->getPosition().y);
-		entity->setVelocity(velX, entity->getVelocity().y);
-		entity->setAcceleration(accX, entity->getAcceleration().y);
 	}
 }
 
 void GameEngine::resolveXYCollision(CompositeEntity* entity){
-	if (entity->getPosition().y - entity->getSizeNegative().y / 2 <= -(int)(mapHeight)){
+	if (entity->getPosition().y - entity->getSizeNegative().y <= -(int)(mapHeight)){
 		entity->setIsActive(false);
 	}
 	else{
@@ -935,6 +957,76 @@ void GameEngine::checkIfShouldWarp(){
 	for (CompositeEntity* entity : gameEntities[currentLevel][WARP_ENTITY]){
 		if (playerEntity->isColliding(entity)){
 			setLevel(entity->getWarpDestination());
+		}
+	}
+}
+
+void GameEngine::freeMemory(){
+	if (levels[currentLevel] != nullptr){
+		try{
+			levels[currentLevel]->freeMemory();
+			delete levels[currentLevel];
+			levels[currentLevel] = nullptr;
+		}
+		catch (char* e){
+			levels[currentLevel] = nullptr;
+		}
+	}
+	levels.erase(currentLevel);
+
+	if (playerEntity != nullptr){
+		playerEntity = nullptr;
+	}
+
+	if (collisionEvents.size() != 0){
+		for (std::vector<CollisionListener*>::iterator itr = collisionEvents.begin(); itr != collisionEvents.end(); itr++){
+			if (*itr != nullptr){
+				try{
+					(*itr)->freeMemory();
+					delete *itr;
+					*itr = nullptr;
+				}
+				catch (char* e){
+					*itr = nullptr;
+				}
+			}
+			itr = collisionEvents.erase(itr);
+			if (itr == collisionEvents.end()){
+				break;
+			}
+		}
+	}
+
+	if (gameEntities.size() != 0){
+		for (std::unordered_map<std::string, std::unordered_map<unsigned, std::vector<CompositeEntity*>>>::iterator itr = gameEntities.begin(); itr != gameEntities.end(); itr++){
+			for (std::unordered_map<unsigned, std::vector<CompositeEntity*>>::iterator itr2 = itr->second.begin(); itr2 != itr->second.end(); itr2++){
+				for (std::vector<CompositeEntity*>::iterator itr3 = itr2->second.begin(); itr3 != itr2->second.end(); itr3++){
+					if (*itr3 != nullptr){
+						try{
+							(*itr3)->freeMemory();
+							delete *itr3;
+							*itr3 = nullptr;
+						}
+						catch (char* e){
+							*itr3 = nullptr;
+						}
+					}
+					itr3 = itr2->second.erase(itr3);
+					if (itr3 == itr2->second.end()){
+						break;
+					}
+				}
+				itr2->second.clear();
+				itr2 = itr->second.erase(itr2);
+				if (itr2 == itr->second.end()){
+					break;
+				}
+			}
+			itr->second.clear();
+			itr = gameEntities.erase(itr);
+			if (itr == gameEntities.end()){
+				break;
+			}
 		}
 	}
 }

@@ -33,6 +33,8 @@ public:
 	void render(ShaderProgram* program);
 	void update(float elapsed, float gravity, Vector3 parentVelocity, Vector3 parentPosition);
 	void trigger(int toEmit = 1);
+
+	void freeMemory();
 };
 
 #endif

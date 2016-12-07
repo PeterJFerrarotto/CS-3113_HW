@@ -22,6 +22,8 @@ public:
 	~CollisionListener();
 
 	void operator()(float elapsed, std::unordered_map<unsigned, std::vector<CompositeEntity*>>& gameEntities);
+	
+	void freeMemory();
 };
 
 #endif

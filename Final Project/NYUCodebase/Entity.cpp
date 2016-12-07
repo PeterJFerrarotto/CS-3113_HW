@@ -28,6 +28,24 @@ Entity::Entity(const std::string& entityID, Texture* texture){
 }
 
 void Entity::freeMemory(){
+	if (animations.size() != 0){
+		for (unordered_map<unsigned, Animation*>::iterator itr = animations.begin(); itr != animations.end(); itr++){
+			if (itr->second != nullptr){
+				try{
+					itr->second->freeMemory();
+					delete itr->second;
+					itr->second = nullptr;
+				}
+				catch (char* e){
+					itr->second = nullptr;
+				}
+			}
+			itr = animations.erase(itr);
+			if (itr == animations.end()){
+				break;
+			}
+		}
+	}
 	if (child != nullptr){
 		child->freeMemory();
 		delete child;
@@ -37,6 +55,16 @@ void Entity::freeMemory(){
 		sibling->freeMemory();
 		delete sibling;
 		sibling = nullptr;
+	}
+	if (texture != nullptr){
+		try{
+			texture->getObjectCoordinates();
+			delete texture;
+			texture = nullptr;
+		}
+		catch (char* e){
+			texture = nullptr;
+		}
 	}
 }
 
@@ -233,6 +261,9 @@ void Entity::draw(ShaderProgram* program, Matrix offset, float elapsed, float fp
 			sibling->draw(program, offset, elapsed, fps);
 		}
 	}
+	if (child != nullptr && child->texture->getTextureLayer() < texture->getTextureLayer()){
+		child->draw(program, modelMatrix, elapsed, fps);
+	}
 	if (doRender){
 		if (isAnimated){
 			runAnimation(elapsed, fps);
@@ -278,6 +309,89 @@ void Entity::draw(ShaderProgram* program, Matrix offset, float elapsed, float fp
 	}
 }
 
+void Entity::transformMatrix(Vector3 positionOffset, Vector3 scaleOffset, float rotationOffset){
+	offsetPosition = position;
+	offsetPosition.x *= scaleOffset.x;
+	offsetPosition.y *= scaleOffset.y;
+	offsetPosition.z *= scaleOffset.z;
+	offsetScale = scale;
+	offsetRotation = rotation;
+
+	offsetPosition.x += positionOffset.x;
+	offsetPosition.y += positionOffset.y;
+	offsetPosition.z += positionOffset.z;
+
+	offsetScale.x *= scaleOffset.x;
+	offsetScale.y *= scaleOffset.y;
+	offsetScale.z *= scaleOffset.z;
+
+	offsetRotation += rotationOffset;
+
+	modelMatrix.identity();
+	modelMatrix.Scale(offsetScale.x, offsetScale.y, offsetScale.z);
+	modelMatrix.Rotate(offsetRotation);
+	modelMatrix.Translate(offsetPosition.x, offsetPosition.y, offsetPosition.z);
+	if (doMirror){
+		modelMatrix.Pitch(M_PI);
+	}
+}
+
+void Entity::draw(ShaderProgram* program, Vector3 positionOffset, Vector3 scaleOffset, float rotationOffset, float elapsed, float fps){
+	static vector<float> color;
+	transformMatrix(positionOffset, scaleOffset, rotationOffset);
+	if (sibling != nullptr){
+		if (sibling->texture->getTextureLayer() < texture->getTextureLayer()){
+			sibling->draw(program, positionOffset, scaleOffset, rotationOffset, elapsed, fps);
+		}
+	}
+	if (child != nullptr && child->texture->getTextureLayer() < texture->getTextureLayer()){
+		child->draw(program, modelMatrix, elapsed, fps);
+	}
+	if (doRender){
+		if (isAnimated){
+			runAnimation(elapsed, fps);
+		}
+		if (texture->getTextureType() == UNEVEN_SPRITESHEET){
+			objectVertices = texture->getObjectCoordinates();
+		}
+		else if (texture->getTextureType() == EVEN_SPRITESHEET || texture->getTextureType() == IMAGE){
+			objectVertices = { -0.5f, -0.5f, 0.5f, 0.5f, -0.5f, 0.5f, 0.5f, 0.5f, -0.5f, -0.5f, 0.5f, -0.5f };
+		}
+		textureCoordinates = texture->getTextureCoordinates();
+		glBindTexture(GL_TEXTURE_2D, texture->getTextureID());
+		program->setModelMatrix(modelMatrix);
+
+		glEnableVertexAttribArray(program->positionAttribute);
+		glVertexAttribPointer(program->positionAttribute, 2, GL_FLOAT, false, 0, objectVertices.data());
+
+		glEnableVertexAttribArray(program->texCoordAttribute);
+		glVertexAttribPointer(program->texCoordAttribute, 2, GL_FLOAT, false, 0, textureCoordinates.data());
+
+		if (color.size() == 0){
+			for (size_t i = 0; i < 6; i++){
+				color.insert(color.end(), { 1.0, 1.0, 1.0, 1.0 });
+			}
+		}
+
+
+		GLuint colorAttribute = glGetAttribLocation(program->programID, "color");
+		glVertexAttribPointer(colorAttribute, 4, GL_FLOAT, false, 0, color.data());
+		glEnableVertexAttribArray(colorAttribute);
+
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+		glDisableVertexAttribArray(program->positionAttribute);
+		glDisableVertexAttribArray(program->texCoordAttribute);
+		glDisableVertexAttribArray(colorAttribute);
+	}
+
+	if (sibling != nullptr && sibling->texture->getTextureLayer() >= texture->getTextureLayer()){
+		sibling->draw(program, positionOffset, scaleOffset, rotationOffset, elapsed, fps);
+	}
+	if (child != nullptr && child->texture->getTextureLayer() >= texture->getTextureLayer()){
+		child->draw(program, offsetPosition, offsetScale, offsetRotation, elapsed, fps);
+	}
+}
+
 
 void Entity::updateBounding(float scaleX, float scaleY, float scaleZ){
 	float tmpScaleX = scale.x * scaleX;
@@ -298,10 +412,10 @@ void Entity::updateBounding(float scaleX, float scaleY, float scaleZ){
 			size.z = 0;
 			break;
 		case UNEVEN_SPRITESHEET:
-			baseSize.x = (texture->getSpriteWidth() / texture->getSheetWidth()) / (texture->getSpriteHeight() / texture->getSheetHeight()) * texture->getSpriteSize();
-			baseSize.y = baseSize.x;
-			size.x = (baseSize.x)*tmpScaleX;
-			size.y = (baseSize.y)*tmpScaleY;
+			//baseSize.x = ((texture->getSpriteWidth() / texture->getSheetWidth()) / (texture->getSpriteHeight() / texture->getSheetHeight()) * texture->getSpriteSize())/2;
+			//baseSize.y = baseSize.x;
+			size.x = tmpScaleX;
+			size.y = tmpScaleY;
 			size.z = 0;
 			break;
 		default:
@@ -435,4 +549,35 @@ void Entity::setAllDoRender(bool doRender){
 	if (sibling != nullptr){
 		sibling->setAllDoRender(doRender);
 	}
+}
+
+void Entity::centralize(Vector3 offset){
+	position.x -= offset.x;
+	position.y -= offset.y;
+	position.z -= offset.z;
+	//if (child != nullptr){
+	//	child->centralize(offset);
+	//}
+	//if (sibling != nullptr){
+	//	sibling->centralize(offset);
+	//}
+}
+
+int Entity::getNumOfEntities(bool lookForCollision){
+	int numOfEntities = 1;
+	if (child == nullptr && sibling == nullptr){
+		if (!lookForCollision || (lookForCollision && canCollide)){
+			return numOfEntities;
+		}
+		else{
+			return 0;
+		}
+	}
+	if (child != nullptr){
+		numOfEntities += child->getNumOfEntities();
+	}
+	if (sibling != nullptr){
+		numOfEntities += child->getNumOfEntities();
+	}
+	return numOfEntities;
 }

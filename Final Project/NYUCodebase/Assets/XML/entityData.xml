@@ -4,76 +4,77 @@
     <EntityID>Player</EntityID>
     <subEntities>
       <First>
-         <EntityID>PlayerLegs</EntityID>
-            <Animations>
-              <Animation loop="0" type="0" startingIndex="87" endingIndex="87" Starting="1">
-                <Texture type="1" layer="1">
-                  <EvenSpritesheet Directory="Assets/Levels/Spritesheets/" index="87" sheetName="arne_sprites.png" layer="1" spriteCountX="16" spriteCountY="8"></EvenSpritesheet>
-                </Texture>
-              </Animation>
-              <Animation loop="1" type="1" startingIndex="64" endingIndex="66">
-                <Texture type="1" layer="1">
-                  <EvenSpritesheet Directory="Assets/Levels/Spritesheets/" index="67" sheetName="arne_sprites.png" layer="1" spriteCountX="16" spriteCountY="8"></EvenSpritesheet>
-                </Texture>
-              </Animation>
-              <Animation loop="1" type="2" startingIndex="67" endingIndex="69">
-                <Texture type="1" layer="1">
-                  <EvenSpritesheet Directory="Assets/Levels/Spritesheets/" index="64" sheetName="arne_sprites.png" layer="1" spriteCountX="16" spriteCountY="8"></EvenSpritesheet>
-                </Texture>
-              </Animation>
-              <Animation loop="0" type="3" startingIndex="71" endingIndex="71">
-                <Texture type="1" layer="1">
-                  <EvenSpritesheet Directory="Assets/Levels/Spritesheets/" index="71" sheetName="arne_sprites.png" layer="1" spriteCountX="16" spriteCountY="8"></EvenSpritesheet>
-                </Texture>
-              </Animation>
-              <Animation loop="0" type="4" startingIndex="70" endingIndex="70">
-                <Texture type="1" layer="1">
-                  <EvenSpritesheet Directory="Assets/Levels/Spritesheets/" index="70" sheetName="arne_sprites.png" layer="1" spriteCountX="16" spriteCountY="8"></EvenSpritesheet>
-                </Texture>
-              </Animation>
-            </Animations>
-            <Details>
-              <Position x="0" y="0"></Position>
-              <Scale x="1" y="1"></Scale>
-              <doRender>1</doRender>
-              <canCollide>1</canCollide>
-            </Details>
+        <EntityID>PlayerTorso</EntityID>
+        <Texture type="1" layer="2">
+          <EvenSpritesheet Directory="Assets/Levels/Spritesheets/" index="98" sheetName="arne_sprites.png" layer="1" spriteCountX="16" spriteCountY="8"></EvenSpritesheet>
+        </Texture>
+        <Details>
+          <Position x="0" y="0.5" z="0"></Position>
+
+          <Scale x="1" y="1" z="1"></Scale>
+
+          <Velocity x="0" y="0" z="0"></Velocity>
+
+          <Acceleration x="0" y="0" z="0"></Acceleration>
+
+          <Rotation>0</Rotation>
+
+          <rotationalVelocity>0</rotationalVelocity>
+
+          <canCollide>1</canCollide>
+
+          <doRender>1</doRender>
+
+          <boundingType>0</boundingType>
+        </Details>
         <Child>
-          <EntityID>PlayerTorso</EntityID>
-          <Texture type="1" layer="2">
-            <EvenSpritesheet Directory="Assets/Levels/Spritesheets/" index="98" sheetName="arne_sprites.png" layer="1" spriteCountX="16" spriteCountY="8"></EvenSpritesheet>
-          </Texture>
+          <EntityID>PlayerLegs</EntityID>
+          <Animations>
+            <Animation loop="0" type="0" startingIndex="87" endingIndex="87" Starting="1">
+              <Texture type="1" layer="1">
+                <EvenSpritesheet Directory="Assets/Levels/Spritesheets/" index="87" sheetName="arne_sprites.png" layer="1" spriteCountX="16" spriteCountY="8"></EvenSpritesheet>
+              </Texture>
+            </Animation>
+            <Animation loop="1" type="1" startingIndex="64" endingIndex="66">
+              <Texture type="1" layer="1">
+                <EvenSpritesheet Directory="Assets/Levels/Spritesheets/" index="67" sheetName="arne_sprites.png" layer="1" spriteCountX="16" spriteCountY="8"></EvenSpritesheet>
+              </Texture>
+            </Animation>
+            <Animation loop="1" type="2" startingIndex="67" endingIndex="69">
+              <Texture type="1" layer="1">
+                <EvenSpritesheet Directory="Assets/Levels/Spritesheets/" index="64" sheetName="arne_sprites.png" layer="1" spriteCountX="16" spriteCountY="8"></EvenSpritesheet>
+              </Texture>
+            </Animation>
+            <Animation loop="0" type="3" startingIndex="71" endingIndex="71">
+              <Texture type="1" layer="1">
+                <EvenSpritesheet Directory="Assets/Levels/Spritesheets/" index="71" sheetName="arne_sprites.png" layer="1" spriteCountX="16" spriteCountY="8"></EvenSpritesheet>
+              </Texture>
+            </Animation>
+            <Animation loop="0" type="4" startingIndex="70" endingIndex="70">
+              <Texture type="1" layer="1">
+                <EvenSpritesheet Directory="Assets/Levels/Spritesheets/" index="70" sheetName="arne_sprites.png" layer="1" spriteCountX="16" spriteCountY="8"></EvenSpritesheet>
+              </Texture>
+            </Animation>
+          </Animations>
           <Details>
-            <Position x="0" y="0.5" z="0"></Position>
-
-            <Scale x="1" y="1" z="1"></Scale>
-
-            <Velocity x="0" y="0" z="0"></Velocity>
-
-            <Acceleration x="0" y="0" z="0"></Acceleration>
-
-            <Rotation>0</Rotation>
-
-            <rotationalVelocity>0</rotationalVelocity>
-
-            <canCollide>1</canCollide>
-
+            <Position x="0" y="-0.5"></Position>
+            <Scale x="1" y="1"></Scale>
             <doRender>1</doRender>
-
-            <boundingType>0</boundingType>
-          </Details>
-          <Child>
-           <EntityID>PlayerHead</EntityID>
-          <Texture type="1" layer="2">
-            <EvenSpritesheet Directory="Assets/Levels/Spritesheets/" index="82" sheetName="arne_sprites.png" layer="1" spriteCountX="16" spriteCountY="8"></EvenSpritesheet>
-          </Texture>
-          <Details>
             <canCollide>1</canCollide>
-            <Scale x="1" y="1" z="1"></Scale>
-            <Position x="0" y="1" z="0"></Position>
-            <doRender>1</doRender>
           </Details>
-          </Child>
+          
+          <Sibling>
+            <EntityID>PlayerHead</EntityID>
+            <Texture type="1" layer="2">
+              <EvenSpritesheet Directory="Assets/Levels/Spritesheets/" index="82" sheetName="arne_sprites.png" layer="1" spriteCountX="16" spriteCountY="8"></EvenSpritesheet>
+            </Texture>
+            <Details>
+              <canCollide>0</canCollide>
+              <Scale x="1" y="1" z="1"></Scale>
+              <Position x="0" y="1" z="0"></Position>
+              <doRender>1</doRender>
+            </Details>
+          </Sibling>
         </Child>
       </First>
     </subEntities>

@@ -134,6 +134,8 @@ public:
 	bool getGameOver();
 	unsigned getPoints();
 
+	void freeMemory();
+
 };
 
 #endif

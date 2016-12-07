@@ -283,3 +283,35 @@ void Level::setPlayerEntity(CompositeEntity* playerEntity){
 CompositeEntity* Level::getPlayerEntity(){
 	return playerEntity;
 }
+
+void Level::freeMemory(){
+
+	playerEntity = nullptr;
+
+	if (collisionData.size() != 0){
+		for (std::unordered_map<GLuint, std::unordered_map<unsigned, Tile*>>::iterator itr = collisionData.begin(); itr != collisionData.end(); itr++){
+			if (itr->second.size() != 0){
+				for (auto itr2 = itr->second.begin(); itr2 != itr->second.end(); itr2++){
+					if (itr2->second != nullptr){
+						try{
+							itr2->second->height;
+							delete itr2->second;
+							itr2->second = nullptr;
+						}
+						catch (char* e){
+							itr2->second = nullptr;
+						}
+					}
+					itr2 = itr->second.erase(itr2);
+					if (itr2 == itr->second.end()){
+						break;
+					}
+				}
+			}
+			itr = collisionData.erase(itr);
+			if (itr == collisionData.end()){
+				break;
+			}
+		}
+	}
+}

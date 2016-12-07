@@ -355,23 +355,26 @@ void CompositeEntity::reset(){
 }
 
 void CompositeEntity::updateBounding(){
+	if (centralized){
+		int x = 5;
+	}
 	if (first != nullptr){
 		Entity* checking = first;
 		if (checking->getDoRender() && checking->getCanCollide()){
 			if (boundingType == SQUARE){
 				checking->updateBounding(scale.x, scale.y, scale.z);
-				sizePositive.x = abs(first->getSize().x);
-				sizePositive.y = abs(first->getSize().y);
-				sizePositive.z = abs(first->getSize().z);
+				sizePositive.x = abs((checking->getScale().x) * scale.x) / 2;
+				sizePositive.y = abs((checking->getScale().y) * scale.y) / 2;
+				sizePositive.z = 1;
 
 				sizeNegative = sizePositive;
 			}
 		}
 		if (checking->getSibling() != nullptr){
-			updateBoundingRecurse(checking->getSibling());
+			updateBoundingRecurse(checking->getSibling(), scale);
 		}
 		if (checking->getChild() != nullptr){
-			updateBoundingRecurse(checking->getChild(), checking->getPosition().x, checking->getPosition().y, checking->getPosition().z);
+			updateBoundingRecurse(checking->getChild(), scale, checking->getPosition().x, checking->getPosition().y, checking->getPosition().z);
 		}
 	}
 	if (type == WARP_ENTITY){
@@ -380,48 +383,58 @@ void CompositeEntity::updateBounding(){
 		sizePositive.z = 0;
 		sizeNegative = sizePositive;
 	}
+
+	if ((sizePositive.x != sizeNegative.x || sizePositive.y != sizeNegative.y || sizePositive.z != sizeNegative.z) && (type != GAME_TEXT_ENTITY && type != POINTS_INDICATOR && type != TITLE_TEXT_ENTITY)){
+		centralize();
+		centralized = true;
+	}
+	projectToAxis();
 }
 
-void CompositeEntity::updateBoundingRecurse(Entity* check, float offsetX, float offsetY, float offsetZ){
+void CompositeEntity::updateBoundingRecurse(Entity* check, Vector3 offsetScale, float offsetX, float offsetY, float offsetZ){
+	Vector3 currentOffsetScale;
 	if (check != nullptr){
+		currentOffsetScale.x = offsetScale.x * check->getScale().x;
+		currentOffsetScale.y = offsetScale.y * check->getScale().y;
+		currentOffsetScale.z = 1;
 		if (check->getDoRender() && check->getCanCollide()){
 			float pos = 0;
 			check->updateBounding(scale.x, scale.y, scale.z);
-			if (offsetX + check->getPosition().x == 0 && offsetY + check->getPosition().y == 0 && offsetZ + check->getPosition().z == 0){
-				throw "Two entities should not be in the same spot!!";
-			}
+			//if (offsetX + check->getPosition().x == 0 && offsetY + check->getPosition().y == 0 && offsetZ + check->getPosition().z == 0){
+			//	throw "Two entities should not be in the same spot!!";
+			//}
 
 			pos = check->getPosition().x;
 			if (offsetX + pos > 0){
 				if (pos == 0){
 					if (pos > sizePositive.x){
-						sizePositive.x += sizePositive.x - check->getSize().x;
+						sizePositive.x += offsetScale.x;
 					}
 				}
 				else if (pos < 1 && pos > 0){
-					sizePositive.x += check->getSize().x - pos;
+					sizePositive.x += currentOffsetScale.x * pos;
 				}
 				else if (pos == 1){
-					sizePositive.x += check->getSize().x;
+					sizePositive.x += currentOffsetScale.x;
 				}
 				else if (pos > 1){
-					sizePositive.x += check->getSize().x + pos;
+					sizePositive.x += currentOffsetScale.x * (1 + pos);
 				}
 			}
 			else if (offsetX + pos < 0){
 				if (pos == 0){
 					if (pos > sizeNegative.x){
-						sizeNegative.x += sizeNegative.x - check->getSize().x;
+						sizeNegative.x += sizeNegative.x - check->getSize().x/2;
 					}
 				}
-				else if (pos < 1 && pos > 0){
-					sizeNegative.x += check->getSize().x - pos;
+				else if (pos > -1 && pos < 0){
+					sizeNegative.x += currentOffsetScale.x * pos;
 				}
-				else if (pos == 1){
-					sizeNegative.x += check->getSize().x;
+				else if (pos == -1){
+					sizeNegative.x += currentOffsetScale.x;
 				}
-				else if (pos > 1){
-					sizeNegative.x += check->getSize().x + pos;
+				else if (pos < -1){
+					sizeNegative.x += currentOffsetScale.x * (1 + pos);
 				}
 			}
 
@@ -429,79 +442,133 @@ void CompositeEntity::updateBoundingRecurse(Entity* check, float offsetX, float 
 			if (offsetY + pos > 0){
 				if (pos == 0){
 					if (pos > sizePositive.y){
-						sizePositive.y += sizePositive.y - check->getSize().y;
+						sizePositive.y += sizePositive.y - check->getSize().y / 2;
 					}
 				}
 				else if (pos < 1 && pos > 0){
-					sizePositive.y += check->getSize().y - pos;
+					sizePositive.y += currentOffsetScale.y * (pos);
 				}
 				else if (pos == 1){
-					sizePositive.y += check->getSize().y;
+					sizePositive.y += currentOffsetScale.y;
 				}
 				else if (pos > 1){
-					sizePositive.y += check->getSize().y + pos;
+					sizePositive.y += currentOffsetScale.y * (1 + pos);
 				}
 			}
 			else if (offsetY + pos < 0){
 				if (pos == 0){
 					if (pos > sizeNegative.y){
-						sizeNegative.y += sizeNegative.y - check->getSize().y;
+						sizeNegative.y += sizeNegative.y - check->getSize().y / 2;
 					}
 				}
-				else if (pos < 1 && pos > 0){
-					sizeNegative.y += check->getSize().y - pos;
+				else if (pos > -1 && pos < 0){
+					sizeNegative.y += currentOffsetScale.y * abs(offsetY + pos);
 				}
-				else if (pos == 1){
-					sizeNegative.y += check->getSize().y;
+				else if (pos == -1){
+					sizeNegative.y += currentOffsetScale.y;
 				}
-				else if (pos > 1){
-					sizeNegative.y += check->getSize().y + pos;
+				else if (pos < -1){
+					sizeNegative.y += currentOffsetScale.y * (1 + abs(pos));
 				}
 			}
 
-			pos = check->getPosition().z;
-			if (offsetZ + pos > 0){
-				if (pos == 0){
-					if (pos > sizePositive.z){
-						sizePositive.z += sizePositive.z - check->getSize().z;
-					}
-				}
-				else if (pos < 1 && pos > 0){
-					sizePositive.z += check->getSize().z - pos;
-				}
-				else if (pos == 1){
-					sizePositive.z += check->getSize().z;
-				}
-				else if (pos > 1){
-					sizePositive.z += check->getSize().z + pos;
-				}
-			}
-			else if (offsetZ + pos < 0){
-				if (pos == 0){
-					if (pos > sizeNegative.z){
-						sizeNegative.z += sizeNegative.z - check->getSize().z;
-					}
-				}
-				else if (pos < 1 && pos > 0){
-					sizeNegative.z += check->getSize().z - pos;
-				}
-				else if (pos == 1){
-					sizeNegative.z += check->getSize().z;
-				}
-				else if (pos > 1){
-					sizeNegative.z += check->getSize().z + pos;
+		//	pos = check->getPosition().z;
+		//	if (offsetZ + pos > 0){
+		//		if (pos == 0){
+		//			if (pos > sizePositive.z){
+		//				sizePositive.z += sizePositive.z - check->getSize().z / 2;
+		//			}
+		//		}
+		//		else if (pos < 1 && pos > 0){
+		//			sizePositive.z += check->getSize().z / 2 - pos;
+		//		}
+		//		else if (pos == 1){
+		//			sizePositive.z += check->getSize().z / 2;
+		//		}
+		//		else if (pos > 1){
+		//			sizePositive.z += check->getSize().z / 2 + pos;
+		//		}
+		//	}
+		//	else if (offsetZ + pos < 0){
+		//		if (pos == 0){
+		//			if (pos > sizeNegative.z){
+		//				sizeNegative.z += sizeNegative.z - check->getSize().z / 2;
+		//			}
+		//		}
+		//		else if (pos < 1 && pos > 0){
+		//			sizeNegative.z += check->getSize().z / 2 - pos;
+		//		}
+		//		else if (pos == 1){
+		//			sizeNegative.z += check->getSize().z / 2;
+		//		}
+		//		else if (pos > 1){
+		//			sizeNegative.z += check->getSize().z / 2 + pos;
+		//		}
+		//	}
+		}
+		sizePositive.z = 1;
+		sizeNegative.z = 1;
+		updateBoundingRecurse(check->getChild(), currentOffsetScale, check->getPosition().x + offsetX, check->getPosition().y + offsetY, check->getPosition().z + offsetZ);
+		updateBoundingRecurse(check->getSibling(), offsetScale, offsetX, offsetY, offsetZ);
+	}
+}
+
+void CompositeEntity::centralize(){
+	Vector3 totalSize;
+	Vector3 offset;
+
+	Vector3 oldSizePositive = sizePositive;
+	
+	totalSize.x = sizePositive.x + sizeNegative.x;
+	totalSize.y = sizePositive.y + sizeNegative.y;
+	totalSize.z = sizePositive.z + sizeNegative.z;
+
+	sizePositive.x = totalSize.x / 2;
+	sizePositive.y = totalSize.y / 2;
+	sizePositive.z = totalSize.z / 2;
+
+	sizeNegative = sizePositive;
+
+	if (!centralized){
+		offset.x = oldSizePositive.x - totalSize.x / 2;
+		offset.y = oldSizePositive.y - totalSize.y / 2;
+		offset.z = oldSizePositive.z - totalSize.z / 2;
+
+		position.x += offset.x;
+		position.y += offset.y;
+		position.z += offset.z;
+
+		startingPosition.x += offset.x;
+		startingPosition.y += offset.y;
+		startingPosition.z += offset.z;
+
+		offset.x /= scale.x;
+		offset.y /= scale.y;
+		offset.z /= scale.z;
+		offset.x *= first->getNumOfEntities(true);
+		offset.y *= first->getNumOfEntities(true);
+		offset.z *= first->getNumOfEntities(true);
+		first->centralize(offset);
+
+		if (particleEmitters.size() != 0){
+			for (std::unordered_map<unsigned, std::vector<ParticleEmitter*>>::iterator itr = particleEmitters.begin(); itr != particleEmitters.end(); itr++){
+				for (ParticleEmitter* emitter : itr->second){
+					emitter->offsetPosition.x -= offset.x;
+					emitter->offsetPosition.y += offset.y;
 				}
 			}
 		}
-		updateBoundingRecurse(check->getChild(), check->getPosition().x + offsetX, check->getPosition().y + offsetY, check->getPosition().z + offsetZ);
-		updateBoundingRecurse(check->getSibling(), offsetX, offsetY, offsetZ);
+
+		if (projectile != nullptr){
+
+		}
 	}
 }
 
 bool CompositeEntity::subEntitiesColliding(Entity* firstOfThis, Entity* firstOfThat, Entity* originalOfThat, CompositeEntity* that){
 	if (firstOfThis->getBoundingType() == SQUARE && firstOfThat->getBoundingType() == SQUARE){
 		if (firstOfThis->getCanCollide() && firstOfThat->getCanCollide()){
-			if (!(position.x + firstOfThis->getPosition().x + firstOfThis->getSize().x/2 < that->position.x + firstOfThat->getPosition().x - firstOfThat->getSize().x/2 || position.x + firstOfThis->getPosition().x - sizeNegative.x / 2 > that->position.x + firstOfThat->getPosition().x + firstOfThat->getSize().x/2 || position.y + firstOfThis->getPosition().y + firstOfThis->getSize().y/2 < that->position.y + firstOfThat->getPosition().y - firstOfThat->getSize().y/2 || position.y + firstOfThis->getPosition().y - firstOfThis->getSize().y/2 > that->position.y + firstOfThat->getPosition().y + firstOfThat->getSize().y/2)){
+			if (!(position.x + firstOfThis->getPosition().x + firstOfThis->getSize().x/2 < that->position.x + firstOfThat->getPosition().x - firstOfThat->getSize().x/2 || position.x + firstOfThis->getPosition().x - sizeNegative.x > that->position.x + firstOfThat->getPosition().x + firstOfThat->getSize().x/2 || position.y + firstOfThis->getPosition().y + firstOfThis->getSize().y/2 < that->position.y + firstOfThat->getPosition().y - firstOfThat->getSize().y/2 || position.y + firstOfThis->getPosition().y - firstOfThis->getSize().y/2 > that->position.y + firstOfThat->getPosition().y + firstOfThat->getSize().y/2)){
 				return true;
 			}
 		}
@@ -531,12 +598,12 @@ bool CompositeEntity::subEntitiesColliding(Entity* firstOfThis, Entity* firstOfT
 }
 
 bool CompositeEntity::atScreenBoundary(float gameWallLeft, float gameWallRight, float gameFloor, float gameCeiling){
-	bool atBoundary = (position.x + sizePositive.x/2 >= gameWallRight || position.x - sizeNegative.x/2 <= gameWallLeft || position.y + sizePositive.y/2 >= gameCeiling || position.y - sizeNegative.y/2 <= gameFloor);
+	bool atBoundary = (position.x + sizePositive.x >= gameWallRight || position.x - sizeNegative.x <= gameWallLeft || position.y + sizePositive.y >= gameCeiling || position.y - sizeNegative.y <= gameFloor);
 	if (atBoundary){
-		boundaryLeft = position.x - sizeNegative.x/2 <= gameWallLeft;
-		boundaryRight = position.x + sizePositive.x / 2 >= gameWallRight;
-		boundaryTop = position.y + sizePositive.y/2 >= gameCeiling;
-		boundaryBottom = position.y - sizeNegative.y/2 <= gameFloor;
+		boundaryLeft = position.x - sizeNegative.x <= gameWallLeft;
+		boundaryRight = position.x + sizePositive.x >= gameWallRight;
+		boundaryTop = position.y + sizePositive.y >= gameCeiling;
+		boundaryBottom = position.y - sizeNegative.y <= gameFloor;
 	}
 	else{
 		boundaryLeft = false;
@@ -559,19 +626,19 @@ bool CompositeEntity::isColliding(CompositeEntity* collidingWith){
 	if (canCollide && collidingWith->getCanCollide() && isActive && collidingWith->getIsActive()){
 		if (objectLayer == collidingWith->objectLayer){
 			if (boundingType == SQUARE && collidingWith->boundingType == SQUARE){
-				if (!(position.x + sizePositive.x / 2 < collidingWith->position.x - collidingWith->sizeNegative.x / 2 ||
-					position.x - sizeNegative.x / 2 > collidingWith->position.x + collidingWith->sizePositive.x / 2 ||
-					position.y + sizePositive.y / 2 < collidingWith->position.y - collidingWith->sizeNegative.y / 2 ||
-					position.y - sizeNegative.y / 2 > collidingWith->position.y + collidingWith->sizePositive.y / 2)){
+				if (!(position.x + sizePositive.x < collidingWith->position.x - collidingWith->sizeNegative.x ||
+					position.x - sizeNegative.x > collidingWith->position.x + collidingWith->sizePositive.x ||
+					position.y + sizePositive.y  < collidingWith->position.y - collidingWith->sizeNegative.y ||
+					position.y - sizeNegative.y > collidingWith->position.y + collidingWith->sizePositive.y)){
 					isColliding = (this->first == nullptr || collidingWith->first == nullptr) || subEntitiesColliding(first, collidingWith->first, collidingWith->first, collidingWith);
 					if (isColliding){
-						collideLeft = position.x - sizeNegative.x / 2 >= collidingWith->position.x - collidingWith->sizeNegative.x / 2;
+						collideLeft = position.x - sizeNegative.x >= collidingWith->position.x - collidingWith->sizeNegative.x;
 
-						collideRight = position.x + sizePositive.x / 2 <= collidingWith->position.x + collidingWith->sizePositive.x / 2;
+						collideRight = position.x + sizePositive.x <= collidingWith->position.x + collidingWith->sizePositive.x;
 
-						collideBottom = position.y - sizeNegative.y / 2 >= collidingWith->position.y - collidingWith->sizeNegative.y / 2;
+						collideBottom = position.y - sizeNegative.y >= collidingWith->position.y - collidingWith->sizeNegative.y;
 
-						collideTop = position.y + sizePositive.y / 2 <= collidingWith->position.y + collidingWith->sizePositive.y / 2;
+						collideTop = position.y + sizePositive.y <= collidingWith->position.y + collidingWith->sizePositive.y;
 
 						if (collideLeft && collideRight){
 							collideRight = false;
@@ -666,6 +733,7 @@ void CompositeEntity::move(float elapsed, float gravity, float frictionX, float 
 			}
 		}
 	}
+	updateBounding();
 }
 
 void CompositeEntity::jump(){
@@ -739,6 +807,7 @@ void CompositeEntity::draw(ShaderProgram* program, Matrix matrix, float elapsed,
 	default:
 		transformMatrix();
 		first->draw(program, modelMatrix, elapsed, fps);
+		//first->draw(program, position, scale, rotation, elapsed, fps);
 		break;
 	}
 	if (particleEmitters.size() != 0){
@@ -918,12 +987,12 @@ void CompositeEntity::boundaryStop(float gameWallLeft, float gameWallRight, floa
 		acceleration.x = 0;
 
 
-		if (boundaryLeft && position.x - sizeNegative.x/2 != gameWallLeft){
-			position.x = gameWallLeft + sizePositive.x/2;
+		if (boundaryLeft && position.x - sizeNegative.x != gameWallLeft){
+			position.x = gameWallLeft + sizePositive.x;
 		}
 
-		if (boundaryRight && position.x + sizePositive.x/2 != gameWallRight){
-			position.x = gameWallRight - sizeNegative.x/2;
+		if (boundaryRight && position.x + sizePositive.x != gameWallRight){
+			position.x = gameWallRight - sizeNegative.x;
 		}
 	}
 
@@ -932,12 +1001,12 @@ void CompositeEntity::boundaryStop(float gameWallLeft, float gameWallRight, floa
 		acceleration.y = 0;
 	}
 
-	if (boundaryBottom && position.y - sizeNegative.y/2 != gameFloor){
-		position.y = gameFloor + sizePositive.y/2;
+	if (boundaryBottom && position.y - sizeNegative.y != gameFloor){
+		position.y = gameFloor + sizePositive.y;
 	}
 
-	if (boundaryTop && position.y + sizePositive.y/2 != gameCeiling){
-		position.y = gameCeiling + sizePositive.y/2;
+	if (boundaryTop && position.y + sizePositive.y != gameCeiling){
+		position.y = gameCeiling + sizePositive.y;
 	}
 	setState(STATIONARY);
 }
@@ -948,12 +1017,12 @@ void CompositeEntity::boundaryStopAtWall(float gameWallLeft, float gameWallRight
 		acceleration.x = 0;
 
 
-		if (boundaryLeft && position.x - sizeNegative.x / 2 != gameWallLeft){
-			position.x = gameWallLeft + sizePositive.x / 2;
+		if (boundaryLeft && position.x - sizeNegative.x != gameWallLeft){
+			position.x = gameWallLeft + sizePositive.x;
 		}
 
-		if (boundaryRight && position.x + sizePositive.x / 2 != gameWallRight){
-			position.x = gameWallRight - sizeNegative.x / 2;
+		if (boundaryRight && position.x + sizePositive.x != gameWallRight){
+			position.x = gameWallRight - sizeNegative.x;
 		}
 	}
 	setState(STATIONARY);
@@ -965,13 +1034,13 @@ void CompositeEntity::boundaryTurn(float gameWallLeft, float gameWallRight, floa
 		acceleration.x = -acceleration.x;
 	}
 
-	if (boundaryLeft && position.x - sizeNegative.x/2 != gameWallLeft){
-		position.x = gameWallLeft + sizePositive.x / 2 + 0.01;
+	if (boundaryLeft && position.x - sizeNegative.x != gameWallLeft){
+		position.x = gameWallLeft + sizePositive.x + 0.01;
 		boundaryLeft = false;
 	}
 
-	if (boundaryRight && position.x + sizePositive.x/2 != gameWallRight){
-		position.x = gameWallRight - sizeNegative.x / 2 - 0.01;
+	if (boundaryRight && position.x + sizePositive.x != gameWallRight){
+		position.x = gameWallRight - sizeNegative.x - 0.01;
 		boundaryRight = false;
 	}
 
@@ -981,12 +1050,12 @@ void CompositeEntity::boundaryTurn(float gameWallLeft, float gameWallRight, floa
 	}
 
 	if (boundaryBottom && position.y - sizeNegative.y/2 != gameFloor){
-		position.y = gameFloor + sizePositive.y/2 + 0.01;
+		position.y = gameFloor + sizePositive.y + 0.01;
 		boundaryBottom = false;
 	}
 
-	if (boundaryTop && position.y + sizePositive.y/2 != gameCeiling){
-		position.y = gameCeiling - sizeNegative.y / 2 - 0.01;
+	if (boundaryTop && position.y + sizePositive.y != gameCeiling){
+		position.y = gameCeiling - sizeNegative.y - 0.01;
 		boundaryTop = false;
 	}
 }
@@ -1032,13 +1101,13 @@ void CompositeEntity::collide(float elapsed, CompositeEntity* collidingWith, COL
 }
 
 void CompositeEntity::collideWithStatic(CompositeEntity* collidingWith, COLLISION_BEHAVIOR behavior){
-	collideLeft = position.x - sizeNegative.x / 2 >= collidingWith->position.x - collidingWith->sizeNegative.x / 2;
+	collideLeft = (position.x - sizeNegative.x * sin(rotation) >= collidingWith->position.x - collidingWith->sizeNegative.x) && (position.y - sizeNegative.y < collidingWith->position.y);
 
-	collideRight = position.x + sizePositive.x / 2 <= collidingWith->position.x + collidingWith->sizePositive.x / 2;
+	collideRight = position.x + sizePositive.x <= collidingWith->position.x + collidingWith->sizePositive.x && (position.y - sizeNegative.y < collidingWith->position.y);
 
-	collideBottom = (position.y - sizeNegative.y / 2 >= collidingWith->position.y - collidingWith->sizeNegative.y / 2) && (position.y - sizeNegative.y / 2 >= collidingWith->position.y - collidingWith->sizeNegative.y / 4);
+	collideBottom = (position.y - sizeNegative.y >= collidingWith->position.y - collidingWith->sizeNegative.y) && (position.y - sizeNegative.y >= collidingWith->position.y - collidingWith->sizeNegative.y / 2);
 
-	collideTop = (position.y + sizePositive.y / 2 <= collidingWith->position.y + collidingWith->sizePositive.y / 2) && (position.y + sizePositive.y / 2 <= collidingWith->position.y + collidingWith->sizePositive.y / 4);
+	collideTop = (position.y + sizePositive.y <= collidingWith->position.y + collidingWith->sizePositive.y) && (position.y + sizePositive.y <= collidingWith->position.y + collidingWith->sizePositive.y / 2);
 
 	if (collideLeft && collideRight){
 		collideLeft = false;
@@ -1057,7 +1126,7 @@ void CompositeEntity::collideWithStatic(CompositeEntity* collidingWith, COLLISIO
 	if (collideLeft){
 		if (velocity.x < 0){
 			velocity.x = 0;
-			penetrationX = ((collidingWith->position.x + collidingWith->sizePositive.x / 2) - (position.x - sizeNegative.x / 2)) + 0.001;
+			penetrationX = ((collidingWith->position.x + collidingWith->sizePositive.x) - (position.x - sizeNegative.x));
 		}
 		staticCollideLeft = true;
 	}
@@ -1065,7 +1134,7 @@ void CompositeEntity::collideWithStatic(CompositeEntity* collidingWith, COLLISIO
 	if (collideRight){
 		if (velocity.x > 0){
 			velocity.x = 0;
-			penetrationX = -(((position.x + sizePositive.x / 2) - (collidingWith->position.x - collidingWith->sizeNegative.x / 2)) + 0.001);
+			penetrationX = -(((position.x + sizePositive.x) - (collidingWith->position.x - collidingWith->sizeNegative.x)));
 		}
 		staticCollideRight = true;
 	}
@@ -1073,7 +1142,7 @@ void CompositeEntity::collideWithStatic(CompositeEntity* collidingWith, COLLISIO
 	if (collideBottom){
 		if (velocity.y < 0){
 			velocity.y = 0;
-			penetrationY = ((collidingWith->position.y + collidingWith->sizePositive.y / 2) - (position.y - sizeNegative.y / 2)) + 0.001;
+			penetrationY = ((collidingWith->position.y + collidingWith->sizePositive.y) - (position.y - sizeNegative.y));
 			onTileGround = true;
 		}
 		staticCollideBottom = true;
@@ -1082,13 +1151,17 @@ void CompositeEntity::collideWithStatic(CompositeEntity* collidingWith, COLLISIO
 	if (collideTop){
 		if (velocity.y > 0){
 			velocity.y = 0;
-			penetrationY = -(((position.y + sizePositive.y / 2) - (collidingWith->position.y - collidingWith->sizeNegative.y / 2)) + 0.001);
+			penetrationY = -(((position.y + sizePositive.y) - (collidingWith->position.y - collidingWith->sizeNegative.y)));
 		}
 		staticCollideTop = true;
 	}
 
 	position.x += penetrationX;
 	position.y += penetrationY;
+	if (collidingWith->getVelocity().y > 0){
+		velocity.y += collidingWith->getVelocity().y;
+	}
+	velocity.x += collidingWith->getVelocity().x;
 }
 
 void CompositeEntity::resetFlags(){
@@ -1190,7 +1263,7 @@ void CompositeEntity::addToTimeSinceFiring(float elapsed){
 CompositeEntity* CompositeEntity::logic(CompositeEntity* player, CompositeEntity* lastProjectile){
 	switch (type){
 	case ACTOR_ENEMY:
-		if ((player->getPosition().x - player->getSizeNegative().x/2 <= position.x + sizePositive.x/2 && player->getPosition().x + player->getSizePositive().x/2 >= position.x - sizeNegative.x/2) && isActive){
+		if ((player->getPosition().x - player->getSizeNegative().x <= position.x + sizePositive.x && player->getPosition().x + player->getSizePositive().x >= position.x - sizeNegative.x) && isActive){
 			if (lastProjectile == nullptr){
 				return fire();
 			}
@@ -1319,6 +1392,8 @@ void CompositeEntity::deepCopy(CompositeEntity* toCopy){
 	this->scale = toCopy->scale;
 	this->entityID = toCopy->entityID;
 	this->jumpSpeed = toCopy->jumpSpeed;
+
+	centralized = false;
 }
 
 Matrix& CompositeEntity::getMatrix(){
@@ -1436,4 +1511,126 @@ void CompositeEntity::addTriggerSound(GameSound* gameSound){
 
 float CompositeEntity::getJumpSpeed(){
 	return jumpSpeed;
+}
+
+void CompositeEntity::freeMemory(){
+	if (first != nullptr){
+		try{
+			first->freeMemory();
+			delete first;
+			first = nullptr;
+		}
+		catch (char* e){
+			first = nullptr;
+		}
+	}
+
+	if (particleEmitters.size() != 0){
+		for (std::unordered_map<unsigned, std::vector<ParticleEmitter*>>::iterator itr = particleEmitters.begin(); itr != particleEmitters.end(); itr++){
+			if (itr->second.size() != 0){
+				for (std::vector<ParticleEmitter*>::iterator itr2 = itr->second.begin(); itr2 != itr->second.begin(); itr++){
+					if (*itr2 != nullptr){
+						try{
+							(*itr2)->freeMemory();
+							delete *itr2;
+							*itr2 = nullptr;
+						}
+						catch (char* e){
+							*itr2 = nullptr;
+						}
+					}
+					itr2 = itr->second.erase(itr2);
+					if (itr2 == itr->second.end()){
+						break;
+					}
+				}
+			}
+			itr = particleEmitters.erase(itr);
+			if (itr == particleEmitters.end()){
+				break;
+			}
+		}
+	}
+
+	if (collisionSounds.size() != 0){
+		for (std::unordered_map<unsigned, std::unordered_map<unsigned, GameSound*>>::iterator itr = collisionSounds.begin(); itr != collisionSounds.end(); itr++){
+			if (itr->second.size() != 0){
+				for (std::unordered_map<unsigned, GameSound*>::iterator itr2 = itr->second.begin(); itr2 != itr->second.end(); itr2++){
+					if (itr2->second != nullptr){
+						itr2->second = nullptr;
+					}
+					itr2 = itr->second.erase(itr2);
+					if (itr2 == itr->second.end()){
+						break;
+					}
+				}
+			}
+			itr = collisionSounds.erase(itr);
+			if (itr == collisionSounds.end()){
+				break;
+			}
+		}
+	}
+
+	if (triggerSounds.size() != 0){
+		for (std::unordered_map<unsigned, GameSound*>::iterator itr = triggerSounds.begin(); itr != triggerSounds.end(); itr++){
+			if (itr->second != nullptr){
+				itr->second = nullptr;
+			}
+			itr = triggerSounds.erase(itr);
+			if (itr == triggerSounds.end()){
+				break;
+			}
+		}
+	}
+
+	if (projectile != nullptr){
+		try{
+			projectile->freeMemory();
+			delete projectile;
+			projectile = nullptr;
+		}
+		catch (char* e){
+			projectile = nullptr;
+		}
+	}
+}
+
+void CompositeEntity::projectToAxis(){
+	Vector3 uR, uL, lL, lR;
+	Vector3 uR_, uL_, lL_, lR_;
+
+	uR_.x = sizePositive.x;
+	uR_.y = sizePositive.y;
+
+	uL_.x = -sizePositive.x;
+	uL_.y = sizePositive.y;
+
+	lL_.x = -sizePositive.x;
+	lL_.y = -sizeNegative.y;
+
+	lR_.x = sizePositive.x;
+	lR_.y = -sizePositive.y;
+
+	uR.x = uR_.x * cos(rotation) - uR_.y * sin(rotation) + position.x;
+	uR.y = uR_.x * sin(rotation) + uR_.y * cos(rotation) + position.y;
+	uR.z = 1;
+
+	uL.x = uL_.x * cos(rotation) - uL_.y * sin(rotation) + position.x;
+	uL.y = uL_.x * sin(rotation) + uL_.y * cos(rotation) + position.y;
+	uL.z = 1;
+
+	lR.x = lR_.x * cos(rotation) - lR_.y * sin(rotation) + position.x;
+	lR.y = lR_.x * sin(rotation) + lR_.y * cos(rotation) + position.y;
+	lR.z = 1;
+
+	lL.x = lL_.x * cos(rotation) - lL_.y * sin(rotation) + position.x;
+	lL.y = lL_.x * sin(rotation) + lL_.y * cos(rotation) + position.y;
+	lL.z = 1;
+
+	SATcoordinates = { uR, uL, lL, lR };
+}
+
+const std::vector<Vector3>& CompositeEntity::getSATCoordinates(){
+	return SATcoordinates;
 }

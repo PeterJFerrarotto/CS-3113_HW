@@ -942,6 +942,8 @@ inline void readEntityData(std::ifstream &stream, Level* level, GameEngine& engi
 	string line;
 	ENTITY_TYPE type;
 	float placeX, placeY;
+	float rotation = 0;
+	float rotationalVelocity = 0;
 	unsigned renderLayer, objectLayer;
 	CompositeEntity* entity = new CompositeEntity();
 	while (getline(stream, line)) {
@@ -1005,6 +1007,16 @@ inline void readEntityData(std::ifstream &stream, Level* level, GameEngine& engi
 			entity->setRenderLayer(renderLayer);
 			entity->setObjectLayer(objectLayer);
 			entity->setStartingPosition(placeX, placeY);
+			entity->setStartingRotation(rotation);
+			entity->setStartingRotationalVelocity(rotationalVelocity);
+		}
+		else if (key == "rotation"){
+			rotation = stof(value) * (M_PI / 180);
+			entity->setStartingRotation(rotation);
+		}
+		else if (key == "rotationalVelocity"){
+			rotationalVelocity = stof(value) * (M_PI / 180);
+			entity->setStartingRotationalVelocity(rotationalVelocity);
 		}
 	}
 	if (type == ACTOR_PLAYER){

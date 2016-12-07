@@ -1,5 +1,9 @@
 #ifndef _MATH_HELPER_H
 #define _MATH_HELPER_H
+#include <algorithm>
+#include "enumHelper.h"
+
+enum VERTEX_INDICES {UPPER_RIGHT, UPPER_LEFT, LOWER_LEFT, LOWER_RIGHT};
 
 inline float lerp(float v0, float v1, float t){
 	return (1 - t)*v0 + t*v1;
@@ -18,6 +22,243 @@ inline float easeOut(float from, float to, float time) {
 
 inline float randomRanged(float maximum){
 	return (-maximum * 0.5) + (maximum * ((float)rand() / (float)RAND_MAX));
+}
+
+
+/*
+-------------PRIMARY ASSUMPTION FOR SAT COLLISION---------------
+
+ALL VECTORS FOR SQUARE COLLISIONS ARE FORMATTED AS SUCH:
+
+{UPPER-RIGHT, UPPER-LEFT, LOWER-LEFT, LOWER-RIGHT}
+
+*/
+
+inline bool testSATSeparationForEdge(float edgeX, float edgeY, const std::vector<Vector3> &points1, const std::vector<Vector3> &points2) {
+	float normalX = -edgeY;
+	float normalY = edgeX;
+	float len = sqrtf(normalX*normalX + normalY*normalY);
+	normalX /= len;
+	normalY /= len;
+
+	std::vector<float> e1Projected;
+	std::vector<float> e2Projected;
+
+	for (int i = 0; i < points1.size(); i++) {
+		e1Projected.push_back(points1[i].x * normalX + points1[i].y * normalY);
+	}
+	for (int i = 0; i < points2.size(); i++) {
+		e2Projected.push_back(points2[i].x * normalX + points2[i].y * normalY);
+	}
+
+	std::sort(e1Projected.begin(), e1Projected.end());
+	std::sort(e2Projected.begin(), e2Projected.end());
+
+	float e1Min = e1Projected[0];
+	float e1Max = e1Projected[e1Projected.size() - 1];
+	float e2Min = e2Projected[0];
+	float e2Max = e2Projected[e2Projected.size() - 1];
+	float e1Width = fabs(e1Max - e1Min);
+	float e2Width = fabs(e2Max - e2Min);
+	float e1Center = e1Min + (e1Width / 2.0);
+	float e2Center = e2Min + (e2Width / 2.0);
+	float dist = fabs(e1Center - e2Center);
+	float p = dist - ((e1Width + e2Width) / 2.0);
+
+	if (p < 0) {
+		return true;
+	}
+	return false;
+}
+
+inline bool checkSATCollision(const std::vector<Vector3> &e1Points, const std::vector<Vector3> &e2Points) {
+	for (int i = 0; i < e1Points.size(); i++) {
+		float edgeX, edgeY;
+
+		if (i == e1Points.size() - 1) {
+			edgeX = e1Points[0].x - e1Points[i].x;
+			edgeY = e1Points[0].y - e1Points[i].y;
+		}
+		else {
+			edgeX = e1Points[i + 1].x - e1Points[i].x;
+			edgeY = e1Points[i + 1].y - e1Points[i].y;
+		}
+
+		bool result = testSATSeparationForEdge(edgeX, edgeY, e1Points, e2Points);
+		if (!result) {
+			return false;
+		}
+	}
+	for (int i = 0; i < e2Points.size(); i++) {
+		float edgeX, edgeY;
+
+		if (i == e2Points.size() - 1) {
+			edgeX = e2Points[0].x - e2Points[i].x;
+			edgeY = e2Points[0].y - e2Points[i].y;
+		}
+		else {
+			edgeX = e2Points[i + 1].x - e2Points[i].x;
+			edgeY = e2Points[i + 1].y - e2Points[i].y;
+		}
+		bool result = testSATSeparationForEdge(edgeX, edgeY, e1Points, e2Points);
+		if (!result) {
+			return false;
+		}
+	}
+	return true;
+}
+
+//inline bool testSATSeparationForEdgeDirectional(float edgeX, float edgeY, const std::vector<Vector3> &points1, const std::vector<Vector3> &points2, DIRECTION directon) {
+//	float normalX = -edgeY;
+//	float normalY = edgeX;
+//	float len = sqrtf(normalX*normalX + normalY*normalY);
+//	normalX /= len;
+//	normalY /= len;
+//
+//	std::vector<float> e1Projected;
+//	std::vector<float> e2Projected;
+//
+//	for (int i = 0; i < points1.size(); i++) {
+//		e1Projected.push_back(points1[i].x * normalX + points1[i].y * normalY);
+//	}
+//	for (int i = 0; i < points2.size(); i++) {
+//		e2Projected.push_back(points2[i].x * normalX + points2[i].y * normalY);
+//	}
+//
+//	std::sort(e1Projected.begin(), e1Projected.end());
+//	std::sort(e2Projected.begin(), e2Projected.end());
+//
+//	float e1Min = e1Projected[0];
+//	float e1Max = e1Projected[e1Projected.size() - 1];
+//	float e2Min = e2Projected[0];
+//	float e2Max = e2Projected[e2Projected.size() - 1];
+//	float e1Width = fabs(e1Max - e1Min);
+//	float e2Width = fabs(e2Max - e2Min);
+//	float e1Center = e1Min + (e1Width / 2.0);
+//	float e2Center = e2Min + (e2Width / 2.0);
+//	float dist = fabs(e1Center - e2Center);
+//	float p = dist - ((e1Width + e2Width) / 2.0);
+//
+//	if (p < 0) {
+//		return true;
+//	}
+//	return false;
+//}
+
+inline bool checkSATCollisionDirectional(const std::vector<Vector3> &e1Points, const std::vector<Vector3> &e2Points, Vector3 e1V, Vector3 e2V, DIRECTION direction) {
+
+	for (int i = 0; i < e1Points.size(); i++) {
+		float edgeX, edgeY;
+
+		if (i == e1Points.size() - 1) {
+			edgeX = e1Points[0].x - e1Points[i].x;
+			edgeY = e1Points[0].y - e1Points[i].y;
+		}
+		else {
+			edgeX = e1Points[i + 1].x - e1Points[i].x;
+			edgeY = e1Points[i + 1].y - e1Points[i].y;
+		}
+
+		bool result = testSATSeparationForEdge(edgeX, edgeY, e1Points, e2Points);
+		if (!result) {
+			return false;
+		}
+	}
+	for (int i = 0; i < e2Points.size(); i++) {
+		float edgeX, edgeY;
+
+		if (i == e2Points.size() - 1) {
+			edgeX = e2Points[0].x - e2Points[i].x;
+			edgeY = e2Points[0].y - e2Points[i].y;
+		}
+		else {
+			edgeX = e2Points[i + 1].x - e2Points[i].x;
+			edgeY = e2Points[i + 1].y - e2Points[i].y;
+		}
+		bool result = testSATSeparationForEdge(edgeX, edgeY, e1Points, e2Points);
+		if (!result) {
+			return false;
+		}
+	}
+	float e1Direc = atan((e1V.x - e2V.x) / (e1V.y - e2V.y));
+	//float e2Direc = atan(e2V.x / e2V.y);
+	switch (direction){
+	case ALL_DIRECTIONS:
+		return true;
+		break;
+	case UP:
+		return e1V.y - e2V.y > 0;
+		break;
+	case LEFT:
+		return e1V.x - e2V.x < 0;
+		return false;
+		break;
+	case RIGHT:
+		return e1V.x - e2V.x > 0;
+		break;
+	case DOWN:
+		return e1V.y - e2V.y < 0;
+		break;
+	default:
+		throw "Unknown direction!";
+		break;
+	}
+	//Vector3 e1Vertex1, e1Vertex2, e2Vertex1, e2Vertex2;
+	//float edgeX, edgeY;
+	//bool result;
+	//switch (direction){
+	//	//Vertex containment order: uR, uL, lL, lR
+	//case ALL_DIRECTIONS:
+	//	return checkSATCollision(e1Points, e2Points);
+	//	break;
+	//case UP:
+	//	e1Vertex1 = e1Points[UPPER_RIGHT];
+	//	e1Vertex2 = e1Points[UPPER_LEFT];
+	//	e2Vertex1 = e2Points[LOWER_LEFT];
+	//	e2Vertex2 = e2Points[LOWER_RIGHT];
+	//	break;
+	//case DOWN:
+	//	e1Vertex1 = e1Points[LOWER_LEFT];
+	//	e1Vertex2 = e1Points[LOWER_RIGHT];
+	//	e2Vertex1 = e2Points[UPPER_RIGHT];
+	//	e2Vertex2 = e2Points[UPPER_LEFT];
+	//	break;
+	//case LEFT:
+	//	e1Vertex1 = e1Points[UPPER_LEFT];
+	//	e1Vertex2 = e1Points[LOWER_LEFT];
+	//	e2Vertex1 = e2Points[LOWER_RIGHT];
+	//	e2Vertex2 = e2Points[UPPER_RIGHT];
+	//	break;
+	//case RIGHT:
+	//	e1Vertex1 = e1Points[LOWER_RIGHT];
+	//	e1Vertex2 = e1Points[UPPER_RIGHT];
+	//	e2Vertex1 = e2Points[UPPER_LEFT];
+	//	e2Vertex2 = e2Points[LOWER_LEFT];
+	//	break;
+	//case X:
+	//	return (checkSATCollisionDirectional(e1Points, e2Points, LEFT) || checkSATCollisionDirectional(e1Points, e2Points, RIGHT));
+	//	break;
+	//case Y:
+	//	return (checkSATCollisionDirectional(e1Points, e2Points, UP) || checkSATCollisionDirectional(e1Points, e2Points, DOWN));
+	//	break;
+	//default:
+	//	throw "Unknown direction!";
+	//	break;
+	//}
+	//edgeX = e1Vertex2.x - e1Vertex1.x;
+	//edgeY = e1Vertex2.y - e1Vertex1.y;
+	//result = testSATSeparationForEdge(edgeX, edgeY, e1Points, e2Points) && checkSATCollision(e1Points, e2Points);
+	//if (!result){
+	//	return false;
+	//}
+
+	//edgeX = e2Vertex2.x - e2Vertex1.x;
+	//edgeY = e2Vertex2.y - e2Vertex1.y;
+	//result = testSATSeparationForEdge(edgeX, edgeY, e1Points, e2Points) && checkSATCollision(e1Points, e2Points);
+	//if (!result){
+	//	return false;
+	//}
+	//return true;
 }
 
 #endif

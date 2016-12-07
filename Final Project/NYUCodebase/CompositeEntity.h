@@ -94,6 +94,14 @@ protected:
 	void boundaryStop(float gameWallLeft, float gameWallRight, float gameFloor, float gameCeiling);
 	void boundaryStopAtWall(float gameWallLeft, float gameWallRight);
 	void boundaryTurn(float gameWallLeft, float gameWallRight, float gameFloor, float gameCeiling);
+
+	void centralize();
+
+	void projectToAxis();
+
+	bool centralized;
+
+	std::vector<Vector3> SATcoordinates;
 public:
 	CompositeEntity();
 	CompositeEntity(Entity* first);
@@ -140,6 +148,7 @@ public:
 
 
 
+
 	void setEntities(Entity* first);
 	void setPosition(float x, float y, float z = 0.0);
 	void setStartingPosition(float x, float y, float z = 0.0);
@@ -177,7 +186,7 @@ public:
 
 	void jump();
 	void updateBounding();
-	void updateBoundingRecurse(Entity* check, float offsetX = 0, float offsetY = 0, float offsetZ = 0);
+	void updateBoundingRecurse(Entity* check, Vector3 offsetScale, float offsetX = 0, float offsetY = 0, float offsetZ = 0);
 	void reset();
 	void resetToCheckpoint();
 	bool isColliding(CompositeEntity* collidingCheck);
@@ -229,6 +238,9 @@ public:
 
 	Matrix& getMatrix();
 
+	void freeMemory();
+
+	const std::vector<Vector3>& getSATCoordinates();
 };
 
 #endif

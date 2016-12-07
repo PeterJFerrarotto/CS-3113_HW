@@ -184,3 +184,34 @@ void ParticleEmitter::deepCopy(ParticleEmitter* toCopy){
 		particles.push_back(tmp);
 	}
 }
+
+void ParticleEmitter::freeMemory(){
+	if (particles.size() != 0){
+		for (std::vector<Particle*>::iterator itr = particles.begin(); itr != particles.end(); itr++){
+			if (*itr != nullptr){
+				try{
+					(*itr)->isActive;
+					delete *itr;
+					*itr = nullptr;
+				}
+				catch (char* e){
+					*itr = nullptr;
+				}
+			}
+			itr = particles.erase(itr);
+			if (itr == particles.end()){
+				break;
+			}
+		}
+	}
+	if (particleTexture != nullptr){
+		try{
+			particleTexture->getObjectCoordinates();
+			delete particleTexture;
+			particleTexture = nullptr;
+		}
+		catch (char* e){
+			particleTexture = nullptr;
+		}
+	}
+}

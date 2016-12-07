@@ -20,6 +20,7 @@
 #include "GameEngine.h"
 #include "dirent.h"
 #include "XMLHelper.h"
+#include <string>
 using namespace rapidxml;
 using namespace std;
 
@@ -104,5 +105,6 @@ int main(int argc, char *argv[])
 	}
 	
 	SDL_Quit();
+	gameEngine.freeMemory();
 	return 0;
 }

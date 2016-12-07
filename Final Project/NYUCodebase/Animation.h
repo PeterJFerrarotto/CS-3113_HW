@@ -35,6 +35,8 @@ public:
 	void restartAnimation();
 
 	virtual void deepCopy(Animation* toCopy);
+
+	void freeMemory();
 };
 
 #endif

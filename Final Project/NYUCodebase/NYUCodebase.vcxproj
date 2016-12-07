@@ -97,6 +97,7 @@
     <ClInclude Include="CompositeEntity.h" />
     <ClInclude Include="Entity.h" />
     <ClInclude Include="EnumClassHash.h" />
+    <ClInclude Include="enumHelper.h" />
     <ClInclude Include="GameEngine.h" />
     <ClInclude Include="GameMusic.h" />
     <ClInclude Include="GameSound.h" />

@@ -66,6 +66,8 @@ public:
 
 	const std::unordered_map<unsigned, unsigned char**> getLevelData();
 	void fillSpriteSheetData(rapidxml::xml_node<>* tileNode);
+
+	void freeMemory();
 };
 
 #endif

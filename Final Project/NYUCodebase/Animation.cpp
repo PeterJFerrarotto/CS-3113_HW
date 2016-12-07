@@ -71,3 +71,16 @@ void Animation::deepCopy(Animation* toCopy){
 	this->startingIndex = toCopy->startingIndex;
 	this->timesRun = 0;
 }
+
+void Animation::freeMemory(){
+	if (currentTexture != nullptr){
+		try{
+			currentTexture->getObjectCoordinates();
+			delete currentTexture;
+			currentTexture = nullptr;
+		}
+		catch (char* e){
+			currentTexture = nullptr;
+		}
+	}
+}

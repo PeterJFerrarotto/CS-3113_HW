@@ -22,14 +22,17 @@ protected:
 	Entity* sibling;
 
 	Vector3 position;
+	Vector3 offsetPosition;
 	Vector3 velocity;
 	Vector3 acceleration;
 
 	Vector3 size;
 	Vector3 scale;
+	Vector3 offsetScale;
 	Vector3 baseSize;
 
 	float rotation;
+	float offsetRotation;
 	float rotationalVelocity;
 
 	bool canCollide;
@@ -44,6 +47,8 @@ protected:
 	Matrix modelMatrix;
 	Matrix offsetModelMatrix;
 	void transformMatrix(Matrix offset);
+
+	void transformMatrix(Vector3 positionOffset, Vector3 scaleOffset, float rotationOffset);
 
 	std::vector<GLfloat> objectVertices;
 	std::vector<GLfloat> textureCoordinates;
@@ -94,6 +99,8 @@ public:
 	void addSibling(Entity* siblingToAdd);
 	void draw(ShaderProgram* program, Matrix offset, float elapsed, float fps);
 
+	void draw(ShaderProgram* program, Vector3 positionOffset, Vector3 scaleOffset, float rotationOffset, float elapsed, float fps);
+
 	void blink();
 	void blinkAll();
 	void setAllDoRender(bool doRender);
@@ -105,6 +112,10 @@ public:
 	void runAnimation(float elapsed, float fps);
 
 	virtual void deepCopy(Entity* toCopy);
+
+	void centralize(Vector3 offset);
+
+	int getNumOfEntities(bool lookForCollision = false);
 };
 
 #endif

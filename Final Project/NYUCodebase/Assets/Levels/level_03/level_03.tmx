@@ -18,7 +18,7 @@
   </data>
  </layer>
  <objectgroup name="ObjectsLayer">
-  <object id="3" name="Player" type="8" gid="159" x="48" y="784" width="16" height="16">
+  <object id="3" name="Player" type="8" gid="159" x="48" y="768" width="16" height="16">
    <properties>
     <property name="objectLayer" type="int" value="2"/>
     <property name="renderLayer" type="int" value="2"/>
@@ -28,6 +28,7 @@
    <properties>
     <property name="objectLayer" type="int" value="2"/>
     <property name="renderLayer" type="int" value="3"/>
+    <property name="rotation" type="float" value="0"/>
     <property name="xmlDescriber" value="Assets/XML/Objects/woodBoxMed.xml"/>
    </properties>
   </object>
