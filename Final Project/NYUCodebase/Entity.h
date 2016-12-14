@@ -41,6 +41,8 @@ protected:
 	bool doMirror;
 	BOUNDING_TYPE boundingType;
 	std::unordered_map<unsigned, Animation*> animations;
+	std::vector<Vector3> SATCoordinates;
+	void projectToAxis(Vector3 position, Vector3 offsetScale, float rotation);
 	ANIMATION_TYPE currentAnimation;
 	std::string entityID;
 
@@ -105,7 +107,9 @@ public:
 	void blinkAll();
 	void setAllDoRender(bool doRender);
 
-	void updateBounding(float scaleX, float scaleY, float scaleZ);
+	void updateBounding(Vector3 scale, Vector3 position, float rotation);
+	
+	const std::vector<Vector3>& getSATCoordinates();
 
 	void startAnimation(ANIMATION_TYPE animation);
 

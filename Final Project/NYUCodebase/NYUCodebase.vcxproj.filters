@@ -143,5 +143,6 @@
     <Xml Include="Assets\Levels\level_index.xml" />
     <Xml Include="Assets\XML\Objects\woodBoxMed.xml" />
     <Xml Include="Assets\XML\collisionData.xml" />
+    <Xml Include="alternateHidingEnemy.xml" />
   </ItemGroup>
 </Project>

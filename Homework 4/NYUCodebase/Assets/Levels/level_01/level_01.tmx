@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.0" orientation="orthogonal" renderorder="right-down" width="150" height="50" tilewidth="16" tileheight="16" nextobjectid="26">
+<map version="1.0" orientation="orthogonal" renderorder="right-down" width="150" height="50" tilewidth="16" tileheight="16" backgroundcolor="#0a98ac" nextobjectid="26">
  <tileset firstgid="1" source="../Spritesheets/arne_sprites.tsx"/>
  <layer name="Tiles" width="150" height="50">
   <data encoding="base64">

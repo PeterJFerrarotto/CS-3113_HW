@@ -81,32 +81,56 @@ void CollisionListener::collide(float elapsed, unordered_map<unsigned, vector<Co
 				//		tmp2->collide(elapsed, tmp1, behaviorOfEntity2);
 				//	}
 				//}
+				//if (tmp1->getCanCollide() && tmp2->getCanCollide() && tmp1->getIsActive() && tmp2->getIsActive()){
+				//	//if (checkSATCollision(tmp1->getSATCoordinates(), tmp2->getSATCoordinates())){
+				//	//	tmp1->collide(elapsed, tmp2, behaviorOfEntity1, soundToPlay);
+				//	//	tmp2->collide(elapsed, tmp1, behaviorOfEntity2);
+				//	//}
+				//	bool collide = false;
+				//	if (up && down && left && right){
+				//		collide = checkSATCollisionDirectional(tmp1->getSATCoordinates(), tmp2->getSATCoordinates(), tmp1->getVelocity(), tmp2->getVelocity(), ALL_DIRECTIONS);
+				//	}
+				//	else{
+				//		if (up){
+				//			collide = collide || checkSATCollisionDirectional(tmp1->getSATCoordinates(), tmp2->getSATCoordinates(), tmp1->getVelocity(), tmp2->getVelocity(), UP);
+				//		}
+				//		if (down){
+				//			collide = collide || checkSATCollisionDirectional(tmp1->getSATCoordinates(), tmp2->getSATCoordinates(), tmp1->getVelocity(), tmp2->getVelocity(), DOWN);
+				//		}
+				//		if (left){
+				//			collide = collide || checkSATCollisionDirectional(tmp1->getSATCoordinates(), tmp2->getSATCoordinates(), tmp1->getVelocity(), tmp2->getVelocity(), LEFT);
+				//		}
+				//		if (right){
+				//			collide = collide || checkSATCollisionDirectional(tmp1->getSATCoordinates(), tmp2->getSATCoordinates(), tmp1->getVelocity(), tmp2->getVelocity(), RIGHT);
+				//		}
+				//	}
+				//	if (collide){
+				//		tmp1->collide(elapsed, tmp2, behaviorOfEntity1, soundToPlay);
+				//		tmp2->collide(elapsed, tmp1, behaviorOfEntity2);
+				//	}
+				//}
 				if (tmp1->getCanCollide() && tmp2->getCanCollide() && tmp1->getIsActive() && tmp2->getIsActive()){
-					//if (checkSATCollision(tmp1->getSATCoordinates(), tmp2->getSATCoordinates())){
-					//	tmp1->collide(elapsed, tmp2, behaviorOfEntity1, soundToPlay);
-					//	tmp2->collide(elapsed, tmp1, behaviorOfEntity2);
-					//}
 					bool collide = false;
-			/*		if (up && down && left && right){
-						collide = checkSATCollisionDirectional(tmp1->getSATCoordinates(), tmp2->getSATCoordinates(), tmp1->getVelocity(), tmp2->getVelocity(), ALL_DIRECTIONS);
+					if (up && down && left && right){
+						collide = tmp1->isCollidingSAT(tmp2, ALL_DIRECTIONS);
 					}
-					else{*/
+					else{
 						if (up){
-							collide = collide || checkSATCollisionDirectional(tmp1->getSATCoordinates(), tmp2->getSATCoordinates(), tmp1->getVelocity(), tmp2->getVelocity(), UP);
+							collide = collide || tmp1->isCollidingSAT(tmp2, UP);
 						}
 						if (down){
-							collide = collide || checkSATCollisionDirectional(tmp1->getSATCoordinates(), tmp2->getSATCoordinates(), tmp1->getVelocity(), tmp2->getVelocity(), DOWN);
+							collide = collide || tmp1->isCollidingSAT(tmp2, DOWN);
 						}
 						if (left){
-							collide = collide || checkSATCollisionDirectional(tmp1->getSATCoordinates(), tmp2->getSATCoordinates(), tmp1->getVelocity(), tmp2->getVelocity(), LEFT);
+							collide = collide || tmp1->isCollidingSAT(tmp2, LEFT);
 						}
 						if (right){
-							collide = collide || checkSATCollisionDirectional(tmp1->getSATCoordinates(), tmp2->getSATCoordinates(), tmp1->getVelocity(), tmp2->getVelocity(), RIGHT);
+							collide = collide || tmp1->isCollidingSAT(tmp2, RIGHT);
 						}
-					//}
+					}
 					if (collide){
-						tmp1->collide(elapsed, tmp2, behaviorOfEntity1, soundToPlay);
-						tmp2->collide(elapsed, tmp1, behaviorOfEntity2);
+						tmp1->collideSAT(elapsed, tmp2, behaviorOfEntity1, soundToPlay);
+						tmp2->collideSAT(elapsed, tmp1, behaviorOfEntity2);
 					}
 				}
 			}

@@ -3,7 +3,7 @@
 #include <algorithm>
 #include "enumHelper.h"
 
-enum VERTEX_INDICES {UPPER_RIGHT, UPPER_LEFT, LOWER_LEFT, LOWER_RIGHT};
+enum VERTEX_INDICES {UPPER_RIGHT, UPPER_LEFT, LOWER_LEFT, LOWER_RIGHT, VERTEX_COUNT};
 
 inline float lerp(float v0, float v1, float t){
 	return (1 - t)*v0 + t*v1;
@@ -259,6 +259,60 @@ inline bool checkSATCollisionDirectional(const std::vector<Vector3> &e1Points, c
 	//	return false;
 	//}
 	//return true;
+}
+
+inline float getSATPenetrationDirectional(const std::vector<Vector3> &e1Points, const std::vector<Vector3> &e2Points, DIRECTION direction){
+	//Vertex storage order: UPPER_RIGHT, UPPER_LEFT, LOWER_LEFT, LOWER_RIGHT
+	float penetration = 0;
+	float tmpPenetration = 0;
+	//Vector3 uR1 = e1Points[UPPER_RIGHT], uL1 = e1Points[UPPER_LEFT], lL1 = e1Points[LOWER_LEFT], lR1 = e1Points[LOWER_RIGHT];
+	//Vector3 uR2 = e2Points[UPPER_RIGHT], uL2 = e2Points[UPPER_LEFT], lL2 = e2Points[LOWER_LEFT], lR2 = e2Points[LOWER_RIGHT];
+	switch (direction){
+	case UP:
+		for (int i = UPPER_RIGHT; i <= UPPER_LEFT; i++){
+			for (int j = LOWER_LEFT; j <= LOWER_RIGHT; j++){
+				tmpPenetration = e1Points[i].y - e2Points[j].y + 0.00001;
+				if (tmpPenetration > penetration){
+					penetration = tmpPenetration;
+				}
+			}
+		}
+		break;
+	case DOWN:
+		for (int i = UPPER_RIGHT; i <= UPPER_LEFT; i++){
+			for (int j = LOWER_LEFT; j <= LOWER_RIGHT; j++){
+				tmpPenetration = e2Points[i].y - e1Points[j].y + 0.00001;
+				if (tmpPenetration > penetration){
+					penetration = tmpPenetration;
+				}
+			}
+		}
+		break;
+	case LEFT:
+		for (int i = UPPER_LEFT; i <= LOWER_LEFT; i++){
+			for (int j = UPPER_RIGHT; j <= LOWER_RIGHT; j = j == UPPER_RIGHT ? LOWER_RIGHT : VERTEX_COUNT){
+				tmpPenetration = e2Points[j].x - e1Points[i].x + 0.00001;
+				if (tmpPenetration > penetration){
+					penetration = tmpPenetration;
+				}
+			}
+		}
+		break;
+	case RIGHT:
+		for (int i = UPPER_RIGHT; i <= LOWER_RIGHT; i = i == UPPER_RIGHT ? LOWER_RIGHT : VERTEX_COUNT){
+			for (int j = UPPER_LEFT; j <= LOWER_LEFT; j++){
+				tmpPenetration = e1Points[i].x - e2Points[j].x + 0.00001;
+				if (tmpPenetration > penetration){
+					penetration = tmpPenetration;
+				}
+			}
+		}
+		break;
+	default:
+		throw "ONLY USE CARDINAL DIRECTIONS FOR GETTING PENETRATION!";
+		break;
+	}
+	return penetration;
 }
 
 #endif

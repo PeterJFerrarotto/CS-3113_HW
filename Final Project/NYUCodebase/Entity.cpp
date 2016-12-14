@@ -135,7 +135,7 @@ bool Entity::animationComplete(ANIMATION_TYPE animationType){
 }
 
 bool Entity::hasAnimation(ANIMATION_TYPE animationType){
-	return (animations.find(animationType) != animations.end());
+	return (animations.find(animationType) != animations.end()) && !(animations[animationType] == nullptr);
 }
 
 void Entity::setEntityID(const std::string& entityID){
@@ -392,11 +392,55 @@ void Entity::draw(ShaderProgram* program, Vector3 positionOffset, Vector3 scaleO
 	}
 }
 
+void Entity::projectToAxis(Vector3 offsetPosition, Vector3 offsetScale, float offsetRotation){
+	Vector3 uR, uL, lL, lR;
+	Vector3 uR_, uL_, lL_, lR_;
 
-void Entity::updateBounding(float scaleX, float scaleY, float scaleZ){
-	float tmpScaleX = scale.x * scaleX;
-	float tmpScaleY = scale.y * scaleY;
-	float tmpScaleZ = scale.z * scaleZ;
+	uR_.x = (scale.x * offsetScale.x)/2;
+	uR_.y = (scale.y * offsetScale.y)/2;
+
+	uL_.x = -(scale.x * offsetScale.x)/2;
+	uL_.y = (scale.y * offsetScale.y)/2;
+
+	lL_.x = -(scale.x * offsetScale.x) / 2;
+	lL_.y = -(scale.y * offsetScale.y)/2;
+
+	lR_.x = (scale.x * offsetScale.x)/2;
+	lR_.y = -(scale.y * offsetScale.y)/2;
+
+	float rotationToUse = rotation + offsetRotation;
+
+
+	uR.x = uR_.x * cos(rotationToUse) - uR_.y * sin(rotationToUse) + (offsetPosition.x - position.x * offsetScale.x * scale.x);
+	uR.y = uR_.x * sin(rotationToUse) + uR_.y * cos(rotationToUse) + (offsetPosition.y - position.y * offsetScale.y * scale.y);
+	uR.z = 1;
+
+	uL.x = uL_.x * cos(rotationToUse) - uL_.y * sin(rotationToUse) + (offsetPosition.x - position.x * offsetScale.x * scale.x);
+	uL.y = uL_.x * sin(rotationToUse) + uL_.y * cos(rotationToUse) + (offsetPosition.y - position.y * offsetScale.y * scale.y);
+	uL.z = 1;
+
+	lR.x = lR_.x * cos(rotationToUse) - lR_.y * sin(rotationToUse) + (offsetPosition.x - position.x * offsetScale.x * scale.x);
+	lR.y = lR_.x * sin(rotationToUse) + lR_.y * cos(rotationToUse) + (offsetPosition.y - position.y * offsetScale.y * scale.y);
+	lR.z = 1;
+
+	lL.x = lL_.x * cos(rotationToUse) - lL_.y * sin(rotationToUse) + (offsetPosition.x - position.x * offsetScale.x * scale.x);
+	lL.y = lL_.x * sin(rotationToUse) + lL_.y * cos(rotationToUse) + (offsetPosition.y - position.y * offsetScale.y * scale.y);
+	lL.z = 1;
+
+	SATCoordinates = { uR, uL, lL, lR };
+}
+
+
+void Entity::updateBounding(Vector3 offsetScale, Vector3 offsetPosition, float offsetRotation){
+	if (isAnimated){
+		if (hasAnimation(currentAnimation)){
+			canCollide = animations[currentAnimation]->getAnimationCollides();
+		}
+	}
+	float tmpScaleX = scale.x * offsetScale.x;
+	float tmpScaleY = scale.y * offsetScale.x;
+	float tmpScaleZ = scale.z * offsetScale.x;
+	float aspect = 0;
 	if (texture != nullptr){
 		switch (texture->getTextureType()){
 		case IMAGE:
@@ -412,10 +456,11 @@ void Entity::updateBounding(float scaleX, float scaleY, float scaleZ){
 			size.z = 0;
 			break;
 		case UNEVEN_SPRITESHEET:
-			//baseSize.x = ((texture->getSpriteWidth() / texture->getSheetWidth()) / (texture->getSpriteHeight() / texture->getSheetHeight()) * texture->getSpriteSize())/2;
-			//baseSize.y = baseSize.x;
-			size.x = tmpScaleX;
-			size.y = tmpScaleY;
+			aspect = (texture->getSpriteWidth() / texture->getSheetWidth()) / (texture->getSpriteHeight() / texture->getSheetHeight());
+			baseSize.x = texture->getSpriteSize() * aspect;
+			baseSize.y = texture->getSpriteSize();
+			size.x = baseSize.x;
+			size.y = baseSize.y;
 			size.z = 0;
 			break;
 		default:
@@ -423,6 +468,11 @@ void Entity::updateBounding(float scaleX, float scaleY, float scaleZ){
 			break;
 		}
 	}
+	projectToAxis(offsetPosition, offsetScale, offsetRotation);
+}
+
+const std::vector<Vector3>& Entity::getSATCoordinates(){
+	return SATCoordinates;
 }
 
 bool Entity::getIsAnimated(){
@@ -457,6 +507,7 @@ void Entity::startAnimation(ANIMATION_TYPE animation){
 			if (animations[animation] != nullptr){
 				animations[animation]->restartAnimation();
 				texture = animations[animation]->getTexture();
+				canCollide = animations[animation]->getAnimationCollides();
 			}
 		}
 	}
@@ -473,6 +524,7 @@ void Entity::runAnimation(float elapsed, float fps){
 		if (animations[currentAnimation] != nullptr){
 			animations[currentAnimation]->runAnimation(elapsed, fps);
 			texture = animations[currentAnimation]->getTexture();
+			canCollide = animations[currentAnimation]->getAnimationCollides();
 		}
 	}
 	if (sibling != nullptr){
@@ -555,12 +607,9 @@ void Entity::centralize(Vector3 offset){
 	position.x -= offset.x;
 	position.y -= offset.y;
 	position.z -= offset.z;
-	//if (child != nullptr){
-	//	child->centralize(offset);
-	//}
-	//if (sibling != nullptr){
-	//	sibling->centralize(offset);
-	//}
+	if (sibling != nullptr){
+		sibling->centralize(offset);
+	}
 }
 
 int Entity::getNumOfEntities(bool lookForCollision){
@@ -574,10 +623,10 @@ int Entity::getNumOfEntities(bool lookForCollision){
 		}
 	}
 	if (child != nullptr){
-		numOfEntities += child->getNumOfEntities();
+		numOfEntities += child->getNumOfEntities(lookForCollision);
 	}
 	if (sibling != nullptr){
-		numOfEntities += child->getNumOfEntities();
+		numOfEntities += sibling->getNumOfEntities(lookForCollision);
 	}
 	return numOfEntities;
 }

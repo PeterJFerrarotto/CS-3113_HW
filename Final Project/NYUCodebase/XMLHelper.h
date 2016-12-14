@@ -149,6 +149,7 @@ inline Texture* enrichTextureInformation(xml_node<>* textureNode){
 
 inline Animation* enrichAnimationInformation(xml_node<>* animationNode){
 	bool loop = false;
+	bool collides = true;
 	ANIMATION_TYPE animationType = ANIMATION_IDLE;
 	unsigned startingIndex = 0, endingIndex = 0;
 	if (animationNode->first_attribute("loop") != nullptr){
@@ -167,8 +168,13 @@ inline Animation* enrichAnimationInformation(xml_node<>* animationNode){
 		endingIndex = stoi(animationNode->first_attribute("endingIndex")->value());
 	}
 
+	if (animationNode->first_attribute("animationCollides") != nullptr){
+		collides = stoi(animationNode->first_attribute("animationCollides")->value()) == 1;
+	}
+
 	Animation* anim = new Animation(animationType, startingIndex, endingIndex);
 	anim->setDoLoop(loop);
+	anim->setAnimationCollides(collides);
 	Texture* tex;
 	if (animationNode->first_node("Texture") != nullptr){
 		tex = enrichTextureInformation(animationNode->first_node("Texture"));
@@ -408,7 +414,7 @@ inline Entity* enrichEntityInformation(xml_node<>* entityNode){
 		do{
 			Animation* animation = enrichAnimationInformation(animationNode);
 			entity->addAnimation(animation);
-			if (animationNode->first_attribute("Starting") != nullptr){
+			if (animationNode->first_attribute("Starting") != nullptr && stoi(animationNode->first_attribute("Starting")->value()) == 1){
 				entity->startAnimation(animation->getAnimationType());
 			}
 			animationNode = animationNode->next_sibling();
@@ -541,7 +547,7 @@ inline CompositeEntity* enrichXMLData(xml_node<>* rootNode){
 	ENTITY_TYPE entityType = static_cast<ENTITY_TYPE>(stoi(rootNode->first_node("Type")->value()));
 	CompositeEntity* tmp;
 	tmp = new CompositeEntity();
-	
+
 	float posX = 0, posY = 0, posZ = 0;
 	float velX = 0, velY = 0, velZ = 0;
 	float accX = 0, accY = 0, accZ = 0;
@@ -554,196 +560,206 @@ inline CompositeEntity* enrichXMLData(xml_node<>* rootNode){
 	float textSize = 1.0, textSpacing = 1.0;
 	unsigned layer = 0;
 	float jumpSpeed = 0;
+	int awarenessRadius = 160;
+	int hidingRadius = 48;
 	string displayText = "";
 	string textSheetDirectory;
 	GLuint textSheet = 1;
 	BOUNDING_TYPE boundingType = SQUARE;
 	COLLISION_BEHAVIOR collisionBehavior = NOTHING;
 	TILE_COLLISION_BEHAVIOR tileCollisionBehavior = T_STOP;
+	TILE_LOGIC_BEHAVIOR tileLogicBehavior = NO_LOGIC;
 	BOUNDARY_BEHAVIOR boundaryBehavior = BOUND_STOP;
 	tmp->setEntityType(entityType);
-	if (entityType != WARP_ENTITY){
-		xml_node<>* detailsNode = rootNode->first_node("Details");
-		if (detailsNode == nullptr){
-			throw "Error: Empty Entity tag!!";
-		}
-		xml_node<>* currentDetail = detailsNode->first_node("firingDelay");
-		if (currentDetail != nullptr){
-			firingDelay = stof(currentDetail->value());
-		}
+	xml_node<>* detailsNode = rootNode->first_node("Details");
+	if (detailsNode == nullptr){
+		throw "Error: Empty Entity tag!!";
+	}
+	xml_node<>* currentDetail = detailsNode->first_node("firingDelay");
+	if (currentDetail != nullptr){
+		firingDelay = stof(currentDetail->value());
+	}
 
-		currentDetail = detailsNode->first_node("tileCollisionBehavior");
-		if (currentDetail != nullptr){
-			tileCollisionBehavior = static_cast<TILE_COLLISION_BEHAVIOR>(stoi(currentDetail->value()));
-		}
+	currentDetail = detailsNode->first_node("tileCollisionBehavior");
+	if (currentDetail != nullptr){
+		tileCollisionBehavior = static_cast<TILE_COLLISION_BEHAVIOR>(stoi(currentDetail->value()));
+	}
 
-		currentDetail = detailsNode->first_node("Position");
-		if (currentDetail != nullptr){
-			if (currentDetail->first_attribute("x") != nullptr){
-				posX = stof(currentDetail->first_attribute("x")->value());
-			}
-			if (currentDetail->first_attribute("y") != nullptr){
-				posY = stof(currentDetail->first_attribute("y")->value());
-			}
-			if (currentDetail->first_attribute("z") != nullptr){
-				posZ = stof(currentDetail->first_attribute("z")->value());
-			}
+	currentDetail = detailsNode->first_node("Position");
+	if (currentDetail != nullptr){
+		if (currentDetail->first_attribute("x") != nullptr){
+			posX = stof(currentDetail->first_attribute("x")->value());
 		}
-
-		currentDetail = detailsNode->first_node("Velocity");
-		if (currentDetail != nullptr){
-			if (currentDetail->first_attribute("x") != nullptr){
-				velX = stof(currentDetail->first_attribute("x")->value());
-			}
-			if (currentDetail->first_attribute("y") != nullptr){
-				velY = stof(currentDetail->first_attribute("y")->value());
-			}
-			if (currentDetail->first_attribute("z") != nullptr){
-				velZ = stof(currentDetail->first_attribute("z")->value());
-			}
+		if (currentDetail->first_attribute("y") != nullptr){
+			posY = stof(currentDetail->first_attribute("y")->value());
 		}
-
-		currentDetail = detailsNode->first_node("Acceleration");
-		if (currentDetail != nullptr){
-			if (currentDetail->first_attribute("x") != nullptr){
-				accX = stof(currentDetail->first_attribute("x")->value());
-			}
-			if (currentDetail->first_attribute("y") != nullptr){
-				accY = stof(currentDetail->first_attribute("y")->value());
-			}
-			if (currentDetail->first_attribute("z") != nullptr){
-				accZ = stof(currentDetail->first_attribute("z")->value());
-			}
-		}
-
-		currentDetail = detailsNode->first_node("Scale");
-		if (currentDetail != nullptr){
-			if (currentDetail->first_attribute("x") != nullptr){
-				scaleX = stof(currentDetail->first_attribute("x")->value());
-			}
-			if (currentDetail->first_attribute("y") != nullptr){
-				scaleY = stof(currentDetail->first_attribute("y")->value());
-			}
-			if (currentDetail->first_attribute("z") != nullptr){
-				scaleZ = stof(currentDetail->first_attribute("z")->value());
-			}
-		}
-
-		currentDetail = detailsNode->first_node("topSpeed");
-		if (currentDetail != nullptr){
-			topSpeed = stof(currentDetail->value());
-		}
-
-		currentDetail = detailsNode->first_node("jumpSpeed");
-		if (currentDetail != nullptr){
-			jumpSpeed = stof(currentDetail->value());
-		}
-
-		currentDetail = detailsNode->first_node("Rotation");
-		if (currentDetail != nullptr){
-			rotation = (M_PI / 180) * stof(currentDetail->value());
-		}
-
-		currentDetail = detailsNode->first_node("rotationalVelocity");
-		if (currentDetail != nullptr){
-			rotationalVelocity = (M_PI / 180) * stof(currentDetail->value());
-		}
-		else{
-			rotationalVelocity = 0;
-		}
-
-		currentDetail = detailsNode->first_node("canCollide");
-		if (currentDetail != nullptr){
-			canCollide = stoi(currentDetail->value()) == 1;
-		}
-
-		currentDetail = detailsNode->first_node("isActive");
-		if (currentDetail != nullptr){
-			isActive = stoi(currentDetail->value()) == 1;
-		}
-
-		currentDetail = detailsNode->first_node("falls");
-		if (currentDetail != nullptr){
-			falls = stoi(currentDetail->value()) == 1;
-		}
-
-		currentDetail = detailsNode->first_node("isInvincible");
-		if (currentDetail != nullptr){
-			isInvincible = stoi(currentDetail->value()) == 1;
-		}
-
-		currentDetail = detailsNode->first_node("CollisionBehavior");
-		if (currentDetail != nullptr){
-			collisionBehavior = static_cast<COLLISION_BEHAVIOR>(stoi(currentDetail->value()));
-		}
-
-		currentDetail = detailsNode->first_node("BoundaryBehavior");
-		if (currentDetail != nullptr){
-			boundaryBehavior = static_cast<BOUNDARY_BEHAVIOR>(stoi(currentDetail->value()));
-		}
-
-		currentDetail = detailsNode->first_node("BoundingType");
-		if (currentDetail != nullptr){
-			boundingType = static_cast<BOUNDING_TYPE>(stoi(currentDetail->value()));
-		}
-
-		currentDetail = detailsNode->first_node("DisplayText");
-		if (currentDetail != nullptr){
-			displayText = currentDetail->value();
-
-			textSize = stof(currentDetail->first_attribute("size")->value());
-			textSpacing = stof(currentDetail->first_attribute("spacing")->value());
-		}
-
-		currentDetail = detailsNode->first_node("TextSheet");
-		if (currentDetail != nullptr){
-			textSheetDirectory = RESOURCE_FOLDER;
-			textSheetDirectory = textSheetDirectory + currentDetail->first_attribute("sheetPath")->value() + currentDetail->first_attribute("sheetName")->value();
-			textSheet = loadTexture(textSheetDirectory.c_str());
-		}
-
-		currentDetail = detailsNode->first_node("isStatic");
-		if (currentDetail != nullptr){
-			isStatic = stoi(currentDetail->value()) == 1;
-		}
-
-		currentDetail = detailsNode->first_node("Layer");
-		if (currentDetail != nullptr){
-			layer = stoi(currentDetail->value());
-		}
-
-		currentDetail = detailsNode->first_node("ParticleEmitters");
-		if (currentDetail != nullptr){
-			xml_node<>* particleEmitterNode = currentDetail->first_node("Emitter");
-			while (particleEmitterNode != nullptr){
-				tmp->addParticleEmitter(enrichParticleEmitterInformation(particleEmitterNode, posX, posY, posZ));
-				particleEmitterNode = particleEmitterNode->next_sibling("Emitter");
-			}
-		}
-
-		currentDetail = detailsNode->first_node("CollisionSounds");
-		if (currentDetail != nullptr){
-			xml_node<>* soundNode = currentDetail->first_node("Sound");
-			while (soundNode != nullptr){
-				tmp->addCollisionSound(enrichSoundInformation(soundNode));
-				soundNode = soundNode->next_sibling("Sound");
-			}
-		}
-
-		currentDetail = detailsNode->first_node("TriggerSounds");
-		if (currentDetail != nullptr){
-			xml_node<>* soundNode = currentDetail->first_node("Sound");
-			while (soundNode != nullptr){
-				tmp->addTriggerSound(enrichSoundInformation(soundNode));
-				soundNode = soundNode->next_sibling("Sound");
-			}
+		if (currentDetail->first_attribute("z") != nullptr){
+			posZ = stof(currentDetail->first_attribute("z")->value());
 		}
 	}
+
+	currentDetail = detailsNode->first_node("Velocity");
+	if (currentDetail != nullptr){
+		if (currentDetail->first_attribute("x") != nullptr){
+			velX = stof(currentDetail->first_attribute("x")->value());
+		}
+		if (currentDetail->first_attribute("y") != nullptr){
+			velY = stof(currentDetail->first_attribute("y")->value());
+		}
+		if (currentDetail->first_attribute("z") != nullptr){
+			velZ = stof(currentDetail->first_attribute("z")->value());
+		}
+	}
+
+	currentDetail = detailsNode->first_node("Acceleration");
+	if (currentDetail != nullptr){
+		if (currentDetail->first_attribute("x") != nullptr){
+			accX = stof(currentDetail->first_attribute("x")->value());
+		}
+		if (currentDetail->first_attribute("y") != nullptr){
+			accY = stof(currentDetail->first_attribute("y")->value());
+		}
+		if (currentDetail->first_attribute("z") != nullptr){
+			accZ = stof(currentDetail->first_attribute("z")->value());
+		}
+	}
+
+	currentDetail = detailsNode->first_node("Scale");
+	if (currentDetail != nullptr){
+		if (currentDetail->first_attribute("x") != nullptr){
+			scaleX = stof(currentDetail->first_attribute("x")->value());
+		}
+		if (currentDetail->first_attribute("y") != nullptr){
+			scaleY = stof(currentDetail->first_attribute("y")->value());
+		}
+		if (currentDetail->first_attribute("z") != nullptr){
+			scaleZ = stof(currentDetail->first_attribute("z")->value());
+		}
+	}
+
+	currentDetail = detailsNode->first_node("topSpeed");
+	if (currentDetail != nullptr){
+		topSpeed = stof(currentDetail->value());
+	}
+
+	currentDetail = detailsNode->first_node("jumpSpeed");
+	if (currentDetail != nullptr){
+		jumpSpeed = stof(currentDetail->value());
+	}
+
+	currentDetail = detailsNode->first_node("Rotation");
+	if (currentDetail != nullptr){
+		rotation = (M_PI / 180) * stof(currentDetail->value());
+	}
+
+	currentDetail = detailsNode->first_node("rotationalVelocity");
+	if (currentDetail != nullptr){
+		rotationalVelocity = (M_PI / 180) * stof(currentDetail->value());
+	}
 	else{
-		canCollide = true;
-		falls = false;
-		isStatic = true;
-		boundingType = SQUARE;
+		rotationalVelocity = 0;
+	}
+
+	currentDetail = detailsNode->first_node("canCollide");
+	if (currentDetail != nullptr){
+		canCollide = stoi(currentDetail->value()) == 1;
+	}
+
+	currentDetail = detailsNode->first_node("isActive");
+	if (currentDetail != nullptr){
+		isActive = stoi(currentDetail->value()) == 1;
+	}
+
+	currentDetail = detailsNode->first_node("falls");
+	if (currentDetail != nullptr){
+		falls = stoi(currentDetail->value()) == 1;
+	}
+
+	currentDetail = detailsNode->first_node("isInvincible");
+	if (currentDetail != nullptr){
+		isInvincible = stoi(currentDetail->value()) == 1;
+	}
+
+	currentDetail = detailsNode->first_node("CollisionBehavior");
+	if (currentDetail != nullptr){
+		collisionBehavior = static_cast<COLLISION_BEHAVIOR>(stoi(currentDetail->value()));
+	}
+
+	currentDetail = detailsNode->first_node("BoundaryBehavior");
+	if (currentDetail != nullptr){
+		boundaryBehavior = static_cast<BOUNDARY_BEHAVIOR>(stoi(currentDetail->value()));
+	}
+
+	currentDetail = detailsNode->first_node("BoundingType");
+	if (currentDetail != nullptr){
+		boundingType = static_cast<BOUNDING_TYPE>(stoi(currentDetail->value()));
+	}
+
+	currentDetail = detailsNode->first_node("TileLogicBehavior");
+	if (currentDetail != nullptr){
+		tileLogicBehavior = static_cast<TILE_LOGIC_BEHAVIOR>(stoi(currentDetail->value()));
+	}
+
+	currentDetail = detailsNode->first_node("DisplayText");
+	if (currentDetail != nullptr){
+		displayText = currentDetail->value();
+
+		textSize = stof(currentDetail->first_attribute("size")->value());
+		textSpacing = stof(currentDetail->first_attribute("spacing")->value());
+	}
+
+	currentDetail = detailsNode->first_node("TextSheet");
+	if (currentDetail != nullptr){
+		textSheetDirectory = RESOURCE_FOLDER;
+		textSheetDirectory = textSheetDirectory + currentDetail->first_attribute("sheetPath")->value() + currentDetail->first_attribute("sheetName")->value();
+		textSheet = loadTexture(textSheetDirectory.c_str());
+	}
+
+	currentDetail = detailsNode->first_node("isStatic");
+	if (currentDetail != nullptr){
+		isStatic = stoi(currentDetail->value()) == 1;
+	}
+
+	currentDetail = detailsNode->first_node("Layer");
+	if (currentDetail != nullptr){
+		layer = stoi(currentDetail->value());
+	}
+
+	currentDetail = detailsNode->first_node("ParticleEmitters");
+	if (currentDetail != nullptr){
+		xml_node<>* particleEmitterNode = currentDetail->first_node("Emitter");
+		while (particleEmitterNode != nullptr){
+			tmp->addParticleEmitter(enrichParticleEmitterInformation(particleEmitterNode, posX, posY, posZ));
+			particleEmitterNode = particleEmitterNode->next_sibling("Emitter");
+		}
+	}
+
+	currentDetail = detailsNode->first_node("CollisionSounds");
+	if (currentDetail != nullptr){
+		xml_node<>* soundNode = currentDetail->first_node("Sound");
+		while (soundNode != nullptr){
+			tmp->addCollisionSound(enrichSoundInformation(soundNode));
+			soundNode = soundNode->next_sibling("Sound");
+		}
+	}
+
+	currentDetail = detailsNode->first_node("TriggerSounds");
+	if (currentDetail != nullptr){
+		xml_node<>* soundNode = currentDetail->first_node("Sound");
+		while (soundNode != nullptr){
+			tmp->addTriggerSound(enrichSoundInformation(soundNode));
+			soundNode = soundNode->next_sibling("Sound");
+		}
+	}
+
+	currentDetail = detailsNode->first_node("awarenessRadius");
+	if (currentDetail != nullptr){
+		awarenessRadius = stoi(currentDetail->value());
+	}
+
+	currentDetail = detailsNode->first_node("hidingRadius");
+	if (currentDetail != nullptr){
+		hidingRadius = stoi(currentDetail->value());
 	}
 
 	tmp->setStartingPosition(posX, posY, posZ);
@@ -766,8 +782,11 @@ inline CompositeEntity* enrichXMLData(xml_node<>* rootNode){
 	tmp->setSpacing(textSpacing);
 	tmp->setTextSheet(textSheet);
 	tmp->setTileCollisionBehavior(tileCollisionBehavior);
+	tmp->setTileLogicBehavior(tileLogicBehavior);
 	tmp->setJumpSpeed(jumpSpeed);
 	tmp->setIsStatic(isStatic);
+	tmp->setAwarenessRadius(awarenessRadius);
+	tmp->setHidingRadius(hidingRadius);
 	if (rootNode->first_node("subEntities") != nullptr){
 		tmp->setEntities(enrichEntityInformation(rootNode->first_node("subEntities")->first_node("First")));
 	}
@@ -798,7 +817,6 @@ inline CompositeEntity* enrichXMLData(xml_node<>* rootNode){
 		compProjectile->setCanCollide(true);
 		compProjectile->setFalls(false);
 		compProjectile->setBoundingType(SQUARE);
-		compProjectile->setEntityType(PLAYER_PROJECTILE);
 		compProjectile->setCollisionBehavior(DESTROY);
 		compProjectile->setBoundaryBehavior(BOUND_DESTROY_NO_ANIM);
 		compProjectile->setScale(16, 16);
@@ -823,7 +841,7 @@ inline CompositeEntity* enrichXMLData(xml_node<>* rootNode){
 		else{
 			delete projectile;
 			projectile = nullptr;
-			throw "Error: No animation or texture for projectile!!";
+			throw "Error: No animation or texture for projectile!";
 		}
 
 		if (projectileTextureNode->first_node("TriggerSounds") != nullptr){
@@ -956,10 +974,10 @@ inline void readEntityData(std::ifstream &stream, Level* level, GameEngine& engi
 		getline(sStream, value);
 		if (key == "type") {
 			type = static_cast<ENTITY_TYPE>(stoi(value));
-			if (entityTypes.find(type) == entityTypes.end() && type != STATIC_ENTITY){
+			if (entityTypes.find(type) == entityTypes.end() && type != STATIC_ENTITY && type != STATIC_FALL_ON_COLLDE){
 				throw "Entity type undefined!";
 			}
-			if (type != STATIC_ENTITY){
+			if (type != STATIC_ENTITY && type != STATIC_FALL_ON_COLLDE){
 				entity->deepCopy(entityTypes[type]);
 			}
 		}
@@ -1060,6 +1078,7 @@ inline void loadLevelData(GameEngine& engine){
 	char spriteSheetName[360];
 	char levelName[360];
 	char spriteSheetDirec[360];
+	//float r = 0, g = 0, b = 0, a = 1.0;
 	xml_document<>* levelIndex = loadXMLFile(RESOURCE_FOLDER"Assets/Levels/level_index.xml");
 	if (!levelIndex){
 		throw "Level index not found!";
@@ -1096,6 +1115,13 @@ inline void loadLevelData(GameEngine& engine){
 
 		strcat_s(spriteSheetDirec, pngExt);
 		Level* level = loadLevel(txtFile, xmlFile, levelName, spriteSheetDirec, engine);
+		//if (levelNode->first_node("Color") != nullptr){
+		//	r = stof(levelNode->first_node("Color")->first_attribute("r")->value());
+		//	g = stof(levelNode->first_node("Color")->first_attribute("g")->value());
+		//	b = stof(levelNode->first_node("Color")->first_attribute("b")->value());
+		//	a = stof(levelNode->first_node("Color")->first_attribute("a")->value());
+		//}
+		//level->setBackgroundColor(r, g, b, a);
 		engine.addLevel(level);
 		if (levelNode->first_attribute("startingLevel") != nullptr){
 			engine.setLevel(levelName);

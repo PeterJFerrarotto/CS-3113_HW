@@ -34,7 +34,7 @@
  <tile id="5">
   <properties>
    <property name="canCollide" type="bool" value="true"/>
-   <property name="tileType" type="int" value="8"/>
+   <property name="tileType" type="int" value="10"/>
   </properties>
  </tile>
  <tile id="6">

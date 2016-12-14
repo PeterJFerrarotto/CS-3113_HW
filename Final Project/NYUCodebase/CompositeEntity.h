@@ -6,11 +6,12 @@
 #include "ParticleEmitter.h"
 #include "GameSound.h"
 
-enum ENTITY_TYPE { ICON_ENTITY, LIFE_ICON_ENTITY, PLAYER_PROJECTILE, ENEMY_PROJECTILE, TITLE_TEXT_ENTITY, GAME_TEXT_ENTITY, POINTS_INDICATOR, ACTOR_ENEMY, ACTOR_PLAYER, ACTOR_ENEMY_PATROL_TURN, STATIC_ENTITY, BACKGROUND_ENTITY, ENTITY_COIN, WARP_ENTITY, ENTITY_TYPE_SIZE };
-enum STATE {MOVING, ACCELERATING, STATIONARY, BOUNCING, BOUNCED, IDLE, JUMPING, FALLING, DESTROYING, DEACTIVATING, STATE_COUNT};
-enum COLLISION_BEHAVIOR { BOUNCE, STOP, DESTROY, DEACTIVATE, NOTHING, BOUNCE_HIGH, WARP, STATIC_COLLISION, COLLISION_BEHAVIOR_SIZE };
-enum BOUNDARY_BEHAVIOR {BOUND_BOUNCE, BOUND_TURN, BOUND_STOP, BOUND_DESTROY, BOUND_DEACTIVATE, BOUND_NOTHING, BOUND_STOP_X, BOUND_DESTROY_NO_ANIM};
-enum TILE_COLLISION_BEHAVIOR {T_STOP, T_BOUNCE, T_TURN};
+enum ENTITY_TYPE { ICON_ENTITY, LIFE_ICON_ENTITY, PLAYER_PROJECTILE, ENEMY_PROJECTILE, TITLE_TEXT_ENTITY, GAME_TEXT_ENTITY, POINTS_INDICATOR, ACTOR_ENEMY, ACTOR_PLAYER, ACTOR_ENEMY_PATROL_TURN, STATIC_ENTITY, BACKGROUND_ENTITY, ENTITY_COIN, WARP_ENTITY, STATIC_FALL_ON_COLLDE, HIDING_ENEMY_FIRE, ENTITY_TYPE_SIZE };
+enum STATE {MOVING, ACCELERATING, STATIONARY, BOUNCING, BOUNCED, IDLE, JUMPING, FALLING, DESTROYING, DEACTIVATING, HIDING, STATE_COUNT};
+enum COLLISION_BEHAVIOR { BOUNCE, STOP, DESTROY, DEACTIVATE, NOTHING, BOUNCE_HIGH, WARP, STATIC_COLLISION, FALL, COLLISION_BEHAVIOR_SIZE };
+enum BOUNDARY_BEHAVIOR {BOUND_BOUNCE, BOUND_TURN, BOUND_STOP, BOUND_DESTROY, BOUND_DEACTIVATE, BOUND_NOTHING, BOUND_STOP_X, BOUND_DESTROY_NO_ANIM, BOUND_DEACTIVATE_UNDER_FLOOR};
+enum TILE_LOGIC_BEHAVIOR {TURN_AT_EDGE, STOP_AT_EDGE, NO_LOGIC, LOGIC_SIZE};
+enum TILE_COLLISION_BEHAVIOR {T_STOP, T_BOUNCE, T_TURN, T_NOTHING};
 
 class ShaderProgram;
 class Texture;
@@ -18,6 +19,9 @@ class CompositeEntity
 {
 protected:
 	Entity* first;
+
+	Entity* collisionNode;
+	Entity* otherCollisionNode;
 
 	std::unordered_map<unsigned, std::vector<ParticleEmitter*>> particleEmitters;
 	//Stores collision sounds based upon direction and collision strength
@@ -54,12 +58,15 @@ protected:
 	//For TEXT_ENTITY only:
 	float spacing, size;
 
+	int awarenessRadius, hidingRadius;
+
 	ENTITY_TYPE type;
 	BOUNDING_TYPE boundingType;
 	COLLISION_BEHAVIOR collisionBehavior;
 	BOUNDARY_BEHAVIOR boundaryBehavior;
 	STATE state;
 	TILE_COLLISION_BEHAVIOR tileCollisionBehavior;
+	TILE_LOGIC_BEHAVIOR tileLogicBehavior;
 
 	bool isActive;
 	bool doDelete;
@@ -70,16 +77,19 @@ protected:
 	bool canCollide;
 	bool falls;
 	bool subEntitiesColliding(Entity* firstOfThis, Entity* firstOfThat, Entity* originalOfThat, CompositeEntity* that);
+	bool subEntitiesCollidingSAT(Entity* firstOfThis, Entity* firstOfThat, Entity* originalOfThat, CompositeEntity* that);
 	bool isInvincible;
 	bool onTileGround;
 	bool doMirror;
 	bool overrideMirroring;
 	bool isStatic;
+	bool firing;
 
 
 	void bounce(float elapsed, CompositeEntity* bouncingOffOf);
 	void bounceHigh(float elapsed, CompositeEntity* bouncingOffOf);
 	void stop();
+	void fall();
 	void resetFlags();
 	void transformMatrix();
 
@@ -102,6 +112,8 @@ protected:
 	bool centralized;
 
 	std::vector<Vector3> SATcoordinates;
+
+	unsigned bottomStaticCollisionCount;
 public:
 	CompositeEntity();
 	CompositeEntity(Entity* first);
@@ -127,6 +139,7 @@ public:
 	COLLISION_BEHAVIOR getCollisionBehavior();
 	BOUNDARY_BEHAVIOR getBoundaryBehavior();
 	TILE_COLLISION_BEHAVIOR getTileCollisionBehavior();
+	TILE_LOGIC_BEHAVIOR getTileLogicBehavior();
 	STATE getState();
 	bool getIsActive();
 	bool getDoDelete();
@@ -137,6 +150,7 @@ public:
 	bool getFalls();
 	bool getCollUpFlag();
 	bool getCollDownFlag();
+	bool getStaticCollDownFlag();
 	bool getCollLeftFlag();
 	bool getCollRightFlag();
 	bool getIsStatic();
@@ -168,6 +182,7 @@ public:
 	void setCollisionBehavior(COLLISION_BEHAVIOR behavior);
 	void setBoundaryBehavior(BOUNDARY_BEHAVIOR behavior);
 	void setTileCollisionBehavior(TILE_COLLISION_BEHAVIOR behavior);
+	void setTileLogicBehavior(TILE_LOGIC_BEHAVIOR behavior);
 	void setState(STATE state);
 	void setIsActive(bool isActive, bool playSound = false);
 	void setCanCollide(bool canCollide);
@@ -183,6 +198,8 @@ public:
 	void setIsStatic(bool isStatic);
 	void setWarpDestination(const std::string& level);
 	void checkPoint();
+	void setAwarenessRadius(int radius);
+	void setHidingRadius(int radius);
 
 	void jump();
 	void updateBounding();
@@ -190,13 +207,18 @@ public:
 	void reset();
 	void resetToCheckpoint();
 	bool isColliding(CompositeEntity* collidingCheck);
+	bool isCollidingSAT(CompositeEntity* collidingCheck, DIRECTION collisionDirection);
 	bool atScreenBoundary(float gameWallLeft, float gameWallRight, float gameFloor, float gameCeiling);
 	void move(float elapsed, float gravity = 0.0f, float frictionX = 0.0f, float frictionY = 0.0f);
 	void draw(ShaderProgram* program, Matrix matrix, float elapsed, float fps);
 	void drawText(ShaderProgram* program, Matrix matrix, float elapsed, float fps);
 	void collide(float elapsed, CompositeEntity* collidingWith, COLLISION_BEHAVIOR collisionBehavior = COLLISION_BEHAVIOR_SIZE, GameSound* sound = nullptr);
+
+	void collideSAT(float elapsed, CompositeEntity* collidingWith, COLLISION_BEHAVIOR collisionBehavior = COLLISION_BEHAVIOR_SIZE, GameSound* sound = nullptr);
+
 	//void collideWithStatic(float penetration, DIRECTION direction);
-	void collideWithStatic(CompositeEntity* collidingWith, COLLISION_BEHAVIOR behavior = COLLISION_BEHAVIOR_SIZE);
+	void collideWithStatic(CompositeEntity* collidingWith);
+	void collideWithStaticSAT(CompositeEntity* collidingWith);
 	void boundaryAction(float gameWallLeft, float gameWallRight, float gameFloor, float gameCeiling);
 	void setJumpSpeed(float jumpSpeed);
 	void setDoMirror(bool doMirror);

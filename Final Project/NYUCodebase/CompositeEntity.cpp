@@ -87,6 +87,10 @@ BOUNDARY_BEHAVIOR CompositeEntity::getBoundaryBehavior(){
 	return boundaryBehavior;
 }
 
+TILE_LOGIC_BEHAVIOR CompositeEntity::getTileLogicBehavior(){
+	return tileLogicBehavior;
+}
+
 STATE CompositeEntity::getState(){
 	return state;
 }
@@ -132,6 +136,9 @@ bool CompositeEntity::getCollUpFlag(){
 }
 bool CompositeEntity::getCollDownFlag(){
 	return collideBottom;
+}
+bool CompositeEntity::getStaticCollDownFlag(){
+	return staticCollideBottom;
 }
 bool CompositeEntity::getCollLeftFlag(){
 	return collideLeft;
@@ -243,6 +250,10 @@ void CompositeEntity::setBoundaryBehavior(BOUNDARY_BEHAVIOR behavior){
 	boundaryBehavior = behavior;
 }
 
+void CompositeEntity::setTileLogicBehavior(TILE_LOGIC_BEHAVIOR behavior){
+	tileLogicBehavior = behavior;
+}
+
 void CompositeEntity::setState(STATE state){
 	if (this->state != state){
 		this->state = state;
@@ -352,6 +363,12 @@ void CompositeEntity::reset(){
 
 	rotationalVelocity = startingRotationalVelocity;
 	resetFlags();
+
+	if (type == STATIC_FALL_ON_COLLDE){
+		isStatic = true;
+		falls = false;
+		canCollide = true;
+	}
 }
 
 void CompositeEntity::updateBounding(){
@@ -362,12 +379,79 @@ void CompositeEntity::updateBounding(){
 		Entity* checking = first;
 		if (checking->getDoRender() && checking->getCanCollide()){
 			if (boundingType == SQUARE){
-				checking->updateBounding(scale.x, scale.y, scale.z);
-				sizePositive.x = abs((checking->getScale().x) * scale.x) / 2;
-				sizePositive.y = abs((checking->getScale().y) * scale.y) / 2;
+				sizePositive.x = 0;
+				sizePositive.y = 0;
 				sizePositive.z = 1;
 
 				sizeNegative = sizePositive;
+				Vector3 currentOffsetScale;
+				currentOffsetScale.x = scale.x * checking->getScale().x;
+				currentOffsetScale.y = scale.y * checking->getScale().y;
+				currentOffsetScale.z = 1;
+				if (checking->getDoRender() && checking->getCanCollide()){
+					float pos = 0;
+					checking->updateBounding(scale, position, rotation);
+
+					pos = checking->getPosition().x;
+					if (pos > 0){
+						if (pos < 1 && pos > 0){
+							sizePositive.x += currentOffsetScale.x * pos;
+							sizeNegative.x += currentOffsetScale.x * (1 - pos);
+						}
+						else if (pos == 1){
+							sizePositive.x += currentOffsetScale.x;
+						}
+						else if (pos > 1){
+							sizePositive.x += currentOffsetScale.x * (1 + pos);
+						}
+					}
+					else if (pos < 0){
+						if (pos > -1 && pos < 0){
+							sizeNegative.x += currentOffsetScale.x * abs(pos);
+							sizePositive.x += currentOffsetScale.x * (1 + pos);
+						}
+						else if (pos == -1){
+							sizeNegative.x += currentOffsetScale.x;
+						}
+						else if (pos < -1){
+							sizeNegative.x += currentOffsetScale.x * (1 + abs(pos));
+						}
+					}
+					else if (pos == 0){
+						sizePositive.x += currentOffsetScale.x / 2;
+						sizeNegative.x += currentOffsetScale.x / 2;
+					}
+
+					pos = checking->getPosition().y;
+					if (pos > 0){
+						if (pos < 1 && pos > 0){
+							sizePositive.y += currentOffsetScale.y * (pos);
+							sizeNegative.y += currentOffsetScale.y * (1 - pos);
+						}
+						else if (pos == 1){
+							sizePositive.y += currentOffsetScale.y;
+						}
+						else if (pos > 1){
+							sizePositive.y += currentOffsetScale.y * (1 + pos);
+						}
+					}
+					else if (pos < 0){
+						if (pos > -1 && pos < 0){
+							sizeNegative.y += currentOffsetScale.y * abs(pos);
+							sizePositive.y += currentOffsetScale.y * (1 + pos);
+						}
+						else if (pos == -1){
+							sizeNegative.y += currentOffsetScale.y;
+						}
+						else if (pos < -1){
+							sizeNegative.y += currentOffsetScale.y * (1 + abs(pos));
+						}
+					}
+					else if (pos == 0){
+						sizePositive.y += currentOffsetScale.y / 2;
+						sizeNegative.y += currentOffsetScale.y / 2;
+					}
+				}
 			}
 		}
 		if (checking->getSibling() != nullptr){
@@ -399,112 +483,129 @@ void CompositeEntity::updateBoundingRecurse(Entity* check, Vector3 offsetScale, 
 		currentOffsetScale.z = 1;
 		if (check->getDoRender() && check->getCanCollide()){
 			float pos = 0;
-			check->updateBounding(scale.x, scale.y, scale.z);
+			check->updateBounding(scale, position, rotation);
 			//if (offsetX + check->getPosition().x == 0 && offsetY + check->getPosition().y == 0 && offsetZ + check->getPosition().z == 0){
 			//	throw "Two entities should not be in the same spot!!";
 			//}
+			//Need to check that it can still collide:
+			if (check->getCanCollide()){
+				pos = check->getPosition().x;
+				if (offsetX + pos > 0){
+					if (pos == 0){
+						if (pos > sizePositive.x){
+							sizePositive.x += offsetScale.x;
+						}
+					}
+					else if (pos < 1 && pos > 0){
+						sizePositive.x += currentOffsetScale.x * pos;
+					}
+					else if (pos == 1){
+						sizePositive.x += currentOffsetScale.x;
+					}
+					else if (pos > 1){
+						sizePositive.x += currentOffsetScale.x * (1 + pos);
+					}
+				}
+				else if (offsetX + pos < 0){
+					if (pos == 0){
+						if (pos > sizeNegative.x){
+							sizeNegative.x += sizeNegative.x - check->getSize().x / 2;
+						}
+					}
+					else if (pos > -1 && pos < 0){
+						sizeNegative.x += currentOffsetScale.x * abs(pos);
+					}
+					else if (pos == -1){
+						sizeNegative.x += currentOffsetScale.x;
+					}
+					else if (pos < -1){
+						sizeNegative.x += currentOffsetScale.x * (1 + abs(pos));
+					}
+				}
+				else if (offsetX + pos == 0){
+					if (pos < 0){
+						if (pos > -1 && pos < 0){
+							sizeNegative.x += currentOffsetScale.x * abs(pos);
+						}
+						else if (pos == -1){
+							sizeNegative.x += currentOffsetScale.x;
+						}
+						else if (pos < -1){
+							sizeNegative.x += currentOffsetScale.x * (1 + abs(pos));
+						}
+					}
+					else if (pos > 0){
+						if (pos < 1 && pos > 0){
+							sizePositive.x += currentOffsetScale.x * pos;
+						}
+						else if (pos == 1){
+							sizePositive.x += currentOffsetScale.x;
+						}
+						else if (pos > 1){
+							sizePositive.x += currentOffsetScale.x * (1 + pos);
+						}
+					}
+				}
 
-			pos = check->getPosition().x;
-			if (offsetX + pos > 0){
-				if (pos == 0){
-					if (pos > sizePositive.x){
-						sizePositive.x += offsetScale.x;
-					}
-				}
-				else if (pos < 1 && pos > 0){
-					sizePositive.x += currentOffsetScale.x * pos;
-				}
-				else if (pos == 1){
-					sizePositive.x += currentOffsetScale.x;
-				}
-				else if (pos > 1){
-					sizePositive.x += currentOffsetScale.x * (1 + pos);
-				}
-			}
-			else if (offsetX + pos < 0){
-				if (pos == 0){
-					if (pos > sizeNegative.x){
-						sizeNegative.x += sizeNegative.x - check->getSize().x/2;
-					}
-				}
-				else if (pos > -1 && pos < 0){
-					sizeNegative.x += currentOffsetScale.x * pos;
-				}
-				else if (pos == -1){
-					sizeNegative.x += currentOffsetScale.x;
-				}
-				else if (pos < -1){
-					sizeNegative.x += currentOffsetScale.x * (1 + pos);
-				}
-			}
 
-			pos = check->getPosition().y;
-			if (offsetY + pos > 0){
-				if (pos == 0){
-					if (pos > sizePositive.y){
-						sizePositive.y += sizePositive.y - check->getSize().y / 2;
+				pos = check->getPosition().y;
+				if (pos < 0){
+					if (pos > -1 && pos < 0){
+						sizeNegative.y += currentOffsetScale.y * abs(pos);
+					}
+					else if (pos == -1){
+						sizeNegative.y += currentOffsetScale.y;
+					}
+					else if (pos < -1){
+						sizeNegative.y += currentOffsetScale.y * (1 + abs(pos));
 					}
 				}
-				else if (pos < 1 && pos > 0){
-					sizePositive.y += currentOffsetScale.y * (pos);
-				}
-				else if (pos == 1){
-					sizePositive.y += currentOffsetScale.y;
-				}
-				else if (pos > 1){
-					sizePositive.y += currentOffsetScale.y * (1 + pos);
-				}
-			}
-			else if (offsetY + pos < 0){
-				if (pos == 0){
-					if (pos > sizeNegative.y){
-						sizeNegative.y += sizeNegative.y - check->getSize().y / 2;
+				else if (pos > 0){
+					if (pos < 1 && pos > 0){
+						sizePositive.y += currentOffsetScale.y * (pos);
+					}
+					else if (pos == 1){
+						sizePositive.y += currentOffsetScale.y;
+					}
+					else if (pos > 1){
+						sizePositive.y += currentOffsetScale.y * (1 + pos);
 					}
 				}
-				else if (pos > -1 && pos < 0){
-					sizeNegative.y += currentOffsetScale.y * abs(offsetY + pos);
-				}
-				else if (pos == -1){
-					sizeNegative.y += currentOffsetScale.y;
-				}
-				else if (pos < -1){
-					sizeNegative.y += currentOffsetScale.y * (1 + abs(pos));
-				}
-			}
 
-		//	pos = check->getPosition().z;
-		//	if (offsetZ + pos > 0){
-		//		if (pos == 0){
-		//			if (pos > sizePositive.z){
-		//				sizePositive.z += sizePositive.z - check->getSize().z / 2;
-		//			}
-		//		}
-		//		else if (pos < 1 && pos > 0){
-		//			sizePositive.z += check->getSize().z / 2 - pos;
-		//		}
-		//		else if (pos == 1){
-		//			sizePositive.z += check->getSize().z / 2;
-		//		}
-		//		else if (pos > 1){
-		//			sizePositive.z += check->getSize().z / 2 + pos;
-		//		}
-		//	}
-		//	else if (offsetZ + pos < 0){
-		//		if (pos == 0){
-		//			if (pos > sizeNegative.z){
-		//				sizeNegative.z += sizeNegative.z - check->getSize().z / 2;
-		//			}
-		//		}
-		//		else if (pos < 1 && pos > 0){
-		//			sizeNegative.z += check->getSize().z / 2 - pos;
-		//		}
-		//		else if (pos == 1){
-		//			sizeNegative.z += check->getSize().z / 2;
-		//		}
-		//		else if (pos > 1){
-		//			sizeNegative.z += check->getSize().z / 2 + pos;
-		//		}
-		//	}
+				//	pos = check->getPosition().z;
+				//	if (offsetZ + pos > 0){
+				//		if (pos == 0){
+				//			if (pos > sizePositive.z){
+				//				sizePositive.z += sizePositive.z - check->getSize().z / 2;
+				//			}
+				//		}
+				//		else if (pos < 1 && pos > 0){
+				//			sizePositive.z += check->getSize().z / 2 - pos;
+				//		}
+				//		else if (pos == 1){
+				//			sizePositive.z += check->getSize().z / 2;
+				//		}
+				//		else if (pos > 1){
+				//			sizePositive.z += check->getSize().z / 2 + pos;
+				//		}
+				//	}
+				//	else if (offsetZ + pos < 0){
+				//		if (pos == 0){
+				//			if (pos > sizeNegative.z){
+				//				sizeNegative.z += sizeNegative.z - check->getSize().z / 2;
+				//			}
+				//		}
+				//		else if (pos < 1 && pos > 0){
+				//			sizeNegative.z += check->getSize().z / 2 - pos;
+				//		}
+				//		else if (pos == 1){
+				//			sizeNegative.z += check->getSize().z / 2;
+				//		}
+				//		else if (pos > 1){
+				//			sizeNegative.z += check->getSize().z / 2 + pos;
+				//		}
+				//	}
+			}
 		}
 		sizePositive.z = 1;
 		sizeNegative.z = 1;
@@ -545,9 +646,18 @@ void CompositeEntity::centralize(){
 		offset.x /= scale.x;
 		offset.y /= scale.y;
 		offset.z /= scale.z;
-		offset.x *= first->getNumOfEntities(true);
-		offset.y *= first->getNumOfEntities(true);
-		offset.z *= first->getNumOfEntities(true);
+		if (abs(offset.x) < 1 && offset.x != 0){
+			offset.x = 1 - abs(offset.x);
+		}
+		if (abs(offset.y) < 1 && offset.y != 0){
+			offset.y = 1 - abs(offset.y);
+		}
+		if (abs(offset.z) < 1 && offset.z != 0){
+			offset.z = 1 - abs(offset.z);
+		}
+		//offset.x *= first->getNumOfEntities(true);
+		//offset.y *= first->getNumOfEntities(true);
+		//offset.z *= first->getNumOfEntities(true);
 		first->centralize(offset);
 
 		if (particleEmitters.size() != 0){
@@ -557,10 +667,6 @@ void CompositeEntity::centralize(){
 					emitter->offsetPosition.y += offset.y;
 				}
 			}
-		}
-
-		if (projectile != nullptr){
-
 		}
 	}
 }
@@ -597,13 +703,49 @@ bool CompositeEntity::subEntitiesColliding(Entity* firstOfThis, Entity* firstOfT
 	return false;
 }
 
+bool CompositeEntity::subEntitiesCollidingSAT(Entity* firstOfThis, Entity* firstOfThat, Entity* originalOfThat, CompositeEntity* that){
+	if (firstOfThis->getBoundingType() == SQUARE && firstOfThat->getBoundingType() == SQUARE){
+		if (firstOfThis->getCanCollide() && firstOfThat->getCanCollide()){
+			if (checkSATCollision(firstOfThis->getSATCoordinates(), firstOfThat->getSATCoordinates())){
+				collisionNode = firstOfThis;
+				otherCollisionNode = firstOfThat;
+				return true;
+			}
+		}
+		if (firstOfThis->getSibling() != nullptr){
+			if (subEntitiesCollidingSAT(firstOfThis->getSibling(), originalOfThat, originalOfThat, that)){
+				return true;
+			}
+		}
+		if (firstOfThis->getChild() != nullptr){
+			if (subEntitiesCollidingSAT(firstOfThis->getChild(), originalOfThat, originalOfThat, that)){
+				return true;
+			}
+		}
+
+		if (firstOfThat->getSibling() != nullptr){
+			if (subEntitiesCollidingSAT(firstOfThis, firstOfThat->getSibling(), originalOfThat, that)){
+				return true;
+			}
+		}
+		if (firstOfThat->getChild() != nullptr){
+			if (subEntitiesCollidingSAT(firstOfThis, firstOfThat->getChild(), originalOfThat, that)){
+				return true;
+			}
+		}
+	}
+	collisionNode = nullptr;
+	otherCollisionNode = nullptr;
+	return false;
+}
+
 bool CompositeEntity::atScreenBoundary(float gameWallLeft, float gameWallRight, float gameFloor, float gameCeiling){
-	bool atBoundary = (position.x + sizePositive.x >= gameWallRight || position.x - sizeNegative.x <= gameWallLeft || position.y + sizePositive.y >= gameCeiling || position.y - sizeNegative.y <= gameFloor);
+	bool atBoundary = (position.x + sizePositive.x * cos(rotation) + sizePositive.y * sin(rotation) >= gameWallRight || position.x - (sizeNegative.x * cos(rotation) - sizeNegative.y * sin(rotation)) <= gameWallLeft || position.y + sizePositive.y * cos(rotation) + sizePositive.x * sin(rotation) >= gameCeiling || position.y - (sizeNegative.y * cos(rotation) - sizeNegative.y * sin(rotation)) <= gameFloor);
 	if (atBoundary){
-		boundaryLeft = position.x - sizeNegative.x <= gameWallLeft;
-		boundaryRight = position.x + sizePositive.x >= gameWallRight;
-		boundaryTop = position.y + sizePositive.y >= gameCeiling;
-		boundaryBottom = position.y - sizeNegative.y <= gameFloor;
+		boundaryLeft = position.x - abs((sizeNegative.x * cos(rotation) - sizeNegative.y * sin(rotation))) <= gameWallLeft;
+		boundaryRight = position.x + abs(sizePositive.x * cos(rotation) + sizePositive.y * sin(rotation)) >= gameWallRight;
+		boundaryTop = position.y + abs(sizePositive.y * cos(rotation) + sizePositive.x * sin(rotation)) >= gameCeiling;
+		boundaryBottom = position.y - abs((sizeNegative.y * cos(rotation) - sizeNegative.y * sin(rotation))) <= gameFloor;
 	}
 	else{
 		boundaryLeft = false;
@@ -666,12 +808,116 @@ bool CompositeEntity::isColliding(CompositeEntity* collidingWith){
 	return isColliding;
 }
 
+bool CompositeEntity::isCollidingSAT(CompositeEntity* collidingWith, DIRECTION collisionDirection){
+	//switch (direction){
+	//case ALL_DIRECTIONS:
+	//	return true;
+	//	break;
+	//case UP:
+	//	return e1V.y - e2V.y > 0;
+	//	break;
+	//case LEFT:
+	//	return e1V.x - e2V.x < 0;
+	//	return false;
+	//	break;
+	//case RIGHT:
+	//	return e1V.x - e2V.x > 0;
+	//	break;
+	//case DOWN:
+	//	return e1V.y - e2V.y < 0;
+	//	break;
+	//default:
+	//	throw "Unknown direction!";
+	//	break;
+	//}
+	collideTop = false;
+	collideLeft = false;
+	collideRight = false;
+	collideBottom = false;
+	staticCollideLeft = false;
+	staticCollideRight = false;
+	staticCollideTop = false;
+	staticCollideBottom = staticCollideBottom && velocity.y == 0;
+	Vector3 e1V = velocity;
+	Vector3 e2V = collidingWith->velocity;
+	switch (collisionDirection){
+	case ALL_DIRECTIONS:
+		if (checkSATCollisionDirectional(SATcoordinates, collidingWith->SATcoordinates, e1V, e2V, ALL_DIRECTIONS)){
+			if (subEntitiesCollidingSAT(first, collidingWith->first, collidingWith->first, collidingWith)){
+				collideTop = e1V.y - e2V.y > 0;
+				collideLeft = e1V.x - e2V.x < 0;
+				collideRight = e1V.x - e2V.x > 0;
+				collideBottom = e1V.y - e2V.y < 0;
+
+				bool boundLeft = position.x >= collidingWith->position.x - collidingWith->sizeNegative.x;
+
+				bool boundRight = position.x <= collidingWith->position.x + collidingWith->sizePositive.x;
+
+				bool boundBottom = position.y >= collidingWith->position.y - collidingWith->sizeNegative.y;
+
+				bool boundTop = position.y <= collidingWith->position.y + collidingWith->sizePositive.y;
+				
+				bool halfHeight = position.y - sizeNegative.y >= collidingWith->position.y;
+
+				if (boundLeft && boundRight){
+					collideLeft = false;
+					collideRight = false;
+				}
+
+				if (boundTop && boundBottom){
+					collideTop = false;
+					collideBottom = false;
+				}
+
+				if (collideTop && (boundLeft || boundRight) && !halfHeight){
+					collideTop = false;
+				}
+				
+				if (halfHeight){
+					collideLeft = false;
+					collideRight = false;
+				}
+				return collideLeft || collideRight || collideTop || collideBottom;
+			}
+		}
+		return false;
+		break;
+	case LEFT:
+		if (checkSATCollisionDirectional(getSATCoordinates(), collidingWith->getSATCoordinates(), e1V, e2V, LEFT)){
+			collideLeft = (subEntitiesCollidingSAT(first, collidingWith->first, collidingWith->first, collidingWith));
+		}
+		return collideLeft;
+		break;
+	case RIGHT:
+		if (checkSATCollisionDirectional(getSATCoordinates(), collidingWith->getSATCoordinates(), e1V, e2V, RIGHT)){
+			collideRight = subEntitiesCollidingSAT(first, collidingWith->first, collidingWith->first, collidingWith);
+		}
+		return collideRight;
+		break;
+	case UP:
+		if (checkSATCollisionDirectional(getSATCoordinates(), collidingWith->getSATCoordinates(), e1V, e2V, UP)){
+			collideTop = subEntitiesCollidingSAT(first, collidingWith->first, collidingWith->first, collidingWith);
+		}
+		return collideTop;
+		break;
+	case DOWN:
+		if (checkSATCollisionDirectional(getSATCoordinates(), collidingWith->getSATCoordinates(), e1V, e2V, DOWN)){
+			collideBottom = subEntitiesCollidingSAT(first, collidingWith->first, collidingWith->first, collidingWith);
+		}
+		return collideBottom;
+		break;
+	default:
+		throw "Unknown direction!";
+		break;
+	}
+}
+
 
 void CompositeEntity::move(float elapsed, float gravity, float frictionX, float frictionY){
 	resetFlags();
 	static float elapsedY;
 	static float elapsedX;
-	if (type != STATIC_ENTITY && isActive && state != DESTROYING && state != DEACTIVATING && !doDelete){
+	if (!isStatic &&  isActive && state != DESTROYING && state != DEACTIVATING && !doDelete){
 
 		//velocity.x = lerp(velocity.x, 0.0f, elapsed * frictionX);
 		//velocity.y = lerp(velocity.y, 0.0f, elapsed * frictionY);
@@ -690,7 +936,7 @@ void CompositeEntity::move(float elapsed, float gravity, float frictionX, float 
 		//position.y = easeIn(position.y, position.y + velocity.y * elapsed, elapsed);
 		//position.z = easeIn(position.z, position.z + velocity.z * elapsed, elapsed);
 
-		if (falls && !onTileGround){
+		if (falls && !onTileGround && !staticCollideBottom){
 			velocity.y += gravity * elapsed;
 		}
 		rotation += rotationalVelocity * elapsed;
@@ -899,6 +1145,12 @@ void CompositeEntity::bounce(float elapsed, CompositeEntity* bouncingOffOf){
 	setState(BOUNCED);
 }
 
+void CompositeEntity::fall(){
+	canCollide = false;
+	isStatic = false;
+	falls = true;
+}
+
 void CompositeEntity::playCollisionSound(DIRECTION direction, COLLISION_STRENGTH collisionStrength){
 	if (collisionSounds.size() != 0){
 		COLLISION_STRENGTH strengthToUse = this->collisionStrength;
@@ -927,7 +1179,9 @@ void CompositeEntity::playCollisionSound(DIRECTION direction, COLLISION_STRENGTH
 			}
 		}
 		if (collisionSounds.find(strengthToUse) != collisionSounds.end() && collisionSounds[strengthToUse].find(directionToUse) != collisionSounds[strengthToUse].end()){
-			collisionSounds[strengthToUse][directionToUse]->play();
+			if (!(directionToUse == DOWN && staticCollideBottom && bottomStaticCollisionCount > 1)){
+				collisionSounds[strengthToUse][directionToUse]->play();
+			}
 		}
 	}
 }
@@ -1025,7 +1279,6 @@ void CompositeEntity::boundaryStopAtWall(float gameWallLeft, float gameWallRight
 			position.x = gameWallRight - sizeNegative.x;
 		}
 	}
-	setState(STATIONARY);
 }
 
 void CompositeEntity::boundaryTurn(float gameWallLeft, float gameWallRight, float gameFloor, float gameCeiling){
@@ -1085,7 +1338,7 @@ void CompositeEntity::collide(float elapsed, CompositeEntity* collidingWith, COL
 		stop();
 		break;
 	case STATIC_COLLISION:
-		collideWithStatic(collidingWith, collisionBehavior);
+		collideWithStatic(collidingWith);
 		break;
 	case NOTHING:
 	case WARP:
@@ -1100,7 +1353,49 @@ void CompositeEntity::collide(float elapsed, CompositeEntity* collidingWith, COL
 	postCollisionAction(sound);
 }
 
-void CompositeEntity::collideWithStatic(CompositeEntity* collidingWith, COLLISION_BEHAVIOR behavior){
+void CompositeEntity::collideSAT(float elapsed, CompositeEntity* collidingWith, COLLISION_BEHAVIOR collisionBehavior, GameSound* sound){
+	switch (collisionBehavior){
+	case BOUNCE:
+		state = BOUNCING;
+		bounce(elapsed, collidingWith);
+		break;
+	case BOUNCE_HIGH:
+		state = BOUNCING;
+		bounceHigh(elapsed, collidingWith);
+		break;
+	case DESTROY:
+		if (!isInvincible){
+			destroy(true, true);
+		}
+		break;
+	case DEACTIVATE:
+		if (!isInvincible){
+			deActivate();
+		}
+		break;
+	case STOP:
+		stop();
+		break;
+	case STATIC_COLLISION:
+		collideWithStaticSAT(collidingWith);
+		break;
+	case NOTHING:
+	case WARP:
+		break;
+	case COLLISION_BEHAVIOR_SIZE:
+		collide(elapsed, collidingWith, this->collisionBehavior);
+		break;
+	case FALL:
+		fall();
+		break;
+	default:
+		throw "UNRECOGNIZED COLLISION BEHAVIOR!";
+		break;
+	}
+	postCollisionAction(sound);
+}
+
+void CompositeEntity::collideWithStatic(CompositeEntity* collidingWith){
 	collideLeft = (position.x - sizeNegative.x * sin(rotation) >= collidingWith->position.x - collidingWith->sizeNegative.x) && (position.y - sizeNegative.y < collidingWith->position.y);
 
 	collideRight = position.x + sizePositive.x <= collidingWith->position.x + collidingWith->sizePositive.x && (position.y - sizeNegative.y < collidingWith->position.y);
@@ -1164,6 +1459,61 @@ void CompositeEntity::collideWithStatic(CompositeEntity* collidingWith, COLLISIO
 	velocity.x += collidingWith->getVelocity().x;
 }
 
+void CompositeEntity::collideWithStaticSAT(CompositeEntity* collidingWith){
+	float penetrationX = 0, penetrationY = 0;
+
+	if (collideLeft){
+		if (velocity.x < 0){
+			velocity.x = 0;
+		}
+		if (collidingWith->velocity.x > 0){
+			velocity.x += collidingWith->velocity.x;
+		}
+		penetrationX = -getSATPenetrationDirectional(collisionNode->getSATCoordinates(), otherCollisionNode->getSATCoordinates(), LEFT);
+	}
+
+	if (collideRight){
+		velocity.x = 0;
+		penetrationX = -getSATPenetrationDirectional(collisionNode->getSATCoordinates(), otherCollisionNode->getSATCoordinates(), RIGHT);
+	}
+	
+	if (collideTop){
+		if (velocity.y > 0){
+			velocity.y = 0;
+		}
+		if (collidingWith->getVelocity().y < 0){
+			velocity.y -= collidingWith->getVelocity().y;
+		}
+		velocity.x += collidingWith->getVelocity().x;
+		penetrationY = -getSATPenetrationDirectional(collisionNode->getSATCoordinates(), otherCollisionNode->getSATCoordinates(), UP);
+	}
+
+	if (collideBottom){
+		if (!staticCollideBottom && velocity.y != 0){
+			penetrationY = getSATPenetrationDirectional(collisionNode->getSATCoordinates(), otherCollisionNode->getSATCoordinates(), DOWN);
+		}
+		if (velocity.y < 0){
+			velocity.y = 0;
+		}
+		if (collidingWith->getVelocity().y > 0){
+			velocity.y += collidingWith->getVelocity().y;
+		}
+		velocity.x += collidingWith->getVelocity().x;
+		staticCollideBottom = true;
+		onTileGround = true;
+		bottomStaticCollisionCount++;
+	}
+
+	if (!collideBottom){
+		staticCollideBottom = false;
+		onTileGround = false;
+		bottomStaticCollisionCount = 0;
+	}
+
+	position.x += penetrationX;
+	position.y += penetrationY;
+}
+
 void CompositeEntity::resetFlags(){
 	boundaryLeft = false;
 	boundaryRight = false;
@@ -1177,6 +1527,7 @@ void CompositeEntity::resetFlags(){
 
 	staticCollideLeft = false;
 	staticCollideRight = false;
+	//staticCollideBottom = staticCollideBottom && velocity.y == 0;
 	staticCollideBottom = false;
 	staticCollideTop = false;
 }
@@ -1219,6 +1570,12 @@ void CompositeEntity::boundaryAction(float gameWallLeft, float gameWallRight, fl
 	case BOUND_DESTROY_NO_ANIM:
 		destroy(false, false);
 		break;
+	case BOUND_DEACTIVATE_UNDER_FLOOR:
+		boundaryStopAtWall(gameWallLeft, gameWallRight);
+		if (position.y - abs(sizePositive.y * cos(rotation) - sizeNegative.x * sin(rotation)) <= gameFloor){
+			deActivate();
+		}
+		break;
 	default:
 		throw "UNKNOWN BOUNDARY BEHAVIOR!";
 		break;
@@ -1241,7 +1598,10 @@ CompositeEntity* CompositeEntity::fire(){
 	if (timeSinceFiring >= firingDelay && isActive && projectile != nullptr){
 		CompositeEntity* newProjectile = new CompositeEntity();
 		newProjectile->deepCopy(projectile);
-		newProjectile->setVelocity(3 * (doMirror ? -topSpeed : topSpeed) * cos(rotation), 3 * topSpeed * sin(rotation));
+		newProjectile->setVelocity(3 * (doMirror ? -topSpeed : topSpeed) * cos(rotation), 3 * (doMirror ? -topSpeed : topSpeed) * sin(rotation));
+		if (type == HIDING_ENEMY_FIRE){
+			newProjectile->setVelocity((doMirror ? 50 : -50), 0, 0);
+		}
 		newProjectile->setPosition(position.x + sin(rotation), position.y + cos(rotation));
 		newProjectile->setRotation(rotation);
 		newProjectile->setIsActive(true);
@@ -1251,6 +1611,10 @@ CompositeEntity* CompositeEntity::fire(){
 
 		timeSinceFiring = 0;
 		playTriggerSound(TRIG_FIRE);
+		if (first->getIsAnimated() && first->hasAnimation(ANIMATION_FIRE)){
+			first->startAnimation(ANIMATION_FIRE);
+			firing = true;
+		}
 		return newProjectile;
 	}
 	return nullptr;
@@ -1275,15 +1639,51 @@ CompositeEntity* CompositeEntity::logic(CompositeEntity* player, CompositeEntity
 		}
 		return nullptr;
 		break;
+	case HIDING_ENEMY_FIRE:
+		if (abs(player->getPosition().x - position.x) >= awarenessRadius){
+			doMirror = player->getPosition().x > position.x;
+			first->startAnimation(ANIMATION_IDLE);
+			return nullptr;
+		}
+		else if (abs(player->getPosition().x - position.x) < awarenessRadius && abs(player->getPosition().x - position.x) >= hidingRadius){
+			doMirror = player->getPosition().x > position.x;
+			if (abs(player->getPosition().y - player->getSizeNegative().y) <= abs(position.y - sizeNegative.y)){
+				CompositeEntity* projectile = fire();
+				if (projectile == nullptr){
+					first->startAnimation(ANIMATION_IDLE);
+				}
+				return projectile;
+			}
+			else{
+				return nullptr;
+			}
+		}
+		else if (abs(player->getPosition().x - position.x) < hidingRadius){
+			doMirror = player->getPosition().x > position.x;
+			first->startAnimation(ANIMATION_HIDING);
+		}
+		else{
+			first->startAnimation(ANIMATION_HIDING);
+			return nullptr;
+		}
 	default:
 		return nullptr;
 		break;
 	}
 }
 
+void CompositeEntity::setAwarenessRadius(int radius){
+	awarenessRadius = radius;
+}
+
+void CompositeEntity::setHidingRadius(int radius){
+	hidingRadius = radius;
+}
+
 void CompositeEntity::setDisplayText(const std::string& text){
 	this->text = text;
 }
+
 
 const std::string& CompositeEntity::getDisplayText(){
 	return text;
@@ -1306,6 +1706,22 @@ void CompositeEntity::changeAnimation(ANIMATION_TYPE animationType){
 void CompositeEntity::runAnimation(float elapsed, float fps){
 	if (first != nullptr && isActive){
 		first->runAnimation(elapsed, fps);
+		if (first->animationComplete(ANIMATION_FIRE)){
+			firing = false;
+			if (first->hasAnimation(ANIMATION_FIRE_RETURN)){
+				first->startAnimation(ANIMATION_FIRE_RETURN);
+			}
+			else{
+				if (first->hasAnimation(ANIMATION_IDLE)){
+					first->startAnimation(ANIMATION_IDLE);
+				}
+			}
+		}
+		if (first->animationComplete(ANIMATION_FIRE_RETURN)){
+			if (first->hasAnimation(ANIMATION_IDLE)){
+				first->startAnimation(ANIMATION_IDLE);
+			}
+		}
 	}
 }
 
@@ -1377,6 +1793,7 @@ void CompositeEntity::deepCopy(CompositeEntity* toCopy){
 	this->collisionBehavior = toCopy->collisionBehavior;
 	this->boundaryBehavior = toCopy->boundaryBehavior;
 	this->tileCollisionBehavior = toCopy->tileCollisionBehavior;
+	this->tileLogicBehavior = toCopy->tileLogicBehavior;
 	this->state = toCopy->state;
 
 	this->isActive = toCopy->isActive;
@@ -1392,8 +1809,12 @@ void CompositeEntity::deepCopy(CompositeEntity* toCopy){
 	this->scale = toCopy->scale;
 	this->entityID = toCopy->entityID;
 	this->jumpSpeed = toCopy->jumpSpeed;
+	this->awarenessRadius = toCopy->awarenessRadius;
+	this->hidingRadius = toCopy->hidingRadius;
 
-	centralized = false;
+	centralized = toCopy->centralized;
+
+	bottomStaticCollisionCount = 0;
 }
 
 Matrix& CompositeEntity::getMatrix(){

@@ -8,9 +8,10 @@
 #include <unordered_map>
 #include "CompositeEntity.h"
 #include "EnumClassHash.h"
+#include "Tile.h"
 
 #define PLAYER_TOP_SPEED 2.5
-#define PLAYER_ACCELERATION 30
+#define PLAYER_ACCELERATION 50
 //60 fps : 1.0f/60.0f
 #define FIXED_TIMESTEP 1/30.0f
 #define MAX_TIMESTEP 6
@@ -73,6 +74,7 @@ private:
 	void collisionCheck(float elapsed);
 	//Checks collisions between dynamic entities and static entities
 	void checkTileCollisions();
+	void checkTileCollisionsSAT();
 	void deleteFlagged();
 	void handleInput(const Uint8* input, SDL_Event input2);
 	bool downPressed;
@@ -119,6 +121,8 @@ private:
 	float screenShakeValue, screenShakeIntensity;
 
 	unsigned int shakeCount;
+
+	Vector3 tileVelocity;
 public:
 	GameEngine();
 	~GameEngine();

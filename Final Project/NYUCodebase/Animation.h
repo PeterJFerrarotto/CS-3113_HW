@@ -1,7 +1,7 @@
 #ifndef ANIMATION_H
 #define ANIMATION_H
 
-enum ANIMATION_TYPE{ ANIMATION_IDLE, ANIMATION_RUN, ANIMATION_WALK, ANIMATION_JUMP, ANIMATION_FALL, ANIMATION_DESTROY, ANIMATION_DEACTIVATE };
+enum ANIMATION_TYPE{ ANIMATION_IDLE, ANIMATION_RUN, ANIMATION_WALK, ANIMATION_JUMP, ANIMATION_FALL, ANIMATION_DESTROY, ANIMATION_DEACTIVATE, ANIMATION_HIDING, ANIMATION_FIRE, ANIMATION_FIRE_RETURN };
 
 class Texture;
 class Animation
@@ -13,6 +13,7 @@ protected:
 	unsigned currentIndex;
 	float animationElapsed;
 	bool loop;
+	bool animationCollides;
 	void updateTexture();
 	unsigned timesRun;
 public:
@@ -29,6 +30,7 @@ public:
 	
 	void setTexture(Texture* texture);
 	void setDoLoop(bool loop);
+	void setAnimationCollides(bool collides);
 
 	void runAnimation(float elapsed, float fps);
 
@@ -37,6 +39,7 @@ public:
 	virtual void deepCopy(Animation* toCopy);
 
 	void freeMemory();
+	bool getAnimationCollides();
 };
 
 #endif

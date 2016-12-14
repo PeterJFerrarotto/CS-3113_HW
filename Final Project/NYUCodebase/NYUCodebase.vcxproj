@@ -123,8 +123,11 @@
     <None Include="vertex_textured.glsl" />
   </ItemGroup>
   <ItemGroup>
+    <Xml Include="alternateHidingEnemy.xml" />
     <Xml Include="Assets\Levels\level_index.xml" />
-    <Xml Include="Assets\XML\collisionData.xml" />
+    <Xml Include="Assets\XML\collisionData.xml">
+      <SubType>Designer</SubType>
+    </Xml>
     <Xml Include="Assets\XML\entityData.xml">
       <SubType>Designer</SubType>
     </Xml>

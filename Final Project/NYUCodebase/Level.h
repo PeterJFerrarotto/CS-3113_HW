@@ -16,6 +16,8 @@ class Level
 {
 protected:
 	std::unordered_map<unsigned, unsigned char**> levelData;
+	std::unordered_map<unsigned, std::vector<std::vector<Tile*>>> levelDataTiles;
+	//std::unordered_map<unsigned, GLuint> layerSpriteSheet;
 	unsigned mapHeight, mapWidth;
 
 	void worldToTileCoordinates(float worldX, float worldY, int *gridX, int *gridY);
@@ -37,6 +39,9 @@ protected:
 
 	void fillVertexArrays();
 	void fillCollisionData(rapidxml::xml_node<>* tileNode);
+
+
+	Color backgroundColor;
 
 public:
 	Level();
@@ -61,11 +66,15 @@ public:
 	void setTileSet(GLuint tileSet);
 	void setTileSize(float tileSize);
 	void setPlayerEntity(CompositeEntity* playerEntity);
+	void setBackgroundColor(float r, float g, float b, float a);
 	Tile* getTile(unsigned layer, int gridX, int gridY);
 	CompositeEntity* getPlayerEntity();
+	Color getBackgroundColor();
 
 	const std::unordered_map<unsigned, unsigned char**> getLevelData();
+	//const std::unordered_map<unsigned, GLuint> getLayerSpriteSheets();
 	void fillSpriteSheetData(rapidxml::xml_node<>* tileNode);
+	void fillTileTestData();
 
 	void freeMemory();
 };

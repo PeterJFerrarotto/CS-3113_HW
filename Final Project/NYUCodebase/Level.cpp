@@ -47,6 +47,18 @@ bool Level::readHeader(const char* levelName, std::ifstream &stream) {
 		else if (key == "tileheight"){
 			tileHeight = atoi(value.c_str());
 		}
+		else if (key == "backgroundColorR"){
+			backgroundColor.r = (float)atoi(value.c_str()) / 255;
+		}
+		else if (key == "backgroundColorG"){
+			backgroundColor.g = (float)atoi(value.c_str()) / 255;
+		}
+		else if (key == "backgroundColorB"){
+			backgroundColor.b = (float)atoi(value.c_str()) / 255;
+		}
+		else if (key == "backgroundColorA"){
+			backgroundColor.a = (float)atoi(value.c_str()) / 255;
+		}
 	}
 	if (tileWidth == tileHeight){
 		tileSize = tileWidth;
@@ -176,6 +188,9 @@ void Level::setTileSize(float tileSize){
 }
 
 Tile* Level::getTile(unsigned layer, int gridX, int gridY){
+	if (levelData.find(layer) == levelData.end()){
+		return nullptr;
+	}
 	unsigned char tileIndex = levelData[layer][gridY][gridX];
 	if (collisionData[tileSet].find(tileIndex) == collisionData[tileSet].end() || tileIndex == 0){
 		return nullptr;
@@ -273,6 +288,7 @@ void Level::fillSpriteSheetData(xml_node<>* tileNode){
 		tileNode = tileNode->first_node("tile");
 	}
 	fillCollisionData(tileNode);
+	fillTileTestData();
 	fillVertexArrays();
 }
 
@@ -280,8 +296,19 @@ void Level::setPlayerEntity(CompositeEntity* playerEntity){
 	this->playerEntity = playerEntity;
 }
 
+void Level::setBackgroundColor(float r, float b, float g, float a){
+	backgroundColor.r = r;
+	backgroundColor.b = b;
+	backgroundColor.g = g;
+	backgroundColor.a = a;
+}
+
 CompositeEntity* Level::getPlayerEntity(){
 	return playerEntity;
+}
+
+Color Level::getBackgroundColor(){
+	return backgroundColor;
 }
 
 void Level::freeMemory(){
@@ -311,6 +338,17 @@ void Level::freeMemory(){
 			itr = collisionData.erase(itr);
 			if (itr == collisionData.end()){
 				break;
+			}
+		}
+	}
+}
+
+void Level::fillTileTestData(){
+	for (std::unordered_map<unsigned, unsigned char**>::iterator itr = levelData.begin(); itr != levelData.end(); itr++){
+		for (int y = 0; y < mapHeight; y++){
+			levelDataTiles[itr->first].resize(mapHeight);
+			for (int x = 0; x < mapWidth; x++){
+				levelDataTiles[itr->first][y].push_back(getTile(itr->first, x, y));
 			}
 		}
 	}

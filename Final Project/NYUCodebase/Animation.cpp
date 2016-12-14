@@ -41,13 +41,26 @@ void Animation::setDoLoop(bool loop){
 	this->loop = loop;
 }
 
+void Animation::setAnimationCollides(bool collide){
+	animationCollides = collide;
+}
+
 void Animation::runAnimation(float elapsed, float fps){
 	animationElapsed += elapsed;
 	if (animationElapsed > 1.0 / fps) {
-		currentIndex++;
-		if (currentIndex > endingIndex){
-			currentIndex = loop ? startingIndex : endingIndex;
-			timesRun++;
+		if (startingIndex <= endingIndex){
+			currentIndex++;
+			if (currentIndex > endingIndex){
+				currentIndex = loop ? startingIndex : endingIndex;
+				timesRun++;
+			}
+		}
+		if (startingIndex > endingIndex){
+			currentIndex--;
+			if (currentIndex < endingIndex){
+				currentIndex = loop ? startingIndex : endingIndex;
+				timesRun++;
+			}
 		}
 		updateTexture();
 		animationElapsed = 0;
@@ -70,6 +83,7 @@ void Animation::deepCopy(Animation* toCopy){
 	this->loop = toCopy->loop;
 	this->startingIndex = toCopy->startingIndex;
 	this->timesRun = 0;
+	this->animationCollides = toCopy->animationCollides;
 }
 
 void Animation::freeMemory(){
@@ -83,4 +97,8 @@ void Animation::freeMemory(){
 			currentTexture = nullptr;
 		}
 	}
+}
+
+bool Animation::getAnimationCollides(){
+	return animationCollides;
 }
