@@ -11,6 +11,7 @@
         <Position x="0.0" y="0.0" z="0.0"></Position>
         <doRender>1</doRender>
         <canCollide>1</canCollide>
+        <canCollideWithTiles>0</canCollideWithTiles>
       </Details>
     </First>
   </subEntities>

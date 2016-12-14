@@ -372,9 +372,6 @@ void CompositeEntity::reset(){
 }
 
 void CompositeEntity::updateBounding(){
-	if (centralized){
-		int x = 5;
-	}
 	if (first != nullptr){
 		Entity* checking = first;
 		if (checking->getDoRender() && checking->getCanCollide()){
@@ -663,8 +660,8 @@ void CompositeEntity::centralize(){
 		if (particleEmitters.size() != 0){
 			for (std::unordered_map<unsigned, std::vector<ParticleEmitter*>>::iterator itr = particleEmitters.begin(); itr != particleEmitters.end(); itr++){
 				for (ParticleEmitter* emitter : itr->second){
-					emitter->offsetPosition.x -= offset.x;
-					emitter->offsetPosition.y += offset.y;
+					emitter->position.x -= offset.x * 2;
+					emitter->position.y -= offset.y * 2;
 				}
 			}
 		}
@@ -1146,9 +1143,10 @@ void CompositeEntity::bounce(float elapsed, CompositeEntity* bouncingOffOf){
 }
 
 void CompositeEntity::fall(){
-	canCollide = false;
+	canCollideWithTiles = false;
 	isStatic = false;
 	falls = true;
+	velocity.y = 5;
 }
 
 void CompositeEntity::playCollisionSound(DIRECTION direction, COLLISION_STRENGTH collisionStrength){
@@ -1462,6 +1460,9 @@ void CompositeEntity::collideWithStatic(CompositeEntity* collidingWith){
 void CompositeEntity::collideWithStaticSAT(CompositeEntity* collidingWith){
 	float penetrationX = 0, penetrationY = 0;
 
+	if ((collideRight || collideLeft) && collideTop){
+		collideTop = false;
+	}
 	if (collideLeft){
 		if (velocity.x < 0){
 			velocity.x = 0;
@@ -1725,6 +1726,14 @@ void CompositeEntity::runAnimation(float elapsed, float fps){
 	}
 }
 
+void CompositeEntity::setCanCollideWithTiles(bool canCollide){
+	canCollideWithTiles = canCollide;
+}
+
+bool CompositeEntity::getCanCollideWithTiles(){
+	return canCollideWithTiles;
+}
+
 void CompositeEntity::deepCopy(CompositeEntity* toCopy){
 	if (toCopy->first != nullptr){
 		first = new Entity();
@@ -1811,6 +1820,7 @@ void CompositeEntity::deepCopy(CompositeEntity* toCopy){
 	this->jumpSpeed = toCopy->jumpSpeed;
 	this->awarenessRadius = toCopy->awarenessRadius;
 	this->hidingRadius = toCopy->hidingRadius;
+	this->canCollideWithTiles = toCopy->canCollideWithTiles;
 
 	centralized = toCopy->centralized;
 

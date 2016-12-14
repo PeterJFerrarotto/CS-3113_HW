@@ -144,5 +144,6 @@
     <Xml Include="Assets\XML\Objects\woodBoxMed.xml" />
     <Xml Include="Assets\XML\collisionData.xml" />
     <Xml Include="alternateHidingEnemy.xml" />
+    <Xml Include="fallingMetalBlock.xml" />
   </ItemGroup>
 </Project>

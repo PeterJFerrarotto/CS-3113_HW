@@ -1,82 +1,10 @@
-﻿Build started 12/14/2016 3:50:48 PM.
+﻿Build started 12/14/2016 5:01:13 PM.
      1>Project "C:\Users\peter\Documents\CS-3113_HW\Final Project\NYUCodebase\NYUCodebase.vcxproj" on node 2 (Build target(s)).
      1>C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\V120\Microsoft.CppBuild.targets(388,5): warning MSB8028: The intermediate directory (Debug\) contains files shared from another project (dynamicCodeBase.vcxproj, Homework 3.vcxproj, Homework 4.vcxproj, Homework 3_Restructured.vcxproj, platformerTest.vcxproj, testingCodeBase.vcxproj, tileTest.vcxproj).  This can lead to incorrect clean and rebuild behavior.
-     1>ClCompile:
-         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\CL.exe /c /IC:\SDL2_mixer\include /IC:\SDL2\include /IC:\SDL2_image\include /IC:\glew\include /IC:\SDL2_mixer\include /ZI /nologo /W3 /WX- /sdl /Od /Oy- /D _WINDOWS /D _MBCS /D _CRT_SECURE_NO_WARNINGS /D _MBCS /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Debug\\" /Fd"Debug\vc120.pdb" /Gd /TP /analyze- /errorReport:prompt GameEngine.cpp
-         GameEngine.cpp
-     1>c:\program files (x86)\microsoft visual studio 12.0\vc\include\math.h(1298): warning C4005: 'M_PI' : macro redefinition
-                 c:\sdl2\include\sdl_stdinc.h(350) : see previous definition of 'M_PI'
-     1>c:\users\peter\documents\cs-3113_hw\final project\nyucodebase\mathhelper.h(24): warning C4244: 'return' : conversion from 'double' to 'float', possible loss of data
-     1>c:\users\peter\documents\cs-3113_hw\final project\nyucodebase\mathhelper.h(47): warning C4018: '<' : signed/unsigned mismatch
-     1>c:\users\peter\documents\cs-3113_hw\final project\nyucodebase\mathhelper.h(50): warning C4018: '<' : signed/unsigned mismatch
-     1>c:\users\peter\documents\cs-3113_hw\final project\nyucodebase\mathhelper.h(63): warning C4244: 'initializing' : conversion from 'double' to 'float', possible loss of data
-     1>c:\users\peter\documents\cs-3113_hw\final project\nyucodebase\mathhelper.h(64): warning C4244: 'initializing' : conversion from 'double' to 'float', possible loss of data
-     1>c:\users\peter\documents\cs-3113_hw\final project\nyucodebase\mathhelper.h(66): warning C4244: 'initializing' : conversion from 'double' to 'float', possible loss of data
-     1>c:\users\peter\documents\cs-3113_hw\final project\nyucodebase\mathhelper.h(75): warning C4018: '<' : signed/unsigned mismatch
-     1>c:\users\peter\documents\cs-3113_hw\final project\nyucodebase\mathhelper.h(92): warning C4018: '<' : signed/unsigned mismatch
-     1>c:\users\peter\documents\cs-3113_hw\final project\nyucodebase\mathhelper.h(150): warning C4018: '<' : signed/unsigned mismatch
-     1>c:\users\peter\documents\cs-3113_hw\final project\nyucodebase\mathhelper.h(167): warning C4018: '<' : signed/unsigned mismatch
-     1>c:\users\peter\documents\cs-3113_hw\final project\nyucodebase\mathhelper.h(274): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
-     1>c:\users\peter\documents\cs-3113_hw\final project\nyucodebase\mathhelper.h(284): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
-     1>c:\users\peter\documents\cs-3113_hw\final project\nyucodebase\mathhelper.h(294): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
-     1>c:\users\peter\documents\cs-3113_hw\final project\nyucodebase\mathhelper.h(304): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
-     1>c:\users\peter\documents\cs-3113_hw\final project\nyucodebase\level.h(14): warning C4099: 'Tile' : type name first seen using 'struct' now seen using 'class'
-                 c:\users\peter\documents\cs-3113_hw\final project\nyucodebase\tile.h(6) : see declaration of 'Tile'
-     1>c:\users\peter\documents\cs-3113_hw\final project\nyucodebase\gameengine.cpp(31): warning C4305: 'argument' : truncation from 'double' to 'float'
-     1>c:\users\peter\documents\cs-3113_hw\final project\nyucodebase\gameengine.cpp(41): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
-     1>c:\users\peter\documents\cs-3113_hw\final project\nyucodebase\gameengine.cpp(42): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
-     1>c:\users\peter\documents\cs-3113_hw\final project\nyucodebase\gameengine.cpp(50): warning C4244: 'argument' : conversion from 'unsigned int' to 'float', possible loss of data
-     1>c:\users\peter\documents\cs-3113_hw\final project\nyucodebase\gameengine.cpp(51): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
-     1>c:\users\peter\documents\cs-3113_hw\final project\nyucodebase\gameengine.cpp(123): warning C4244: '=' : conversion from 'float' to 'unsigned int', possible loss of data
-     1>c:\users\peter\documents\cs-3113_hw\final project\nyucodebase\gameengine.cpp(124): warning C4244: '=' : conversion from 'float' to 'unsigned int', possible loss of data
-     1>c:\users\peter\documents\cs-3113_hw\final project\nyucodebase\gameengine.cpp(136): warning C4244: 'return' : conversion from 'double' to 'float', possible loss of data
-     1>c:\users\peter\documents\cs-3113_hw\final project\nyucodebase\gameengine.cpp(140): warning C4244: 'return' : conversion from 'double' to 'float', possible loss of data
-     1>c:\users\peter\documents\cs-3113_hw\final project\nyucodebase\gameengine.cpp(144): warning C4244: 'return' : conversion from 'double' to 'float', possible loss of data
-     1>c:\users\peter\documents\cs-3113_hw\final project\nyucodebase\gameengine.cpp(148): warning C4244: 'return' : conversion from 'double' to 'float', possible loss of data
-     1>c:\users\peter\documents\cs-3113_hw\final project\nyucodebase\gameengine.cpp(192): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
-     1>c:\users\peter\documents\cs-3113_hw\final project\nyucodebase\gameengine.cpp(192): warning C4244: 'argument' : conversion from 'unsigned int' to 'float', possible loss of data
-     1>c:\users\peter\documents\cs-3113_hw\final project\nyucodebase\gameengine.cpp(387): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
-     1>c:\users\peter\documents\cs-3113_hw\final project\nyucodebase\gameengine.cpp(387): warning C4244: 'argument' : conversion from 'unsigned int' to 'float', possible loss of data
-     1>c:\users\peter\documents\cs-3113_hw\final project\nyucodebase\gameengine.cpp(388): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
-     1>c:\users\peter\documents\cs-3113_hw\final project\nyucodebase\gameengine.cpp(388): warning C4244: 'argument' : conversion from 'unsigned int' to 'float', possible loss of data
-     1>c:\users\peter\documents\cs-3113_hw\final project\nyucodebase\gameengine.cpp(463): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
-     1>c:\users\peter\documents\cs-3113_hw\final project\nyucodebase\gameengine.cpp(463): warning C4244: 'argument' : conversion from 'unsigned int' to 'float', possible loss of data
-     1>c:\users\peter\documents\cs-3113_hw\final project\nyucodebase\gameengine.cpp(464): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
-     1>c:\users\peter\documents\cs-3113_hw\final project\nyucodebase\gameengine.cpp(464): warning C4244: 'argument' : conversion from 'unsigned int' to 'float', possible loss of data
-     1>c:\users\peter\documents\cs-3113_hw\final project\nyucodebase\gameengine.cpp(579): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
-     1>c:\users\peter\documents\cs-3113_hw\final project\nyucodebase\gameengine.cpp(579): warning C4244: 'argument' : conversion from 'unsigned int' to 'float', possible loss of data
-     1>c:\users\peter\documents\cs-3113_hw\final project\nyucodebase\gameengine.cpp(631): warning C4305: 'argument' : truncation from 'double' to 'float'
-     1>c:\users\peter\documents\cs-3113_hw\final project\nyucodebase\gameengine.cpp(637): warning C4305: 'argument' : truncation from 'double' to 'float'
-     1>c:\users\peter\documents\cs-3113_hw\final project\nyucodebase\gameengine.cpp(643): warning C4305: 'argument' : truncation from 'double' to 'float'
-     1>c:\users\peter\documents\cs-3113_hw\final project\nyucodebase\gameengine.cpp(647): warning C4800: 'const Uint8' : forcing value to bool 'true' or 'false' (performance warning)
-     1>c:\users\peter\documents\cs-3113_hw\final project\nyucodebase\gameengine.cpp(765): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
-     1>c:\users\peter\documents\cs-3113_hw\final project\nyucodebase\gameengine.cpp(765): warning C4244: 'argument' : conversion from 'unsigned int' to 'float', possible loss of data
-     1>c:\users\peter\documents\cs-3113_hw\final project\nyucodebase\gameengine.cpp(766): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
-     1>c:\users\peter\documents\cs-3113_hw\final project\nyucodebase\gameengine.cpp(766): warning C4244: 'argument' : conversion from 'unsigned int' to 'float', possible loss of data
-     1>c:\users\peter\documents\cs-3113_hw\final project\nyucodebase\gameengine.cpp(803): warning C4244: 'argument' : conversion from 'int' to 'float', possible loss of data
-     1>c:\users\peter\documents\cs-3113_hw\final project\nyucodebase\gameengine.cpp(803): warning C4244: 'argument' : conversion from 'unsigned int' to 'float', possible loss of data
-     1>c:\users\peter\documents\cs-3113_hw\final project\nyucodebase\gameengine.cpp(804): warning C4244: 'initializing' : conversion from 'double' to 'float', possible loss of data
-     1>c:\users\peter\documents\cs-3113_hw\final project\nyucodebase\gameengine.cpp(990): warning C4101: 'e' : unreferenced local variable
-     1>c:\users\peter\documents\cs-3113_hw\final project\nyucodebase\gameengine.cpp(1008): warning C4101: 'e' : unreferenced local variable
-     1>c:\users\peter\documents\cs-3113_hw\final project\nyucodebase\gameengine.cpp(1029): warning C4101: 'e' : unreferenced local variable
-       Link:
-         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"C:\Users\peter\Documents\CS-3113_HW\Final Project\Debug\Final Project.exe" /INCREMENTAL /NOLOGO /LIBPATH:C:\SDL2_mixer\lib\x86 /LIBPATH:C:\SDL2\lib\x86 /LIBPATH:C:\SDL2_image\lib\x86 /LIBPATH:C:\glew\lib\Release\Win32 SDL2.lib SDL2_mixer.lib glew32.lib SDL2main.lib SDL2_image.lib OpenGL32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"C:\Users\peter\Documents\CS-3113_HW\Final Project\Debug\Final Project.pdb" /SUBSYSTEM:WINDOWS /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:\Users\peter\Documents\CS-3113_HW\Final Project\Debug\Final Project.lib" /MACHINE:X86 Debug\Animation.obj
-         Debug\CollisionListener.obj
-         Debug\CompositeEntity.obj
-         Debug\Entity.obj
-         Debug\EnumClassHash.obj
-         Debug\GameEngine.obj
-         Debug\GameMusic.obj
-         Debug\GameSound.obj
-         Debug\Level.obj
-         Debug\main.obj
-         Debug\Matrix.obj
-         Debug\ParticleEmitter.obj
-         Debug\ShaderProgram.obj
-         Debug\Texture.obj
+     1>Link:
          NYUCodebase.vcxproj -> C:\Users\peter\Documents\CS-3113_HW\Final Project\Debug\Final Project.exe
      1>Done Building Project "C:\Users\peter\Documents\CS-3113_HW\Final Project\NYUCodebase\NYUCodebase.vcxproj" (Build target(s)).
 
 Build succeeded.
 
-Time Elapsed 00:00:02.82
+Time Elapsed 00:00:00.08

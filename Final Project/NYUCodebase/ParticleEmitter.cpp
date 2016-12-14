@@ -129,6 +129,9 @@ void ParticleEmitter::trigger(int toEmit){
 		}
 		if (particles[i]->isActive == false){
 			particles[i]->position = offsetPosition;
+			particles[i]->position.x += position.x;
+			particles[i]->position.y += position.y;
+			particles[i]->position.z += position.z;
 			particles[i]->velocity.x = randomRanged(velocityDeviation.x);
 			particles[i]->velocity.y = randomRanged(velocityDeviation.y);
 			particles[i]->velocity.z = randomRanged(velocityDeviation.z);

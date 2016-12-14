@@ -555,7 +555,7 @@ inline CompositeEntity* enrichXMLData(xml_node<>* rootNode){
 	float rotation = 0;
 	float rotationalVelocity = 0;
 	float firingDelay = 0;
-	bool canCollide = false, isInvincible = false, isActive = true, falls = false, isStatic = false;
+	bool canCollide = false, canCollideWithTiles = false, isInvincible = false, isActive = true, falls = false, isStatic = false;
 	float topSpeed = 1.0;
 	float textSize = 1.0, textSpacing = 1.0;
 	unsigned layer = 0;
@@ -762,6 +762,14 @@ inline CompositeEntity* enrichXMLData(xml_node<>* rootNode){
 		hidingRadius = stoi(currentDetail->value());
 	}
 
+	currentDetail = detailsNode->first_node("canCollideWithTile");
+	if (currentDetail != nullptr){
+		canCollideWithTiles = stoi(currentDetail->value()) == 1;
+	}
+	else{
+		canCollideWithTiles = canCollide;
+	}
+
 	tmp->setStartingPosition(posX, posY, posZ);
 	tmp->setStartingVelocity(velX, velY, velZ);
 	tmp->setTopSpeed(topSpeed);
@@ -787,6 +795,7 @@ inline CompositeEntity* enrichXMLData(xml_node<>* rootNode){
 	tmp->setIsStatic(isStatic);
 	tmp->setAwarenessRadius(awarenessRadius);
 	tmp->setHidingRadius(hidingRadius);
+	tmp->setCanCollideWithTiles(canCollideWithTiles);
 	if (rootNode->first_node("subEntities") != nullptr){
 		tmp->setEntities(enrichEntityInformation(rootNode->first_node("subEntities")->first_node("First")));
 	}

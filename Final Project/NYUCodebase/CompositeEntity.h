@@ -75,6 +75,7 @@ protected:
 	COLLISION_STRENGTH collisionStrength;
 	bool boundaryLeft, boundaryRight, boundaryTop, boundaryBottom;
 	bool canCollide;
+	bool canCollideWithTiles;
 	bool falls;
 	bool subEntitiesColliding(Entity* firstOfThis, Entity* firstOfThat, Entity* originalOfThat, CompositeEntity* that);
 	bool subEntitiesCollidingSAT(Entity* firstOfThis, Entity* firstOfThat, Entity* originalOfThat, CompositeEntity* that);
@@ -154,6 +155,7 @@ public:
 	bool getCollLeftFlag();
 	bool getCollRightFlag();
 	bool getIsStatic();
+	bool getCanCollideWithTiles();
 	unsigned getObjectLayer();
 	unsigned getRenderLayer();
 	const std::string& getWarpDestination();
@@ -200,6 +202,7 @@ public:
 	void checkPoint();
 	void setAwarenessRadius(int radius);
 	void setHidingRadius(int radius);
+	void setCanCollideWithTiles(bool canCollide);
 
 	void jump();
 	void updateBounding();
