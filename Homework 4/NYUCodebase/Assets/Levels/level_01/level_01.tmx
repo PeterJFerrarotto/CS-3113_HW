@@ -36,7 +36,7 @@
   <object id="17" name="menu_text" type="4" gid="52" x="32" y="80" width="16" height="16">
    <properties>
     <property name="isStatic" type="bool" value="true"/>
-    <property name="renderLayer" type="int" value="99"/>
+    <property name="renderLayer" type="int" value="1"/>
     <property name="size" type="float" value="16"/>
     <property name="spacing" type="float" value="1"/>
     <property name="text" value="Press enter to play!"/>

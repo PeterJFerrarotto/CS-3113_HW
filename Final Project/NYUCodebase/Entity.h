@@ -40,7 +40,7 @@ protected:
 	bool isAnimated;
 	bool doMirror;
 	BOUNDING_TYPE boundingType;
-	std::unordered_map<unsigned, Animation*> animations;
+	//std::unordered_map<unsigned, Animation*> animations;
 	std::vector<Vector3> SATCoordinates;
 	void projectToAxis(Vector3 position, Vector3 offsetScale, float rotation);
 	ANIMATION_TYPE currentAnimation;
@@ -58,6 +58,9 @@ public:
 	Entity();
 	Entity(const std::string& entityID, Texture* texture);
 	~Entity();
+
+	std::unordered_map<unsigned, Animation*> animations;
+
 
 	const std::string& getEntityID();
 	Vector3 getPosition();

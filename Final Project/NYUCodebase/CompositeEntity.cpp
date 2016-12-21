@@ -372,104 +372,106 @@ void CompositeEntity::reset(){
 }
 
 void CompositeEntity::updateBounding(){
-	if (first != nullptr){
-		Entity* checking = first;
-		if (checking->getDoRender() && checking->getCanCollide()){
-			if (boundingType == SQUARE){
-				sizePositive.x = 0;
-				sizePositive.y = 0;
-				sizePositive.z = 1;
+	if (isActive){
+		if (first != nullptr){
+			Entity* checking = first;
+			if (checking->getDoRender() && checking->getCanCollide()){
+				if (boundingType == SQUARE){
+					sizePositive.x = 0;
+					sizePositive.y = 0;
+					sizePositive.z = 1;
 
-				sizeNegative = sizePositive;
-				Vector3 currentOffsetScale;
-				currentOffsetScale.x = scale.x * checking->getScale().x;
-				currentOffsetScale.y = scale.y * checking->getScale().y;
-				currentOffsetScale.z = 1;
-				if (checking->getDoRender() && checking->getCanCollide()){
-					float pos = 0;
-					checking->updateBounding(scale, position, rotation);
+					sizeNegative = sizePositive;
+					Vector3 currentOffsetScale;
+					currentOffsetScale.x = scale.x * checking->getScale().x;
+					currentOffsetScale.y = scale.y * checking->getScale().y;
+					currentOffsetScale.z = 1;
+					if (checking->getDoRender() && checking->getCanCollide()){
+						float pos = 0;
+						checking->updateBounding(scale, position, rotation);
 
-					pos = checking->getPosition().x;
-					if (pos > 0){
-						if (pos < 1 && pos > 0){
-							sizePositive.x += currentOffsetScale.x * pos;
-							sizeNegative.x += currentOffsetScale.x * (1 - pos);
+						pos = checking->getPosition().x;
+						if (pos > 0){
+							if (pos < 1 && pos > 0){
+								sizePositive.x += currentOffsetScale.x * pos;
+								sizeNegative.x += currentOffsetScale.x * (1 - pos);
+							}
+							else if (pos == 1){
+								sizePositive.x += currentOffsetScale.x;
+							}
+							else if (pos > 1){
+								sizePositive.x += currentOffsetScale.x * (1 + pos);
+							}
 						}
-						else if (pos == 1){
-							sizePositive.x += currentOffsetScale.x;
+						else if (pos < 0){
+							if (pos > -1 && pos < 0){
+								sizeNegative.x += currentOffsetScale.x * abs(pos);
+								sizePositive.x += currentOffsetScale.x * (1 + pos);
+							}
+							else if (pos == -1){
+								sizeNegative.x += currentOffsetScale.x;
+							}
+							else if (pos < -1){
+								sizeNegative.x += currentOffsetScale.x * (1 + abs(pos));
+							}
 						}
-						else if (pos > 1){
-							sizePositive.x += currentOffsetScale.x * (1 + pos);
+						else if (pos == 0){
+							sizePositive.x += currentOffsetScale.x / 2;
+							sizeNegative.x += currentOffsetScale.x / 2;
 						}
-					}
-					else if (pos < 0){
-						if (pos > -1 && pos < 0){
-							sizeNegative.x += currentOffsetScale.x * abs(pos);
-							sizePositive.x += currentOffsetScale.x * (1 + pos);
-						}
-						else if (pos == -1){
-							sizeNegative.x += currentOffsetScale.x;
-						}
-						else if (pos < -1){
-							sizeNegative.x += currentOffsetScale.x * (1 + abs(pos));
-						}
-					}
-					else if (pos == 0){
-						sizePositive.x += currentOffsetScale.x / 2;
-						sizeNegative.x += currentOffsetScale.x / 2;
-					}
 
-					pos = checking->getPosition().y;
-					if (pos > 0){
-						if (pos < 1 && pos > 0){
-							sizePositive.y += currentOffsetScale.y * (pos);
-							sizeNegative.y += currentOffsetScale.y * (1 - pos);
+						pos = checking->getPosition().y;
+						if (pos > 0){
+							if (pos < 1 && pos > 0){
+								sizePositive.y += currentOffsetScale.y * (pos);
+								sizeNegative.y += currentOffsetScale.y * (1 - pos);
+							}
+							else if (pos == 1){
+								sizePositive.y += currentOffsetScale.y;
+							}
+							else if (pos > 1){
+								sizePositive.y += currentOffsetScale.y * (1 + pos);
+							}
 						}
-						else if (pos == 1){
-							sizePositive.y += currentOffsetScale.y;
+						else if (pos < 0){
+							if (pos > -1 && pos < 0){
+								sizeNegative.y += currentOffsetScale.y * abs(pos);
+								sizePositive.y += currentOffsetScale.y * (1 + pos);
+							}
+							else if (pos == -1){
+								sizeNegative.y += currentOffsetScale.y;
+							}
+							else if (pos < -1){
+								sizeNegative.y += currentOffsetScale.y * (1 + abs(pos));
+							}
 						}
-						else if (pos > 1){
-							sizePositive.y += currentOffsetScale.y * (1 + pos);
+						else if (pos == 0){
+							sizePositive.y += currentOffsetScale.y / 2;
+							sizeNegative.y += currentOffsetScale.y / 2;
 						}
-					}
-					else if (pos < 0){
-						if (pos > -1 && pos < 0){
-							sizeNegative.y += currentOffsetScale.y * abs(pos);
-							sizePositive.y += currentOffsetScale.y * (1 + pos);
-						}
-						else if (pos == -1){
-							sizeNegative.y += currentOffsetScale.y;
-						}
-						else if (pos < -1){
-							sizeNegative.y += currentOffsetScale.y * (1 + abs(pos));
-						}
-					}
-					else if (pos == 0){
-						sizePositive.y += currentOffsetScale.y / 2;
-						sizeNegative.y += currentOffsetScale.y / 2;
 					}
 				}
 			}
+			if (checking->getSibling() != nullptr){
+				updateBoundingRecurse(checking->getSibling(), scale);
+			}
+			if (checking->getChild() != nullptr){
+				updateBoundingRecurse(checking->getChild(), scale, checking->getPosition().x, checking->getPosition().y, checking->getPosition().z);
+			}
 		}
-		if (checking->getSibling() != nullptr){
-			updateBoundingRecurse(checking->getSibling(), scale);
+		if (type == WARP_ENTITY){
+			sizePositive.x = 8;
+			sizePositive.y = 8;
+			sizePositive.z = 0;
+			sizeNegative = sizePositive;
 		}
-		if (checking->getChild() != nullptr){
-			updateBoundingRecurse(checking->getChild(), scale, checking->getPosition().x, checking->getPosition().y, checking->getPosition().z);
-		}
-	}
-	if (type == WARP_ENTITY){
-		sizePositive.x = 8;
-		sizePositive.y = 8;
-		sizePositive.z = 0;
-		sizeNegative = sizePositive;
-	}
 
-	if ((sizePositive.x != sizeNegative.x || sizePositive.y != sizeNegative.y || sizePositive.z != sizeNegative.z) && (type != GAME_TEXT_ENTITY && type != POINTS_INDICATOR && type != TITLE_TEXT_ENTITY)){
-		centralize();
-		centralized = true;
+		if ((sizePositive.x != sizeNegative.x || sizePositive.y != sizeNegative.y || sizePositive.z != sizeNegative.z) && (type != GAME_TEXT_ENTITY && type != POINTS_INDICATOR && type != TITLE_TEXT_ENTITY)){
+			centralize();
+			centralized = true;
+		}
+		projectToAxis();
 	}
-	projectToAxis();
 }
 
 void CompositeEntity::updateBoundingRecurse(Entity* check, Vector3 offsetScale, float offsetX, float offsetY, float offsetZ){
@@ -737,6 +739,9 @@ bool CompositeEntity::subEntitiesCollidingSAT(Entity* firstOfThis, Entity* first
 }
 
 bool CompositeEntity::atScreenBoundary(float gameWallLeft, float gameWallRight, float gameFloor, float gameCeiling){
+	if (state == DEACTIVATING || state == DESTROYING){
+		return false;
+	}
 	bool atBoundary = (position.x + sizePositive.x * cos(rotation) + sizePositive.y * sin(rotation) >= gameWallRight || position.x - (sizeNegative.x * cos(rotation) - sizeNegative.y * sin(rotation)) <= gameWallLeft || position.y + sizePositive.y * cos(rotation) + sizePositive.x * sin(rotation) >= gameCeiling || position.y - (sizeNegative.y * cos(rotation) - sizeNegative.y * sin(rotation)) <= gameFloor);
 	if (atBoundary){
 		boundaryLeft = position.x - abs((sizeNegative.x * cos(rotation) - sizeNegative.y * sin(rotation))) <= gameWallLeft;
@@ -827,6 +832,9 @@ bool CompositeEntity::isCollidingSAT(CompositeEntity* collidingWith, DIRECTION c
 	//	throw "Unknown direction!";
 	//	break;
 	//}
+	if ((!canCollide || state == DEACTIVATING || state == DESTROYING || !isActive) || (!collidingWith->canCollide || collidingWith->state == DEACTIVATING || collidingWith->state == DESTROYING || !collidingWith->isActive)){
+		return false;
+	}
 	collideTop = false;
 	collideLeft = false;
 	collideRight = false;
@@ -873,6 +881,12 @@ bool CompositeEntity::isCollidingSAT(CompositeEntity* collidingWith, DIRECTION c
 				if (halfHeight){
 					collideLeft = false;
 					collideRight = false;
+				}
+
+				if (collidingWith->type == STATIC_FALL_ON_COLLDE && collidingWith->state == FALLING){
+					collideLeft = false;
+					collideRight = false;
+					collideTop = false;
 				}
 				return collideLeft || collideRight || collideTop || collideBottom;
 			}
@@ -975,6 +989,9 @@ void CompositeEntity::move(float elapsed, float gravity, float frictionX, float 
 				emitter->update(elapsed, gravity, velocity, position);
 			}
 		}
+	}
+	if (type == STATIC_FALL_ON_COLLDE && velocity.y != 0){
+		state = FALLING;
 	}
 	updateBounding();
 }
@@ -1147,6 +1164,7 @@ void CompositeEntity::fall(){
 	isStatic = false;
 	falls = true;
 	velocity.y = 5;
+	state = FALLING;
 }
 
 void CompositeEntity::playCollisionSound(DIRECTION direction, COLLISION_STRENGTH collisionStrength){
@@ -1600,8 +1618,8 @@ CompositeEntity* CompositeEntity::fire(){
 		CompositeEntity* newProjectile = new CompositeEntity();
 		newProjectile->deepCopy(projectile);
 		newProjectile->setVelocity(3 * (doMirror ? -topSpeed : topSpeed) * cos(rotation), 3 * (doMirror ? -topSpeed : topSpeed) * sin(rotation));
-		if (type == HIDING_ENEMY_FIRE){
-			newProjectile->setVelocity((doMirror ? 50 : -50), 0, 0);
+		if (type == HIDING_ENEMY_FIRE || type == ENEMY_TURRET){
+			newProjectile->setVelocity((doMirror ? 100 : -100), 0, 0);
 		}
 		newProjectile->setPosition(position.x + sin(rotation), position.y + cos(rotation));
 		newProjectile->setRotation(rotation);
@@ -1609,13 +1627,14 @@ CompositeEntity* CompositeEntity::fire(){
 		newProjectile->setObjectLayer(objectLayer);
 		newProjectile->setRenderLayer(renderLayer);
 		newProjectile->setState(MOVING);
+		newProjectile->setCanCollideWithTiles(true);
 
 		timeSinceFiring = 0;
 		playTriggerSound(TRIG_FIRE);
-		if (first->getIsAnimated() && first->hasAnimation(ANIMATION_FIRE)){
-			first->startAnimation(ANIMATION_FIRE);
-			firing = true;
-		}
+		first->startAnimation(ANIMATION_FIRE);
+		firing = true;
+		
+		
 		return newProjectile;
 	}
 	return nullptr;
@@ -1643,10 +1662,47 @@ CompositeEntity* CompositeEntity::logic(CompositeEntity* player, CompositeEntity
 	case HIDING_ENEMY_FIRE:
 		if (abs(player->getPosition().x - position.x) >= awarenessRadius){
 			doMirror = player->getPosition().x > position.x;
-			first->startAnimation(ANIMATION_IDLE);
+			if (!firing || first->animationComplete(ANIMATION_FIRE)){
+				first->startAnimation(ANIMATION_IDLE);
+			}
 			return nullptr;
 		}
 		else if (abs(player->getPosition().x - position.x) < awarenessRadius && abs(player->getPosition().x - position.x) >= hidingRadius){
+			doMirror = player->getPosition().x > position.x;
+			if (abs(player->getPosition().y - player->getSizeNegative().y) >= abs(position.y - sizeNegative.y) && abs(player->getPosition().y + player->getSizePositive().y) <= abs(position.y)){
+				CompositeEntity* projectile = fire();
+				if (projectile == nullptr && (!firing || first->animationComplete(ANIMATION_FIRE))){
+					first->startAnimation(ANIMATION_IDLE);
+				}
+				return projectile;
+			}
+			else{
+				first->startAnimation(ANIMATION_IDLE);
+				return nullptr;
+			}
+		}
+		else if (abs(player->getPosition().x - position.x) < hidingRadius){
+			doMirror = player->getPosition().x > position.x;
+			if (!firing || first->animationComplete(ANIMATION_FIRE)){
+				first->startAnimation(ANIMATION_HIDING);
+			}
+			return nullptr;
+		}
+		else{
+			if (!firing || first->animationComplete(ANIMATION_FIRE)){
+				first->startAnimation(ANIMATION_HIDING);
+			}
+			return nullptr;
+		}
+		return nullptr;
+		break;
+	case ENEMY_TURRET:
+		if (abs(player->getPosition().x - position.x) >= awarenessRadius){
+			doMirror = player->getPosition().x > position.x;
+			first->startAnimation(ANIMATION_IDLE);
+			return nullptr;
+		}
+		else if (abs(player->getPosition().x - position.x) < awarenessRadius){
 			doMirror = player->getPosition().x > position.x;
 			if (abs(player->getPosition().y - player->getSizeNegative().y) <= abs(position.y - sizeNegative.y)){
 				CompositeEntity* projectile = fire();
@@ -1659,14 +1715,11 @@ CompositeEntity* CompositeEntity::logic(CompositeEntity* player, CompositeEntity
 				return nullptr;
 			}
 		}
-		else if (abs(player->getPosition().x - position.x) < hidingRadius){
-			doMirror = player->getPosition().x > position.x;
-			first->startAnimation(ANIMATION_HIDING);
-		}
 		else{
 			first->startAnimation(ANIMATION_HIDING);
 			return nullptr;
 		}
+		break;
 	default:
 		return nullptr;
 		break;
@@ -1878,7 +1931,7 @@ void CompositeEntity::addParticleEmitter(ParticleEmitter* emitter){
 }
 
 void CompositeEntity::hardCollision(DIRECTION collisionDirection, int particleCount){
-	if (particleEmitters[HARD_COLLISION_EMITTER].size() != 0){
+	if (particleEmitters.size() != 0 && particleEmitters[HARD_COLLISION_EMITTER].size() != 0){
 		for (size_t i = 0; i < particleEmitters[HARD_COLLISION_EMITTER].size(); i++){
 			particleEmitters[HARD_COLLISION_EMITTER][i]->trigger(particleCount);
 		}

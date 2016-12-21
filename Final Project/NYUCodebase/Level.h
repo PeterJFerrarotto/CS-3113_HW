@@ -71,7 +71,7 @@ public:
 	CompositeEntity* getPlayerEntity();
 	Color getBackgroundColor();
 
-	const std::unordered_map<unsigned, unsigned char**> getLevelData();
+	//const std::unordered_map<unsigned, unsigned char**> getLevelData();
 	//const std::unordered_map<unsigned, GLuint> getLayerSpriteSheets();
 	void fillSpriteSheetData(rapidxml::xml_node<>* tileNode);
 	void fillTileTestData();

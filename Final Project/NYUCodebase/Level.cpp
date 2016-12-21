@@ -1,6 +1,7 @@
 #include "Level.h"
 #include "ShaderProgram.h"
 #include "Tile.h"
+#include "mathHelper.h"
 using namespace std;
 using namespace rapidxml;
 
@@ -58,6 +59,13 @@ bool Level::readHeader(const char* levelName, std::ifstream &stream) {
 		}
 		else if (key == "backgroundColorA"){
 			backgroundColor.a = (float)atoi(value.c_str()) / 255;
+		}
+		else if (key == "backgroundColor"){
+			int startHex = value.find('#') + 1;
+			backgroundColor.a = hexToBase10(value.substr(startHex, 2)) / 255;
+			backgroundColor.r = hexToBase10(value.substr(startHex + 2, 2)) / 255;
+			backgroundColor.g = hexToBase10(value.substr(startHex + 4, 2)) / 255;
+			backgroundColor.b = hexToBase10(value.substr(startHex + 6, 2)) / 255;
 		}
 	}
 	if (tileWidth == tileHeight){

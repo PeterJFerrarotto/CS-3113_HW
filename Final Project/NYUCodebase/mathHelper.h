@@ -2,6 +2,7 @@
 #define _MATH_HELPER_H
 #include <algorithm>
 #include "enumHelper.h"
+#include <unordered_map>
 
 enum VERTEX_INDICES {UPPER_RIGHT, UPPER_LEFT, LOWER_LEFT, LOWER_RIGHT, VERTEX_COUNT};
 
@@ -146,7 +147,6 @@ inline bool checkSATCollision(const std::vector<Vector3> &e1Points, const std::v
 //}
 
 inline bool checkSATCollisionDirectional(const std::vector<Vector3> &e1Points, const std::vector<Vector3> &e2Points, Vector3 e1V, Vector3 e2V, DIRECTION direction) {
-
 	for (int i = 0; i < e1Points.size(); i++) {
 		float edgeX, edgeY;
 
@@ -314,5 +314,86 @@ inline float getSATPenetrationDirectional(const std::vector<Vector3> &e1Points, 
 	}
 	return penetration;
 }
+
+inline float hexToBase10(const std::string& hex){
+	int value = 0;
+	int i = hex.size() - 1;
+	for (int pos = 0; pos < hex.size(); pos++){
+		int modifier = 0;
+		switch (hex[pos]){
+		case '0':
+		case '1':
+		case '2':
+		case '3':
+		case '4':
+		case '5':
+		case '6':
+		case '7':
+		case '8':
+		case '9':
+			modifier = hex[pos] - 48;
+			break;
+		case 'a':
+		case 'b':
+		case 'c':
+		case 'd':
+		case 'e':
+		case 'f':
+			modifier = hex[pos] - 87;
+			break;
+		default:
+			throw "Uknown hex character!";
+			break;
+		}
+		int inc = pow(16, i);
+		value += modifier * pow(16, i);
+		i--;
+	}
+	return value;
+}
+
+class CompositeEntity;
+inline int getEntityLayers(std::unordered_map<std::string, std::unordered_map<unsigned, std::vector<CompositeEntity*>>>& gameEntityRenderingOrder, const std::string& level){
+	int max = gameEntityRenderingOrder.size();
+	for (auto itr = gameEntityRenderingOrder[level].begin(); itr != gameEntityRenderingOrder[level].end(); itr++){
+		if (itr->first > max){
+			max = itr->first;
+		}
+	}
+	return max;
+}
+//
+//float sizeXPos = abs(entity->getSizePositive().x * rC + entity->getSizePositive().y * rS);
+//float sizeXNeg = abs(entity->getSizeNegative().x * rC - entity->getSizePositive().y * rS);
+//float sizeY = abs(entity->getSizeNegative().y * rC - entity->getSizePositive().x * rS);
+
+//inline float getPenetration(Vector3 e1Pos, Vector3 e1Size, float e1Rotation, Vector3 e2Pos, Vector3 e2Size, float e2Rotation, DIRECTION direction){
+//	float rC1 = cos(e1Rotation), rS1 = sin(e1Rotation);
+//	float rC2 = cos(e2Rotation), rS2 = sin(e2Rotation);
+//	float e1PositiveX = abs(e1Size.x * rC1 + e1Size.y * rS1);
+//	float e1NegativeX = abs(e1Size.x * rC1 - e1Size.y * rS1);
+//	float e1PositiveY = abs(e1Size.y * rC1 + e1Size.x * rS1);
+//	float e1NegativeY = abs(e1Size.y * rC1 - e1Size.x * rS1);
+//	float e2PositiveX = abs(e2Size.x * rC2 + e2Size.y * rS2);
+//	float e2NegativeX = abs(e2Size.x * rC2 - e2Size.y * rS2);
+//	float e2PositiveY = abs(e2Size.y * rC2 + e2Size.x * rS2);
+//	float e2NegativeY = abs(e2Size.y * rC2 - e2Size.x * rS2);
+//	float penetration = 0;
+//	switch (direction){
+//	case UP:
+//		penetration = (e1Pos.y + e1PositiveY) - (e2Pos.y - e2NegativeY);
+//		break;
+//	case DOWN:
+//		penetration = (e2Pos.y + e2PositiveY) - (e1Pos.y - e1NegativeY);
+//		break;
+//	case LEFT:
+//		penetration = (e2Pos.x + e2PositiveX) - (e1Pos.x - e1NegativeX);
+//		break;
+//	case RIGHT:
+//		penetration = (e1Pos.x + e1PositiveX) - (e2Pos.x - e2NegativeX);
+//		break;
+//	}
+//	return penetration;
+//}
 
 #endif

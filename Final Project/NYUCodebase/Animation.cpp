@@ -7,6 +7,7 @@ Animation::Animation(Animation* toCopy){
 
 Animation::Animation(ANIMATION_TYPE animationType, unsigned startingIndex, unsigned endingIndex) : animationType(animationType), startingIndex(startingIndex), endingIndex(endingIndex), currentIndex(startingIndex)
 {
+	framesPerImage = 1;
 }
 
 Animation::~Animation()
@@ -14,7 +15,7 @@ Animation::~Animation()
 }
 
 bool Animation::animationIsDone(){
-	return !loop && currentIndex == endingIndex;
+	return !loop && currentIndex == endingIndex && currentImageFrameCount >= framesPerImage;
 }
 
 void Animation::updateTexture(){
@@ -48,28 +49,33 @@ void Animation::setAnimationCollides(bool collide){
 void Animation::runAnimation(float elapsed, float fps){
 	animationElapsed += elapsed;
 	if (animationElapsed > 1.0 / fps) {
-		if (startingIndex <= endingIndex){
-			currentIndex++;
-			if (currentIndex > endingIndex){
-				currentIndex = loop ? startingIndex : endingIndex;
-				timesRun++;
+		currentImageFrameCount++;
+		if (currentImageFrameCount > framesPerImage){
+			if (startingIndex <= endingIndex){
+				currentIndex++;
+				if (currentIndex > endingIndex){
+					currentIndex = loop ? startingIndex : endingIndex;
+					timesRun++;
+				}
 			}
-		}
-		if (startingIndex > endingIndex){
-			currentIndex--;
-			if (currentIndex < endingIndex){
-				currentIndex = loop ? startingIndex : endingIndex;
-				timesRun++;
+			if (startingIndex > endingIndex){
+				currentIndex--;
+				if (currentIndex < endingIndex){
+					currentIndex = loop ? startingIndex : endingIndex;
+					timesRun++;
+				}
 			}
+			updateTexture();
+			animationElapsed = 0;
+			currentImageFrameCount = 0;
 		}
-		updateTexture();
-		animationElapsed = 0;
 	}
 }
 
 void Animation::restartAnimation(){
 	currentIndex = startingIndex;
 	timesRun = 0;
+	currentImageFrameCount = 0;
 	updateTexture();
 }
 
@@ -84,6 +90,7 @@ void Animation::deepCopy(Animation* toCopy){
 	this->startingIndex = toCopy->startingIndex;
 	this->timesRun = 0;
 	this->animationCollides = toCopy->animationCollides;
+	this->framesPerImage = toCopy->framesPerImage;
 }
 
 void Animation::freeMemory(){
@@ -101,4 +108,8 @@ void Animation::freeMemory(){
 
 bool Animation::getAnimationCollides(){
 	return animationCollides;
+}
+
+void Animation::setFramesPerImage(unsigned framesPerImage){
+	this->framesPerImage = framesPerImage;
 }

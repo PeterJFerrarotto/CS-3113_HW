@@ -73,13 +73,16 @@ void GameEngine::render(ShaderProgram* program, float elapsed, float fps){
 
 	program->setViewMatrix(viewMatrix);
 	Level* lvl = levels[currentLevel];
-	for (size_t i = 0; i < gameEntitiesRenderingOrder[currentLevel].size(); i++){
+	int layerCount = getEntityLayers(gameEntitiesRenderingOrder, currentLevel) > lvl->getLayerCount() ? getEntityLayers(gameEntitiesRenderingOrder, currentLevel) : lvl->getLayerCount();
+	for (size_t i = 0; i <= layerCount; i++){
 		//glClearColor(0.03921568627, 0.59607843137, 0.67450980392, 1.0);
 		glClearColor(lvl->getBackgroundColor().r, lvl->getBackgroundColor().g, lvl->getBackgroundColor().b, lvl->getBackgroundColor().a);
 		levels[currentLevel]->draw(program, i);
-		for (vector<CompositeEntity*>::const_iterator itr = gameEntitiesRenderingOrder[currentLevel][i].begin(); itr != gameEntitiesRenderingOrder[currentLevel][i].end(); itr++){
-			if ((*itr)->getIsActive() && (*itr)->getEntityType() != POINTS_INDICATOR) 
-				(*itr)->draw(program, uIMatrix, elapsed, fps);
+		if (gameEntitiesRenderingOrder[currentLevel].find(i) != gameEntitiesRenderingOrder[currentLevel].end()){
+			for (vector<CompositeEntity*>::const_iterator itr = gameEntitiesRenderingOrder[currentLevel][i].begin(); itr != gameEntitiesRenderingOrder[currentLevel][i].end(); itr++){
+				if ((*itr)->getIsActive() && (*itr)->getEntityType() != POINTS_INDICATOR)
+					(*itr)->draw(program, uIMatrix, elapsed, fps);
+			}
 		}
 	}
 	for (size_t i = 0; i < userInterface.size(); i++){
@@ -498,12 +501,9 @@ void GameEngine::resolveXCollisions(CompositeEntity* entity){
 void GameEngine::checkTileCollisions(){
 	//Using layer, get value of the tile that the evaluated entity is currently touching
 	//for (size_t i = 0; i < gameEntities[currentLevel].size(); i++){
-	if (currentLevel == "level_02"){
-		int x = 5;
-	}
 	for (unordered_map<unsigned, vector<CompositeEntity*>>::iterator itr = gameEntities[currentLevel].begin(); itr != gameEntities[currentLevel].end(); itr++){
 		for (CompositeEntity* entity : itr->second){
-			if (entity->getIsActive() && entity->getCanCollide() && entity->getState() != DESTROYING && entity->getEntityType() != STATIC_ENTITY){
+			if (entity->getIsActive() && entity->getCanCollideWithTiles() && entity->getCanCollide() && entity->getState() != DESTROYING && entity->getEntityType() != STATIC_ENTITY){
 				resolveYCollisions(entity);
 				resolveXCollisions(entity);
 			}
@@ -823,6 +823,9 @@ void GameEngine::update(float elapsed, ShaderProgram* program){
 			blinkTime = BLINK_TIMING;
 			playerEntity->setisInvincible(true);
 			playerEntity->resetToCheckpoint();
+			//deActivateLevelEntities();
+			//activateLevelEntities();
+			//activateLevelEntities();
 		}
 		else{
 			changeState(GAME_END);
@@ -885,7 +888,7 @@ void GameEngine::activateLevelEntities(){
 		for (CompositeEntity* entity : itr->second){
 			if (entity != nullptr){
 				entity->reset();
-				if (entity->getEntityType() != ACTOR_PLAYER && entity->getEntityType() != ACTOR_ENEMY && entity->getEntityType() != GAME_TEXT_ENTITY && entity->getEntityType() != ICON_ENTITY && entity->getEntityType() != POINTS_INDICATOR && entity->getEntityType() != LIFE_ICON_ENTITY && entity->getEntityType() != STATIC_ENTITY && entity->getEntityType() != ACTOR_ENEMY_PATROL_TURN && entity->getEntityType() != ENTITY_COIN && entity->getEntityType() != STATIC_FALL_ON_COLLDE && entity->getEntityType() != HIDING_ENEMY_FIRE){
+				if (entity->getEntityType() != ACTOR_PLAYER && entity->getEntityType() != ACTOR_ENEMY && entity->getEntityType() != GAME_TEXT_ENTITY && entity->getEntityType() != ICON_ENTITY && entity->getEntityType() != POINTS_INDICATOR && entity->getEntityType() != LIFE_ICON_ENTITY && entity->getEntityType() != STATIC_ENTITY && entity->getEntityType() != ACTOR_ENEMY_PATROL_TURN && entity->getEntityType() != ENTITY_COIN && entity->getEntityType() != STATIC_FALL_ON_COLLDE && entity->getEntityType() != HIDING_ENEMY_FIRE && entity->getEntityType() != WARP_ENTITY){
 					entity->setIsActive(false);
 				}
 				else{
@@ -974,7 +977,7 @@ void GameEngine::start(){
 
 void GameEngine::checkIfShouldWarp(){
 	for (CompositeEntity* entity : gameEntities[currentLevel][WARP_ENTITY]){
-		if (playerEntity->isColliding(entity)){
+		if (playerEntity->isCollidingSAT(entity, ALL_DIRECTIONS)){
 			setLevel(entity->getWarpDestination());
 		}
 	}

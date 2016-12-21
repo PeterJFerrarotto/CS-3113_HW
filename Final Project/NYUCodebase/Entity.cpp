@@ -125,13 +125,20 @@ bool Entity::getDoMirror(){
 }
 
 bool Entity::animationComplete(ANIMATION_TYPE animationType){
+	bool isComplete = false;
 	if (animations.find(animationType) == animations.end()){
-		return false;
+		isComplete = false;
 	}
-	if (currentAnimation == animationType){
-		return (animations[animationType]->animationIsDone());
+	if (currentAnimation == animationType && animations[animationType] != nullptr){
+		isComplete = (animations[animationType]->animationIsDone());
 	}
-	return false;
+	if (child != nullptr){
+		isComplete = isComplete || child->animationComplete(animationType);
+	}
+	if (sibling != nullptr){
+		isComplete = isComplete || sibling->animationComplete(animationType);
+	}
+	return isComplete;
 }
 
 bool Entity::hasAnimation(ANIMATION_TYPE animationType){
@@ -521,7 +528,7 @@ void Entity::startAnimation(ANIMATION_TYPE animation){
 
 void Entity::runAnimation(float elapsed, float fps){
 	if (isAnimated){
-		if (animations[currentAnimation] != nullptr){
+		if (animations.find(currentAnimation) != animations.end() && animations[currentAnimation] != nullptr){
 			animations[currentAnimation]->runAnimation(elapsed, fps);
 			texture = animations[currentAnimation]->getTexture();
 			canCollide = animations[currentAnimation]->getAnimationCollides();

@@ -1,7 +1,7 @@
 #ifndef ANIMATION_H
 #define ANIMATION_H
 
-enum ANIMATION_TYPE{ ANIMATION_IDLE, ANIMATION_RUN, ANIMATION_WALK, ANIMATION_JUMP, ANIMATION_FALL, ANIMATION_DESTROY, ANIMATION_DEACTIVATE, ANIMATION_HIDING, ANIMATION_FIRE, ANIMATION_FIRE_RETURN };
+enum ANIMATION_TYPE{ ANIMATION_IDLE, ANIMATION_RUN, ANIMATION_WALK, ANIMATION_JUMP, ANIMATION_FALL, ANIMATION_DESTROY, ANIMATION_DEACTIVATE, ANIMATION_HIDING, ANIMATION_FIRE, ANIMATION_FIRE_RETURN, ANIMATION_SIZE };
 
 class Texture;
 class Animation
@@ -15,7 +15,7 @@ protected:
 	bool loop;
 	bool animationCollides;
 	void updateTexture();
-	unsigned timesRun;
+	unsigned timesRun, framesPerImage, currentImageFrameCount;
 public:
 	//Note: animations can only be used with even spritesheets!
 	Animation(Animation* toCopy);
@@ -31,6 +31,7 @@ public:
 	void setTexture(Texture* texture);
 	void setDoLoop(bool loop);
 	void setAnimationCollides(bool collides);
+	void setFramesPerImage(unsigned framesPerImage);
 
 	void runAnimation(float elapsed, float fps);
 

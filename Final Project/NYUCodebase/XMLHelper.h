@@ -152,6 +152,7 @@ inline Animation* enrichAnimationInformation(xml_node<>* animationNode){
 	bool collides = true;
 	ANIMATION_TYPE animationType = ANIMATION_IDLE;
 	unsigned startingIndex = 0, endingIndex = 0;
+	unsigned framesPerImage = 1;
 	if (animationNode->first_attribute("loop") != nullptr){
 		loop = stoi(animationNode->first_attribute("loop")->value()) == 1;
 	}
@@ -172,9 +173,14 @@ inline Animation* enrichAnimationInformation(xml_node<>* animationNode){
 		collides = stoi(animationNode->first_attribute("animationCollides")->value()) == 1;
 	}
 
+	if (animationNode->first_attribute("framesPerImage") != nullptr){
+		framesPerImage = stoi(animationNode->first_attribute("framesPerImage")->value());
+	}
+
 	Animation* anim = new Animation(animationType, startingIndex, endingIndex);
 	anim->setDoLoop(loop);
 	anim->setAnimationCollides(collides);
+	anim->setFramesPerImage(framesPerImage);
 	Texture* tex;
 	if (animationNode->first_node("Texture") != nullptr){
 		tex = enrichTextureInformation(animationNode->first_node("Texture"));
@@ -1026,6 +1032,7 @@ inline void readEntityData(std::ifstream &stream, Level* level, GameEngine& engi
 		else if (key == "xmlDescriber"){
 			char xmlFile[360];
 			strcpy_s(xmlFile, RESOURCE_FOLDER);
+			strcat_s(xmlFile, "Assets/");
 			strcat_s(xmlFile, value.c_str());
 			xml_document<>* doc = loadXMLFile(xmlFile);
 			delete entity;
