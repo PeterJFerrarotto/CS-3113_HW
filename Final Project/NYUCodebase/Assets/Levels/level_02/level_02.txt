@@ -570,3 +570,24 @@ objectLayer=1
 renderLayer=1
 xmlDescriber=XML/Objects/fallingBridgeSegment.xml
 
+[ObjectsLayer]
+# ENEMY
+type=9
+location=32,24,1,1
+objectLayer=1
+renderLayer=1
+
+[ObjectsLayer]
+# ENEMY
+type=9
+location=35,18,1,1
+objectLayer=1
+renderLayer=1
+
+[ObjectsLayer]
+# ENEMY
+type=9
+location=31,12,1,1
+objectLayer=1
+renderLayer=1
+

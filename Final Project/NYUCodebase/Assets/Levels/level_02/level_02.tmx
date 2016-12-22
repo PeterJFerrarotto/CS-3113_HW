@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.0" orientation="orthogonal" renderorder="right-down" width="50" height="50" tilewidth="16" tileheight="16" backgroundcolor="#0a98ac" nextobjectid="141">
+<map version="1.0" orientation="orthogonal" renderorder="right-down" width="50" height="50" tilewidth="16" tileheight="16" backgroundcolor="#0a98ac" nextobjectid="144">
  <tileset firstgid="1" source="../../../../../Homework 4/NYUCodebase/Assets/Levels/Spritesheets/arne_sprites.tsx"/>
  <tileset firstgid="129" source="../../../../../Homework 4/NYUCodebase/Assets/Levels/Spritesheets/ripped_starbound_sprites_solid_floor.tsx"/>
  <layer name="Tile Layer 2" width="50" height="50">
@@ -407,6 +407,24 @@
     <property name="objectLayer" type="int" value="1"/>
     <property name="renderLayer" type="int" value="1"/>
     <property name="xmlDescriber" type="file" value="../../XML/Objects/fallingBridgeSegment.xml"/>
+   </properties>
+  </object>
+  <object id="141" name="ENEMY" type="9" gid="82" x="512" y="384" width="16" height="16">
+   <properties>
+    <property name="objectLayer" type="int" value="1"/>
+    <property name="renderLayer" type="int" value="1"/>
+   </properties>
+  </object>
+  <object id="142" name="ENEMY" type="9" gid="82" x="560" y="288" width="16" height="16">
+   <properties>
+    <property name="objectLayer" type="int" value="1"/>
+    <property name="renderLayer" type="int" value="1"/>
+   </properties>
+  </object>
+  <object id="143" name="ENEMY" type="9" gid="82" x="496" y="192" width="16" height="16">
+   <properties>
+    <property name="objectLayer" type="int" value="1"/>
+    <property name="renderLayer" type="int" value="1"/>
    </properties>
   </object>
  </objectgroup>

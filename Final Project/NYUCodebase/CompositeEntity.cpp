@@ -1478,7 +1478,7 @@ void CompositeEntity::collideWithStatic(CompositeEntity* collidingWith){
 void CompositeEntity::collideWithStaticSAT(CompositeEntity* collidingWith){
 	float penetrationX = 0, penetrationY = 0;
 
-	if ((collideRight || collideLeft) && collideTop){
+	if ((collideRight || collideLeft || abs(acceleration.x) >= 1) && collideTop){
 		collideTop = false;
 	}
 	if (collideLeft){
@@ -1488,12 +1488,12 @@ void CompositeEntity::collideWithStaticSAT(CompositeEntity* collidingWith){
 		if (collidingWith->velocity.x > 0){
 			velocity.x += collidingWith->velocity.x;
 		}
-		penetrationX = -getSATPenetrationDirectional(collisionNode->getSATCoordinates(), otherCollisionNode->getSATCoordinates(), LEFT);
+		penetrationX = getSATPenetrationDirectional(collisionNode->getSATCoordinates(), otherCollisionNode->getSATCoordinates(), LEFT);
 	}
 
 	if (collideRight){
 		velocity.x = 0;
-		penetrationX = -getSATPenetrationDirectional(collisionNode->getSATCoordinates(), otherCollisionNode->getSATCoordinates(), RIGHT);
+		penetrationX = getSATPenetrationDirectional(collisionNode->getSATCoordinates(), otherCollisionNode->getSATCoordinates(), RIGHT);
 	}
 	
 	if (collideTop){
@@ -1671,7 +1671,7 @@ CompositeEntity* CompositeEntity::logic(CompositeEntity* player, CompositeEntity
 			doMirror = player->getPosition().x > position.x;
 			if (abs(player->getPosition().y - player->getSizeNegative().y) >= abs(position.y - sizeNegative.y) && abs(player->getPosition().y + player->getSizePositive().y) <= abs(position.y)){
 				CompositeEntity* projectile = fire();
-				if (projectile == nullptr && (!firing || first->animationComplete(ANIMATION_FIRE))){
+				if (projectile == nullptr && (!firing || first->animationComplete(ANIMATION_FIRE) || first->getCurrentAnimation() != ANIMATION_FIRE)){
 					first->startAnimation(ANIMATION_IDLE);
 				}
 				return projectile;
@@ -1683,13 +1683,13 @@ CompositeEntity* CompositeEntity::logic(CompositeEntity* player, CompositeEntity
 		}
 		else if (abs(player->getPosition().x - position.x) < hidingRadius){
 			doMirror = player->getPosition().x > position.x;
-			if (!firing || first->animationComplete(ANIMATION_FIRE)){
+			if (!firing || first->animationComplete(ANIMATION_FIRE) || first->getCurrentAnimation() != ANIMATION_FIRE){
 				first->startAnimation(ANIMATION_HIDING);
 			}
 			return nullptr;
 		}
 		else{
-			if (!firing || first->animationComplete(ANIMATION_FIRE)){
+			if (!firing || first->animationComplete(ANIMATION_FIRE) || first->getCurrentAnimation() != ANIMATION_FIRE){
 				first->startAnimation(ANIMATION_HIDING);
 			}
 			return nullptr;

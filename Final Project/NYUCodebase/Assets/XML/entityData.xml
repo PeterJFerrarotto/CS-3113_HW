@@ -239,7 +239,7 @@
     </subEntities>
     <Details>
       <firingDelay>2.5</firingDelay>
-      <Velocity x="-15" y="0" z="0"></Velocity>
+      <Velocity x="-30" y="0" z="0"></Velocity>
       <Acceleration x="0" y="0" z="0"></Acceleration>
       <Scale x="5" y="3" z="1.0"></Scale>
       <Rotation>0</Rotation>
@@ -373,7 +373,7 @@
               <EvenSpritesheet Directory="Assets/Levels/Spritesheets/" index="29" sheetName="arne_sprites.png" layer="1" spriteCountX="16" spriteCountY="8"></EvenSpritesheet>
             </Texture>
           </Animtion>
-          <Animation loop="0" type="8" startingIndex="30" endingIndex="31" Starting="0" framesPerImage="100">
+          <Animation loop="0" type="8" startingIndex="30" endingIndex="31" Starting="0" framesPerImage="4">
             <Texture type="1" layer="1">
               <EvenSpritesheet Directory="Assets/Levels/Spritesheets/" index="30" sheetName="arne_sprites.png" layer="1" spriteCountX="16" spriteCountY="8"></EvenSpritesheet>
             </Texture>
@@ -402,7 +402,7 @@
                 <EvenSpritesheet Directory="Assets/Levels/Spritesheets/" index="13" sheetName="arne_sprites.png" layer="1" spriteCountX="16" spriteCountY="8"></EvenSpritesheet>
               </Texture>
             </Animtion>
-            <Animation loop="0" type="8" startingIndex="14" endingIndex="15" framesPerImage="100">
+            <Animation loop="0" type="8" startingIndex="14" endingIndex="15" framesPerImage="4">
               <Texture type="1" layer="1">
                 <EvenSpritesheet Directory="Assets/Levels/Spritesheets/" index="14" sheetName="arne_sprites.png" layer="1" spriteCountX="16" spriteCountY="8"></EvenSpritesheet>
               </Texture>

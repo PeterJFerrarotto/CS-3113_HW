@@ -9,6 +9,7 @@
 #include "CompositeEntity.h"
 #include "EnumClassHash.h"
 #include "Tile.h"
+#include "GameMusic.h"
 
 #define PLAYER_TOP_SPEED 2.5
 #define PLAYER_ACCELERATION 50
@@ -28,6 +29,7 @@
 #endif
 
 enum GAME_STATE { TITLE_SCREEN, GAME_BEGIN, GAME_PLAY, GAME_END, GAME_QUIT, LEVEL_CHANGE };
+enum SHAKE_DIREC {VERTICAL, HORIZONTAL};
 
 class CollisionListener;
 class CompositeEntity;
@@ -120,9 +122,15 @@ private:
 
 	float screenShakeValue, screenShakeIntensity;
 
+	int collisionMagnitude;
+
 	unsigned int shakeCount;
 
 	Vector3 tileVelocity;
+
+	GameMusic* music;
+
+	SHAKE_DIREC shakeDirection;
 public:
 	GameEngine();
 	~GameEngine();

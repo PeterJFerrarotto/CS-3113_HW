@@ -56,7 +56,8 @@ void GameEngine::render(ShaderProgram* program, float elapsed, float fps){
 	}
 	if (shakeScreen && shakeCount < maximumScreenShakes){
 		screenShakeValue += elapsed;
-		screenShakeIntensity = 5;
+		screenShakeIntensity = shakeDirection == VERTICAL ? 5 : 2.5;
+		screenShakeIntensity *= collisionMagnitude;
 		shakeCount++;
 	}
 	else{
@@ -68,8 +69,13 @@ void GameEngine::render(ShaderProgram* program, float elapsed, float fps){
 			screenShakeIntensity = 0;
 		}
 	}
-
-	viewMatrix.Translate(0.0f, sin(screenShakeValue * screenShakeSpeed) * screenShakeIntensity, 0.0f);
+	
+	if (shakeDirection == VERTICAL){
+		viewMatrix.Translate(0.0f, sin(screenShakeValue * screenShakeSpeed) * screenShakeIntensity, 0.0f);
+	}
+	else if (shakeDirection == HORIZONTAL){
+		viewMatrix.Translate(sin(screenShakeValue * screenShakeSpeed) * screenShakeIntensity, 0, 0.0f);
+	}
 
 	program->setViewMatrix(viewMatrix);
 	Level* lvl = levels[currentLevel];
@@ -413,6 +419,8 @@ void GameEngine::resolveYCollisions(CompositeEntity* entity){
 					else if (entity->getVelocity().y <= -entity->getJumpSpeed() && entity->getJumpSpeed() != 0){
 						entity->hardCollision(DOWN, 4);
 						shakeScreen = true;
+						shakeDirection = VERTICAL;
+						collisionMagnitude = 1;
 						shakeCount = 0;
 					}
 					accY = 0;
@@ -420,6 +428,7 @@ void GameEngine::resolveYCollisions(CompositeEntity* entity){
 				else if (penetrationDown <= 0 && penetrationUp > 0){
 					if (entity->getEntityType() == PLAYER_PROJECTILE || entity->getEntityType() == ENEMY_PROJECTILE){
 						entity->destroy(true, true);
+						
 						return;
 					}
 					posY -= penetrationUp;
@@ -443,6 +452,8 @@ void GameEngine::resolveYCollisions(CompositeEntity* entity){
 					else if (entity->getVelocity().y <= -entity->getJumpSpeed() && entity->getJumpSpeed() != 0){
 						entity->hardCollision(DOWN, 4);
 						shakeScreen = true;
+						shakeDirection = VERTICAL;
+						collisionMagnitude = 1;
 						shakeCount = 0;
 					}
 					entity->setOnTileGround(true);
@@ -475,6 +486,10 @@ void GameEngine::resolveXCollisions(CompositeEntity* entity){
 			if (penetrationRight <= 0 && penetrationLeft > 0){
 				if (entity->getEntityType() == PLAYER_PROJECTILE || entity->getEntityType() == ENEMY_PROJECTILE){
 					entity->destroy(true, true);
+					shakeScreen = true;
+					collisionMagnitude = 1;
+					shakeDirection = HORIZONTAL;
+					shakeCount = 0;
 					return;
 				}
 				posX += penetrationLeft;
@@ -485,6 +500,10 @@ void GameEngine::resolveXCollisions(CompositeEntity* entity){
 			else if (penetrationLeft <= 0 && penetrationRight > 0){
 				if (entity->getEntityType() == PLAYER_PROJECTILE || entity->getEntityType() == ENEMY_PROJECTILE){
 					entity->destroy(true, true);
+					shakeScreen = true;
+					collisionMagnitude = 1;
+					shakeDirection = HORIZONTAL;
+					shakeCount = 0;
 					return;
 				}
 				posX -= penetrationRight;
@@ -824,7 +843,7 @@ void GameEngine::update(float elapsed, ShaderProgram* program){
 			playerEntity->setisInvincible(true);
 			playerEntity->resetToCheckpoint();
 			//deActivateLevelEntities();
-			//activateLevelEntities();
+			activateLevelEntities();
 			//activateLevelEntities();
 		}
 		else{
@@ -935,6 +954,7 @@ void GameEngine::changeState(unsigned state){
 			}
 		}
 		playerEntity->getEntities()->setDoRender(true);
+		music->play();
 		gameState = GAME_PLAY;
 		lives = 3;
 		blinkCount = MAX_BLINK_COUNT + 1;
@@ -945,6 +965,7 @@ void GameEngine::changeState(unsigned state){
 	case GAME_END:
 		setLevel("level_01");
 		changeState(TITLE_SCREEN);
+		music->stop();
 		break;
 	case GAME_QUIT:
 		break;
@@ -973,6 +994,9 @@ bool GameEngine::getGameOver(){
 
 void GameEngine::start(){
 	changeState(TITLE_SCREEN);
+	music = new GameMusic();
+	music->loadFile(RESOURCE_FOLDER"Assets/Sounds/SuperMarioBros.ogg");
+	//music->play();
 }
 
 void GameEngine::checkIfShouldWarp(){

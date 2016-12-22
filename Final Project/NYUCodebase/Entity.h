@@ -123,6 +123,7 @@ public:
 	void centralize(Vector3 offset);
 
 	int getNumOfEntities(bool lookForCollision = false);
+	ANIMATION_TYPE getCurrentAnimation();
 };
 
 #endif

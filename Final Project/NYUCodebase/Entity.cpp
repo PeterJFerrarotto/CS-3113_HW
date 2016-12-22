@@ -637,3 +637,7 @@ int Entity::getNumOfEntities(bool lookForCollision){
 	}
 	return numOfEntities;
 }
+
+ANIMATION_TYPE Entity::getCurrentAnimation(){
+	return currentAnimation;
+}
